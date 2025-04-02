@@ -307,12 +307,7 @@ struct AddExpenseView: View {
         }
             Form {
                 Section(header: Text("Required")) {
-                    HStack {
-                        Label("Date", systemImage: "calendar")
-                        Spacer()
-                        DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
-                            .labelsHidden()
-                    }
+                    DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
                     TextField("Name", text: $name)
                     TextField("Amount", text: $amount)
                         .keyboardType(.decimalPad)
