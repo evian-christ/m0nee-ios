@@ -32,6 +32,13 @@ class ExpenseStore: ObservableObject {
         }
     }
 
+    func delete(_ expense: Expense) {
+        if let index = expenses.firstIndex(where: { $0.id == expense.id }) {
+            expenses.remove(at: index)
+            save() // Update the saved data after deletion
+        }
+    }
+
     private func save() {
         do {
             let data = try JSONEncoder().encode(expenses)
@@ -84,6 +91,13 @@ struct ContentView: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(10)
                         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            store.delete(expense)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
