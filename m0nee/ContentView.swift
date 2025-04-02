@@ -306,11 +306,17 @@ struct AddExpenseView: View {
 
             Section(header: Text("Optional")) {
                 TextField("Details", text: $details)
-                Stepper(value: $rating, in: 1...5) {
-                    HStack {
-                        Text("Rating")
-                        Spacer()
-                        Text("\(rating)")
+                HStack(alignment: .center) {
+                    Text("Rating")
+                    Spacer()
+                    HStack(spacing: 4) {
+                        ForEach(1...5, id: \.self) { index in
+                            Image(systemName: index <= rating ? "star.fill" : "star")
+                                .foregroundColor(.yellow)
+                                .onTapGesture {
+                                    rating = index
+                                }
+                        }
                     }
                 }
                 TextField("Note", text: $memo)
