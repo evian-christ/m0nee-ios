@@ -297,57 +297,72 @@ struct AddExpenseView: View {
     }
 
     var body: some View {
-        Form {
-            Section(header: Text("Required")) {
-                DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
-                TextField("Name", text: $name)
-                TextField("Amount", text: $amount)
-                    .keyboardType(.decimalPad)
-                Picker("Category", selection: $category) {
-                    ForEach(categoryList, id: \.self) { Text($0) }
+        VStack(alignment: .leading, spacing: 16) {
+        if expenseID == nil {
+            Text("Add New Expense")
+                .font(.title2)
+                .bold()
+                .padding(.top, 24)
+                .padding(.horizontal)
+        }
+            Form {
+                Section(header: Text("Required")) {
+                    HStack {
+                        Label("Date", systemImage: "calendar")
+                        Spacer()
+                        DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
+                            .labelsHidden()
+                    }
+                    TextField("Name", text: $name)
+                    TextField("Amount", text: $amount)
+                        .keyboardType(.decimalPad)
+                    Picker("Category", selection: $category) {
+                        ForEach(categoryList, id: \.self) { Text($0) }
+                    }
+                    .pickerStyle(.menu)
                 }
-            }
 
-            Section(header: Text("Optional")) {
-                TextField("Details", text: $details)
-                HStack(alignment: .center) {
-                    Text("Rating")
-                    Spacer()
-                    HStack(spacing: 4) {
-                        ForEach(1...5, id: \.self) { index in
-                            Image(systemName: index <= rating ? "star.fill" : "star")
-                                .foregroundColor(.yellow)
-                                .onTapGesture {
-                                    rating = index
-                                }
+                Section(header: Text("Optional")) {
+                    TextField("Details", text: $details)
+                    HStack(alignment: .center) {
+                        Text("Rating")
+                        Spacer()
+                        HStack(spacing: 4) {
+                            ForEach(1...5, id: \.self) { index in
+                                Image(systemName: index <= rating ? "star.fill" : "star")
+                                    .foregroundColor(.yellow)
+                                    .onTapGesture {
+                                        rating = index
+                                    }
+                            }
                         }
                     }
+                    TextField("Note", text: $memo)
                 }
-                TextField("Note", text: $memo)
-            }
 
-            Button("Save") {
-                guard let parsedAmount = Double(amount) else { return }
-                let newExpense = Expense(
-                    id: expenseID ?? UUID(),
-                    date: date,
-                    name: name,
-                    amount: parsedAmount,
-                    category: category,
-                    details: details.isEmpty ? nil : details,
-                    rating: rating,
-                    memo: memo.isEmpty ? nil : memo
-                )
-                onSave(newExpense)
-                dismiss()
-            }
-        }
-        .navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
+                Button("Save") {
+                    guard let parsedAmount = Double(amount) else { return }
+                    let newExpense = Expense(
+                        id: expenseID ?? UUID(),
+                        date: date,
+                        name: name,
+                        amount: parsedAmount,
+                        category: category,
+                        details: details.isEmpty ? nil : details,
+                        rating: rating,
+                        memo: memo.isEmpty ? nil : memo
+                    )
+                    onSave(newExpense)
                     dismiss()
+                }
+            }
+            .navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
                 }
             }
         }
