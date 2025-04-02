@@ -400,30 +400,40 @@ struct SettingsView: View {
             }
 
             Section(header: Text("Manage Categories")) {
-                ForEach(categoryList, id: \.self) { category in
-                    HStack {
-                        Text(category)
-                        Spacer()
-                        Button(role: .destructive) {
-                            let updated = categoryList.filter { $0 != category }
-                            saveCategories(updated)
-                        } label: {
-                            Image(systemName: "trash")
+                List {
+                    ForEach(categoryList, id: \.self) { category in
+                        HStack {
+                            Image(systemName: "line.3.horizontal")
+                                .foregroundColor(.gray)
+                            Text(category)
+                            Spacer()
+                            Button(role: .destructive) {
+                                let updated = categoryList.filter { $0 != category }
+                                saveCategories(updated)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
                         }
                     }
-                }
-
-                HStack {
-                    TextField("New Category", text: $newCategory)
-                    Button("Add") {
+                    .onMove { indices, newOffset in
                         var updated = categoryList
-                        if !newCategory.isEmpty && !updated.contains(newCategory) {
-                            updated.append(newCategory)
-                            saveCategories(updated)
-                            newCategory = ""
+                        updated.move(fromOffsets: indices, toOffset: newOffset)
+                        saveCategories(updated)
+                    }
+
+                    HStack {
+                        TextField("New Category", text: $newCategory)
+                        Button("Add") {
+                            var updated = categoryList
+                            if !newCategory.isEmpty && !updated.contains(newCategory) {
+                                updated.append(newCategory)
+                                saveCategories(updated)
+                                newCategory = ""
+                            }
                         }
                     }
                 }
+                .environment(\.editMode, .constant(.active))
             }
         }
         .navigationTitle("Settings")
