@@ -260,8 +260,13 @@ struct AddExpenseView: View {
     @State private var rating: Int
     @State private var memo: String
 
+    @AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
+
+    var categoryList: [String] {
+        categoriesString.split(separator: ",").map { String($0) }
+    }
+
     var onSave: (Expense) -> Void
-    let categories = ["Food", "Transport", "Other"]
 
     init(
         expenseID: UUID? = nil,
@@ -293,7 +298,7 @@ struct AddExpenseView: View {
                 TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)
                 Picker("Category", selection: $category) {
-                    ForEach(categories, id: \.self) { Text($0) }
+                    ForEach(categoryList, id: \.self) { Text($0) }
                 }
             }
 
@@ -341,6 +346,23 @@ struct SettingsView: View {
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
+    @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    let currencyOptions: [(symbol: String, country: String)] = [
+        ("£", "United Kingdom"),
+        ("$", "United States"),
+        ("€", "Eurozone"),
+        ("₩", "South Korea"),
+        ("¥", "Japan"),
+        ("₹", "India"),
+        ("₽", "Russia"),
+        ("฿", "Thailand"),
+        ("₫", "Vietnam"),
+        ("₴", "Ukraine"),
+        ("₪", "Israel"),
+        ("₦", "Nigeria"),
+        ("₲", "Paraguay"),
+        ("₵", "Ghana")
+    ]
 
     @State private var newCategory = ""
 
@@ -363,6 +385,14 @@ struct SettingsView: View {
                 Picker("Start Day", selection: $monthlyStartDay) {
                     ForEach(1...31, id: \.self) {
                         Text("\($0)")
+                    }
+                }
+            }
+
+            Section(header: Text("Currency")) {
+                Picker("Select Currency", selection: $currencySymbol) {
+                    ForEach(currencyOptions, id: \.symbol) { option in
+                        Text("\(option.symbol) - \(option.country)").tag(option.symbol)
                     }
                 }
             }
