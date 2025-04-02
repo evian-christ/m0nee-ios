@@ -60,9 +60,7 @@ struct ContentView: View {
         NavigationStack {
             List {
                 ForEach($store.expenses) { $expense in
-                    NavigationLink(destination: ExpenseDetailView(expense: $expense, onUpdate: { updated in
-                        store.update(updated)
-                    })) {
+                    NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(expense.date.formatted(date: .abbreviated, time: .shortened))
@@ -102,62 +100,66 @@ struct ContentView: View {
 }
 
 struct ExpenseDetailView: View {
-    @Binding var expense: Expense
-    var onUpdate: (Expense) -> Void
+    let expenseID: UUID
+    @ObservedObject var store: ExpenseStore
     @State private var isEditing = false
 
+    private var expense: Expense? {
+        store.expenses.first(where: { $0.id == expenseID })
+    }
+
     var body: some View {
-        Form {
-            Section(header: Text("Date")) {
-                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-            }
-            Section(header: Text("Amount")) {
-                Text("£\(expense.amount, specifier: "%.2f")")
-            }
-            Section(header: Text("Category")) {
-                Text(expense.category)
-            }
-            Section(header: Text("Details")) {
-                Text(expense.details ?? "—")
-            }
-            Section(header: Text("Rating")) {
-                Text(expense.rating.map { "\($0)/5" } ?? "—")
-            }
-            Section(header: Text("Note")) {
-                Text(expense.memo ?? "—")
-            }
-        }
-        .navigationTitle(expense.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Edit") {
-                    isEditing = true
+        if let expense = expense {
+            Form {
+                Section(header: Text("Date")) {
+                    Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                }
+                Section(header: Text("Amount")) {
+                    Text("£\(expense.amount, specifier: "%.2f")")
+                }
+                Section(header: Text("Category")) {
+                    Text(expense.category)
+                }
+                Section(header: Text("Details")) {
+                    Text(expense.details ?? "—")
+                }
+                Section(header: Text("Rating")) {
+                    Text(expense.rating.map { "\($0)/5" } ?? "—")
+                }
+                Section(header: Text("Note")) {
+                    Text(expense.memo ?? "—")
                 }
             }
-        }
-        .sheet(isPresented: $isEditing) {
-            NavigationStack {
-                AddExpenseView(
-                    date: expense.date,
-                    name: expense.name,
-                    amount: "\(expense.amount)",
-                    category: expense.category,
-                    details: expense.details ?? "",
-                    rating: expense.rating ?? 3,
-                    memo: expense.memo ?? "",
-                    onSave: { updated in
-                        expense = updated
-                        onUpdate(updated)
-                        isEditing = false
+            .navigationTitle(expense.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Edit") {
+                        isEditing = true
                     }
-                )
+                }
             }
-        }
-        .onChange(of: isEditing) { newValue in
-            if !newValue {
-                onUpdate(expense)
+            .sheet(isPresented: $isEditing) {
+                NavigationStack {
+                    AddExpenseView(
+                    expenseID: expense.id,
+                        date: expense.date,
+                        name: expense.name,
+                        amount: "\(expense.amount)",
+                        category: expense.category,
+                        details: expense.details ?? "",
+                        rating: expense.rating ?? 3,
+                        memo: expense.memo ?? "",
+                        onSave: { updated in
+                            store.update(updated)
+                            isEditing = false
+                        }
+                    )
+                }
             }
+        } else {
+            Text("Expense not found")
+                .foregroundColor(.secondary)
         }
     }
 }
@@ -165,6 +167,7 @@ struct ExpenseDetailView: View {
 struct AddExpenseView: View {
     @Environment(\.dismiss) private var dismiss
 
+    @State private var expenseID: UUID?
     @State private var date: Date
     @State private var name: String
     @State private var amount: String
@@ -177,6 +180,7 @@ struct AddExpenseView: View {
     let categories = ["Food", "Transport", "Other"]
 
     init(
+        expenseID: UUID? = nil,
         date: Date = Date(),
         name: String = "",
         amount: String = "",
@@ -186,6 +190,7 @@ struct AddExpenseView: View {
         memo: String = "",
         onSave: @escaping (Expense) -> Void
     ) {
+        _expenseID = State(initialValue: expenseID)
         _date = State(initialValue: date)
         _name = State(initialValue: name)
         _amount = State(initialValue: amount)
@@ -223,7 +228,7 @@ struct AddExpenseView: View {
             Button("Save") {
                 guard let parsedAmount = Double(amount) else { return }
                 let newExpense = Expense(
-                    id: UUID(),
+                    id: expenseID ?? UUID(),
                     date: date,
                     name: name,
                     amount: parsedAmount,
