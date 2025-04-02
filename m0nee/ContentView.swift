@@ -154,26 +154,66 @@ struct ExpenseDetailView: View {
 
     var body: some View {
         if let expense = expense {
-            Form {
-                Section(header: Text("Date")) {
-                    Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+            List {
+                Section {
+                    HStack {
+                        Label("Date", systemImage: "calendar")
+                        Spacer()
+                        Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                            .foregroundColor(.secondary)
+                    }
                 }
-                Section(header: Text("Amount")) {
-                    Text("£\(expense.amount, specifier: "%.2f")")
+
+                Section {
+                    HStack {
+                        Label("Amount", systemImage: "dollarsign.circle")
+                        Spacer()
+                        Text("£\(expense.amount, specifier: "%.2f")")
+                            .foregroundColor(.green)
+                    }
                 }
-                Section(header: Text("Category")) {
-                    Text(expense.category)
+
+                Section {
+                    HStack {
+                        Label("Category", systemImage: "tag")
+                        Spacer()
+                        Text(expense.category)
+                            .foregroundColor(.purple)
+                    }
                 }
-                Section(header: Text("Details")) {
-                    Text(expense.details ?? "—")
+
+                if let details = expense.details {
+                    Section {
+                        Label("Details", systemImage: "text.alignleft")
+                        Text(details)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .padding(.leading, 4)
+                    }
                 }
-                Section(header: Text("Rating")) {
-                    Text(expense.rating.map { "\($0)/5" } ?? "—")
+
+                if let rating = expense.rating {
+                    Section {
+                        HStack {
+                            Label("Rating", systemImage: "star.fill")
+                            Spacer()
+                            Text("\(rating)/5")
+                                .foregroundColor(.yellow)
+                        }
+                    }
                 }
-                Section(header: Text("Note")) {
-                    Text(expense.memo ?? "—")
+
+                if let memo = expense.memo {
+                    Section {
+                        Label("Note", systemImage: "note.text")
+                        Text(memo)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .padding(.leading, 4)
+                    }
                 }
             }
+            .listStyle(.insetGrouped)
             .navigationTitle(expense.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -186,7 +226,7 @@ struct ExpenseDetailView: View {
             .sheet(isPresented: $isEditing) {
                 NavigationStack {
                     AddExpenseView(
-                    expenseID: expense.id,
+                        expenseID: expense.id,
                         date: expense.date,
                         name: expense.name,
                         amount: "\(expense.amount)",
