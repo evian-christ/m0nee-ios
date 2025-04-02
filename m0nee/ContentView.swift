@@ -64,22 +64,29 @@ struct ContentView: View {
                 ForEach($store.expenses) { $expense in
                     NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
                         HStack {
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text(expense.date.formatted(date: .abbreviated, time: .shortened))
                                     .font(.caption2)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.blue)
                                 Text(expense.name)
                                     .font(.headline)
+                                    .foregroundColor(.primary)
                                 Text(expense.category)
                                     .font(.caption)
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.purple)
                             }
                             Spacer()
                             Text("£\(expense.amount, specifier: "%.2f")")
                                 .font(.headline)
+                                .foregroundColor(.green)
                         }
-                        .padding(.vertical, 4)
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
             }
             .listStyle(.plain)
