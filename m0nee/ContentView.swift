@@ -60,6 +60,7 @@ class ExpenseStore: ObservableObject {
 }
 
 struct ContentView: View {
+    @AppStorage("currencySymbol") private var currencySymbol: String = "£"
     @StateObject var store = ExpenseStore()
     @State private var showingAddExpense = false
     @State private var showingSettings = false
@@ -83,7 +84,7 @@ struct ContentView: View {
                                     .foregroundColor(.purple)
                             }
                             Spacer()
-                            Text("£\(expense.amount, specifier: "%.2f")")
+                            Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
                                 .font(.headline)
                                 .foregroundColor(.green)
                         }
@@ -144,6 +145,7 @@ struct ContentView: View {
 }
 
 struct ExpenseDetailView: View {
+    @AppStorage("currencySymbol") private var currencySymbol: String = "£"
     let expenseID: UUID
     @ObservedObject var store: ExpenseStore
     @State private var isEditing = false
@@ -168,7 +170,7 @@ struct ExpenseDetailView: View {
                     HStack {
                         Label("Amount", systemImage: "dollarsign.circle")
                         Spacer()
-                        Text("£\(expense.amount, specifier: "%.2f")")
+                        Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
                             .foregroundColor(.green)
                     }
                 }
