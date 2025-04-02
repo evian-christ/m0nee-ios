@@ -301,13 +301,6 @@ struct AddExpenseView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-        if expenseID == nil {
-            Text("Add New Expense")
-                .font(.title2)
-                .bold()
-                .padding(.top, 24)
-                .padding(.horizontal)
-        }
             Form {
                 Section(header: Text("Required")) {
                     DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
