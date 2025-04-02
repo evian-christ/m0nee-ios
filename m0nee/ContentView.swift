@@ -55,6 +55,8 @@ class ExpenseStore: ObservableObject {
 struct ContentView: View {
     @StateObject var store = ExpenseStore()
     @State private var showingAddExpense = false
+    @State private var showingSettings = false
+    @State private var showingInsights = false
 
     var body: some View {
         NavigationStack {
@@ -82,6 +84,19 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .toolbar {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+
+                    Button {
+                        showingInsights = true
+                    } label: {
+                        Image(systemName: "chart.bar")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingAddExpense = true
@@ -94,6 +109,14 @@ struct ContentView: View {
                 AddExpenseView { newExpense in
                     store.add(newExpense)
                 }
+            }
+            .navigationDestination(isPresented: $showingSettings) {
+                SettingsView()
+            }
+            .navigationDestination(isPresented: $showingInsights) {
+                Text("Insights View") // Placeholder
+                    .font(.largeTitle)
+                    .padding()
             }
         }
     }
@@ -250,5 +273,66 @@ struct AddExpenseView: View {
                 }
             }
         }
+    }
+}
+
+struct SettingsView: View {
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
+    @AppStorage("categories") private var categories: String = "Food,Transport,Other"
+
+    @State private var newCategory = ""
+
+    var categoryList: [String] {
+        categories.split(separator: ",").map { String($0) }
+    }
+
+    func saveCategories(_ updated: [String]) {
+        categories = updated.joined(separator: ",")
+    }
+
+    var body: some View {
+        Form {
+            Section(header: Text("Monthly Budget")) {
+                TextField("Enter budget", value: $monthlyBudget, format: .number)
+                    .keyboardType(.decimalPad)
+            }
+
+            Section(header: Text("Month Start Day")) {
+                Picker("Start Day", selection: $monthlyStartDay) {
+                    ForEach(1...31, id: \.self) {
+                        Text("\($0)")
+                    }
+                }
+            }
+
+            Section(header: Text("Manage Categories")) {
+                ForEach(categoryList, id: \.self) { category in
+                    HStack {
+                        Text(category)
+                        Spacer()
+                        Button(role: .destructive) {
+                            let updated = categoryList.filter { $0 != category }
+                            saveCategories(updated)
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                }
+
+                HStack {
+                    TextField("New Category", text: $newCategory)
+                    Button("Add") {
+                        var updated = categoryList
+                        if !newCategory.isEmpty && !updated.contains(newCategory) {
+                            updated.append(newCategory)
+                            saveCategories(updated)
+                            newCategory = ""
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Settings")
     }
 }
