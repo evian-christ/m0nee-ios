@@ -128,8 +128,10 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showingAddExpense) {
-                AddExpenseView { newExpense in
-                    store.add(newExpense)
+                NavigationStack {
+                    AddExpenseView { newExpense in
+                        store.add(newExpense)
+                    }
                 }
             }
             .navigationDestination(isPresented: $showingSettings) {
@@ -265,6 +267,7 @@ struct AddExpenseView: View {
     @State private var details: String
     @State private var rating: Int
     @State private var memo: String
+    @State private var showFieldValidation = false
 
     @AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
 
@@ -309,8 +312,16 @@ struct AddExpenseView: View {
                 Section(header: Text("Required")) {
                     DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
                     TextField("Name", text: $name)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                        )
                     TextField("Amount", text: $amount)
                         .keyboardType(.decimalPad)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(showFieldValidation && (amount.trimmingCharacters(in: .whitespaces).isEmpty || Double(amount) == nil) ? Color.red : Color.clear, lineWidth: 1)
+                        )
                     Picker("Category", selection: $category) {
                         ForEach(categoryList, id: \.self) { Text($0) }
                     }
@@ -335,27 +346,34 @@ struct AddExpenseView: View {
                     TextField("Note", text: $memo)
                 }
 
-                Button("Save") {
-                    guard let parsedAmount = Double(amount) else { return }
-                    let newExpense = Expense(
-                        id: expenseID ?? UUID(),
-                        date: date,
-                        name: name,
-                        amount: parsedAmount,
-                        category: category,
-                        details: details.isEmpty ? nil : details,
-                        rating: rating,
-                        memo: memo.isEmpty ? nil : memo
-                    )
-                    onSave(newExpense)
-                    dismiss()
-                }
             }
             .navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        showFieldValidation = true
+                        guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
+                              !amount.trimmingCharacters(in: .whitespaces).isEmpty,
+                              let parsedAmount = Double(amount) else {
+                            return
+                        }
+                        let newExpense = Expense(
+                            id: expenseID ?? UUID(),
+                            date: date,
+                            name: name,
+                            amount: parsedAmount,
+                            category: category,
+                            details: details.isEmpty ? nil : details,
+                            rating: rating,
+                            memo: memo.isEmpty ? nil : memo
+                        )
+                        onSave(newExpense)
                         dismiss()
                     }
                 }
