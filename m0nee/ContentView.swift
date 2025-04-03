@@ -161,7 +161,7 @@ struct ExpenseDetailView: View {
     var body: some View {
         if let expense = expense {
             List {
-                Section {
+                Section(header: EmptyView()) {
                     HStack {
                         Label("Date", systemImage: "calendar")
                         Spacer()
@@ -199,7 +199,7 @@ struct ExpenseDetailView: View {
  
                     if let details = expense.details, !details.isEmpty {
                         Section {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 15) {
                                 Label("Details", systemImage: "text.alignleft")
                                 Text(details)
                                     .font(.body)
@@ -211,7 +211,7 @@ struct ExpenseDetailView: View {
  
                     if let memo = expense.memo, !memo.isEmpty {
                         Section {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 15) {
                                 Label("Note", systemImage: "note.text")
                                 Text(memo)
                                     .font(.body)
@@ -221,9 +221,9 @@ struct ExpenseDetailView: View {
                         }
                     }
             }
-            .padding(.top, -8)
             .listStyle(.insetGrouped)
-            .listSectionSpacing(18)
+            .listSectionSpacing(24)
+            .padding(.top, -20)
             .navigationTitle(expense.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
