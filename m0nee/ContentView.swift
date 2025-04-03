@@ -65,11 +65,29 @@ struct ContentView: View {
     @State private var showingAddExpense = false
     @State private var showingSettings = false
     @State private var showingInsights = false
+    @State private var selectedMonth: String = ""
+    private var monthsWithExpenses: [String] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        let uniqueMonths = Set(store.expenses.map { formatter.string(from: $0.date) })
+        return uniqueMonths.sorted(by: >)
+    }
+    private var filteredExpenses: [Binding<Expense>] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        if selectedMonth.isEmpty {
+            return $store.expenses.map { $0 }
+        } else {
+            return $store.expenses.filter {
+                formatter.string(from: $0.wrappedValue.date) == selectedMonth
+            }
+        }
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach($store.expenses) { $expense in
+                ForEach(filteredExpenses) { $expense in
                     NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
@@ -121,6 +139,27 @@ struct ContentView: View {
                         }
                     }
                 }
+                ToolbarItem(placement: .principal) {
+                    Menu {
+                        ForEach(monthsWithExpenses, id: \.self) { month in
+                            Button {
+                                selectedMonth = month
+                            } label: {
+                                Text(displayMonth(month))
+                            }
+                        }
+                        Button("All Months") {
+                            selectedMonth = ""
+                        }
+                    } label: {
+                        HStack {
+                            Text(selectedMonth.isEmpty ? "All Months" : displayMonth(selectedMonth))
+                                .font(.headline)
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                        }
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingAddExpense = true
@@ -145,6 +184,17 @@ struct ContentView: View {
                     .padding()
             }
         }
+    }
+
+    private func displayMonth(_ month: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-MM"
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "MMMM yyyy"
+        if let date = inputFormatter.date(from: month) {
+            return outputFormatter.string(from: date)
+        }
+        return month
     }
 }
 
