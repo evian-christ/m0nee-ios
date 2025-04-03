@@ -93,69 +93,62 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Summary view moved into List as Section header
-
-                List {
-                    Section {
-                        TabView {
-                            ForEach(1...3, id: \.self) { index in
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color(.systemGray6))
-                                        .frame(height: 240)
-                                    Text("Summary Page \(index)")
-                                        .foregroundColor(.gray)
-                                }
-                                .padding(.horizontal, 16)
-                            }
-                        }
-                        .frame(height: 240)
-                        .tabViewStyle(.page)
-                        .indexViewStyle(.page(backgroundDisplayMode: .never))
-                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
+        ScrollView {
+        VStack(spacing: 0) {
+            TabView {
+                ForEach(1...3, id: \.self) { index in
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color(.systemGray6))
+                        Text("Summary Page \(index)")
+                            .foregroundColor(.gray)
                     }
-                    
-                    ForEach(filteredExpenses) { $expense in
-                        NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(expense.name)
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-                                    Text(expense.category)
-                                        .font(.caption2)
-                                        .foregroundColor(.gray)
-                                }
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                        .font(.subheadline)
-                                        .foregroundColor(.green)
-                                    Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-                                        .font(.caption2)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            .padding(.vertical, 6)
-                        }
-                        .swipeActions {
-                            Button(role: .destructive) {
-                                store.delete(expense)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    }
-                    .padding(.top, 2)
+                    .frame(height: 240)
+                    .padding(.horizontal, 16)
                 }
             }
-            .listStyle(.plain)
-            .padding(.top, -28)
+            .frame(height: 240)
+            .tabViewStyle(.page)
+            .indexViewStyle(.page(backgroundDisplayMode: .never))
+            .padding(.vertical, 16)
+
+            LazyVStack(spacing: 0) {
+                ForEach(filteredExpenses, id: \.id) { $expense in
+                    NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(expense.name)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                Text(expense.category)
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+                                    .font(.subheadline)
+                                    .foregroundColor(.green)
+                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            store.delete(expense)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.top, -43)
+        }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     HStack(spacing: 12) {
