@@ -72,26 +72,25 @@ struct ContentView: View {
                 ForEach($store.expenses) { $expense in
                     NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
                         HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.caption2)
-                                    .foregroundColor(.blue)
+                            VStack(alignment: .leading, spacing: 2) {
                                 Text(expense.name)
-                                    .font(.headline)
+                                    .font(.subheadline)
                                     .foregroundColor(.primary)
                                 Text(expense.category)
-                                    .font(.caption)
-                                    .foregroundColor(.purple)
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
                             }
                             Spacer()
-                            Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                .font(.headline)
-                                .foregroundColor(.green)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+                                    .font(.subheadline)
+                                    .foregroundColor(.green)
+                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
                         }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        .padding(.vertical, 6)
                     }
                     .swipeActions {
                         Button(role: .destructive) {
