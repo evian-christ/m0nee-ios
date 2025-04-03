@@ -148,6 +148,7 @@ struct ContentView: View {
 
 struct ExpenseDetailView: View {
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @Environment(\.dismiss) private var dismiss
     let expenseID: UUID
     @ObservedObject var store: ExpenseStore
     @State private var isEditing = false
@@ -243,8 +244,17 @@ struct ExpenseDetailView: View {
                         rating: expense.rating ?? 3,
                         memo: expense.memo ?? "",
                         onSave: { updated in
-                            store.update(updated)
-                            isEditing = false
+                            if updated.amount == -1 {
+                                store.delete(updated)
+                                isEditing = false
+                                // Pop back
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    dismiss()
+                                }
+                            } else {
+                                store.update(updated)
+                                isEditing = false
+                            }
                         }
                     )
                 }
@@ -334,6 +344,7 @@ struct AddExpenseView: View {
                     .frame(height: 1)
                     .disabled(false)
             }
+            
             HStack {
                 Spacer()
                 HStack(spacing: 4) {
@@ -371,17 +382,40 @@ struct AddExpenseView: View {
                 }
 
             }
-            .navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+            if let id = expenseID {
+                VStack {
+                    Button(role: .destructive) {
+                        onSave(Expense(
+                            id: id,
+                            date: date,
+                            name: name,
+                            amount: -1, // sentinel to mark deletion
+                            category: category,
+                            details: details,
+                            rating: rating,
+                            memo: memo
+                        ))
                         dismiss()
+                    } label: {
+                        Text("Delete Expense")
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
                     }
+                    .padding()
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        showFieldValidation = true
+            }
+        }
+        .navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
+                    dismiss()
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Save") {
+                    showFieldValidation = true
                     guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
                           !rawAmount.trimmingCharacters(in: .whitespaces).isEmpty else {
                         return
@@ -399,10 +433,10 @@ struct AddExpenseView: View {
                     )
                     onSave(newExpense)
                     dismiss()
-                    }
                 }
             }
         }
+            
     }
 }
 
