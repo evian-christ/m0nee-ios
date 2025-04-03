@@ -324,7 +324,7 @@ struct AddExpenseView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack {
-                Spacer().frame(height: 60)
+                Spacer().frame(height: 24)
                 
                 Text(formattedAmount)
                     .font(.system(size: 50, weight: .bold))
@@ -380,16 +380,16 @@ struct AddExpenseView: View {
             
             Form {
                 Section(header: Text("Required")) {
-                    DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
-                    TextField("Name", text: $name)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.red : Color.clear, lineWidth: 1)
-                        )
-                    Picker("Category", selection: $category) {
-                        ForEach(categoryList, id: \.self) { Text($0) }
-                    }
-                    .pickerStyle(.menu)
+                TextField("Name", text: $name)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                    )
+                DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
+                Picker("Category", selection: $category) {
+                    ForEach(categoryList, id: \.self) { Text($0) }
+                }
+                .pickerStyle(.menu)
                 }
 
                 Section(header: Text("Optional")) {
