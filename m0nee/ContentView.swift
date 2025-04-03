@@ -61,6 +61,7 @@ class ExpenseStore: ObservableObject {
 
 struct ContentView: View {
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
     @StateObject var store = ExpenseStore()
     @State private var showingAddExpense = false
     @State private var showingSettings = false
@@ -207,6 +208,10 @@ struct ContentView: View {
                     .padding()
             }
         }
+        .preferredColorScheme(
+            appearanceMode == "Dark" ? .dark :
+            appearanceMode == "Light" ? .light : nil
+        )
     }
 
     private func displayMonth(_ month: String) -> String {
@@ -532,6 +537,7 @@ struct AddExpenseView: View {
 }
 
 struct SettingsView: View {
+    @AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
@@ -585,6 +591,15 @@ struct SettingsView: View {
                     }
                 }
             }
+        
+        Section(header: Text("Appearance")) {
+            Picker("Appearance", selection: $appearanceMode) {
+                Text("Automatic").tag("Automatic")
+                Text("Light").tag("Light")
+                Text("Dark").tag("Dark")
+            }
+            .pickerStyle(.segmented)
+        }
 
             Section(header: Text("Manage Categories")) {
                 List {
