@@ -295,6 +295,9 @@ struct AddExpenseView: View {
         _date = State(initialValue: date)
         _name = State(initialValue: name)
         _amount = State(initialValue: amount)
+        let amountDouble = Double(amount) ?? 0
+        let integerValue = Int(amountDouble * 100)
+        _rawAmount = State(initialValue: "\(integerValue)")
         _category = State(initialValue: category)
         _details = State(initialValue: details)
         _rating = State(initialValue: rating)
