@@ -268,6 +268,9 @@ struct AddExpenseView: View {
     @State private var rating: Int
     @State private var memo: String
     @State private var showFieldValidation = false
+    @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @FocusState private var isAmountFocused: Bool
+    @State private var rawAmount: String = ""
 
     @AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
 
@@ -298,9 +301,53 @@ struct AddExpenseView: View {
         _memo = State(initialValue: memo)
         self.onSave = onSave
     }
-
+    
+    private var formattedAmount: String {
+        let digits = rawAmount.filter { $0.isWholeNumber }
+        let doubleValue = (Double(digits) ?? 0) / 100
+        return String(format: "\(currencySymbol)%.2f", doubleValue)
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            VStack {
+                Spacer().frame(height: 60)
+                
+                Text(formattedAmount)
+                    .font(.system(size: 50, weight: .bold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 32)
+                    .contentShape(Rectangle())
+                    .background(Color.white)
+                    .onTapGesture {
+                        isAmountFocused = true
+                    }
+                
+                TextField("", text: $rawAmount)
+                    .keyboardType(.numberPad)
+                    .focused($isAmountFocused)
+                    .opacity(0.01)
+                    .frame(height: 1)
+                    .disabled(false)
+            }
+            HStack {
+                Spacer()
+                HStack(spacing: 4) {
+                    ForEach(1...5, id: \.self) { index in
+                        Image(systemName: index <= rating ? "star.fill" : "star")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.yellow)
+                            .onTapGesture {
+                                rating = index
+                            }
+                    }
+                }
+                Spacer()
+            }
+            .padding(.bottom, 8)
+            
             Form {
                 Section(header: Text("Required")) {
                     DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
@@ -308,12 +355,6 @@ struct AddExpenseView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
                                 .stroke(showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.red : Color.clear, lineWidth: 1)
-                        )
-                    TextField("Amount", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(showFieldValidation && (amount.trimmingCharacters(in: .whitespaces).isEmpty || Double(amount) == nil) ? Color.red : Color.clear, lineWidth: 1)
                         )
                     Picker("Category", selection: $category) {
                         ForEach(categoryList, id: \.self) { Text($0) }
@@ -323,19 +364,6 @@ struct AddExpenseView: View {
 
                 Section(header: Text("Optional")) {
                     TextField("Details", text: $details)
-                    HStack(alignment: .center) {
-                        Text("Rating")
-                        Spacer()
-                        HStack(spacing: 4) {
-                            ForEach(1...5, id: \.self) { index in
-                                Image(systemName: index <= rating ? "star.fill" : "star")
-                                    .foregroundColor(.yellow)
-                                    .onTapGesture {
-                                        rating = index
-                                    }
-                            }
-                        }
-                    }
                     TextField("Note", text: $memo)
                 }
 
@@ -351,23 +379,23 @@ struct AddExpenseView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         showFieldValidation = true
-                        guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
-                              !amount.trimmingCharacters(in: .whitespaces).isEmpty,
-                              let parsedAmount = Double(amount) else {
-                            return
-                        }
-                        let newExpense = Expense(
-                            id: expenseID ?? UUID(),
-                            date: date,
-                            name: name,
-                            amount: parsedAmount,
-                            category: category,
-                            details: details.isEmpty ? nil : details,
-                            rating: rating,
-                            memo: memo.isEmpty ? nil : memo
-                        )
-                        onSave(newExpense)
-                        dismiss()
+                    guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
+                          !rawAmount.trimmingCharacters(in: .whitespaces).isEmpty else {
+                        return
+                    }
+                    let parsedAmount = (Double(rawAmount.filter { $0.isWholeNumber }) ?? 0) / 100
+                    let newExpense = Expense(
+                        id: expenseID ?? UUID(),
+                        date: date,
+                        name: name,
+                        amount: parsedAmount,
+                        category: category,
+                        details: details.isEmpty ? nil : details,
+                        rating: rating,
+                        memo: memo.isEmpty ? nil : memo
+                    )
+                    onSave(newExpense)
+                    dismiss()
                     }
                 }
             }
