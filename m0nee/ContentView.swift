@@ -332,7 +332,7 @@ struct AddExpenseView: View {
                     .font(.system(size: 50, weight: .bold))
                     .foregroundColor(.primary)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 32)
+                    .padding(.vertical, 16)
                     .contentShape(Rectangle())
                     .background(Color(.systemBackground))
                     .onTapGesture {
