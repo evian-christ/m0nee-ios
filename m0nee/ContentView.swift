@@ -346,19 +346,35 @@ struct AddExpenseView: View {
             }
             
             HStack {
-                Spacer()
-                HStack(spacing: 4) {
-                    ForEach(1...5, id: \.self) { index in
-                        Image(systemName: index <= rating ? "star.fill" : "star")
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(.yellow)
-                            .onTapGesture {
-                                rating = index
-                            }
+                GeometryReader { geometry in
+                    HStack(spacing: 8) {
+                        Spacer()
+                        ForEach(1...5, id: \.self) { index in
+                            Image(systemName: index <= rating ? "star.fill" : "star")
+                                .resizable()
+                                .frame(width: 32, height: 32)
+                                .foregroundColor(.yellow)
+                        }
+                        Spacer()
                     }
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                let spacing: CGFloat = 8
+                                let starWidth: CGFloat = 32
+                                let totalWidth = (starWidth * 5) + (spacing * 4)
+                                let startX = (geometry.size.width - totalWidth) / 2
+                                let relativeX = value.location.x - startX
+                                let fullStarWidth = starWidth + spacing
+                                let newRating = min(5, max(1, Int(relativeX / fullStarWidth) + 1))
+                                if newRating != rating {
+                                    rating = newRating
+                                }
+                            }
+                    )
                 }
-                Spacer()
+                .frame(height: 40)
             }
             .padding(.bottom, 8)
             
