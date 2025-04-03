@@ -107,16 +107,18 @@ struct ContentView: View {
             .listStyle(.plain)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button {
-                        showingSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
+                    HStack(spacing: 12) {
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
 
-                    Button {
-                        showingInsights = true
-                    } label: {
-                        Image(systemName: "chart.bar")
+                        Button {
+                            showingInsights = true
+                        } label: {
+                            Image(systemName: "chart.bar")
+                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -328,11 +330,11 @@ struct AddExpenseView: View {
                 
                 Text(formattedAmount)
                     .font(.system(size: 50, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 32)
                     .contentShape(Rectangle())
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
                     .onTapGesture {
                         isAmountFocused = true
                     }
