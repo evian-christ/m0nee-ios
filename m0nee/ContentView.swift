@@ -98,14 +98,22 @@ struct ContentView: View {
 
                 List {
                     Section {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.systemGray6))
-                                .frame(height: 200)
-                            Text("Summary / Graph Placeholder")
-                                .foregroundColor(.gray)
+                        TabView {
+                            ForEach(1...3, id: \.self) { index in
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color(.systemGray6))
+                                        .frame(height: 240)
+                                    Text("Summary Page \(index)")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.horizontal, 16)
+                            }
                         }
-                        .listRowInsets(EdgeInsets(top: -28, leading: 16, bottom: 12, trailing: 16))
+                        .frame(height: 240)
+                        .tabViewStyle(.page)
+                        .indexViewStyle(.page(backgroundDisplayMode: .never))
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                     }
@@ -147,6 +155,7 @@ struct ContentView: View {
                 }
             }
             .listStyle(.plain)
+            .padding(.top, -28)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     HStack(spacing: 12) {
