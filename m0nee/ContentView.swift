@@ -103,6 +103,7 @@ struct ContentView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 }
+                .padding(.top, 2)
             }
             .listStyle(.plain)
             .toolbar {
@@ -167,38 +168,22 @@ struct ExpenseDetailView: View {
                         Text(expense.date.formatted(date: .abbreviated, time: .shortened))
                             .foregroundColor(.secondary)
                     }
-                }
-
-                Section {
+ 
                     HStack {
                         Label("Amount", systemImage: "dollarsign.circle")
                         Spacer()
                         Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
                             .foregroundColor(.green)
                     }
-                }
-
-                Section {
+ 
                     HStack {
                         Label("Category", systemImage: "tag")
                         Spacer()
                         Text(expense.category)
                             .foregroundColor(.purple)
                     }
-                }
-
-                if let details = expense.details {
-                    Section {
-                        Label("Details", systemImage: "text.alignleft")
-                        Text(details)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 4)
-                    }
-                }
-
-                if let rating = expense.rating {
-                    Section {
+ 
+                    if let rating = expense.rating {
                         HStack {
                             Label("Rating", systemImage: "star.fill")
                             Spacer()
@@ -211,18 +196,34 @@ struct ExpenseDetailView: View {
                         }
                     }
                 }
-
-                if let memo = expense.memo {
-                    Section {
-                        Label("Note", systemImage: "note.text")
-                        Text(memo)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 4)
+ 
+                    if let details = expense.details, !details.isEmpty {
+                        Section {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("Details", systemImage: "text.alignleft")
+                                Text(details)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        }
                     }
-                }
+ 
+                    if let memo = expense.memo, !memo.isEmpty {
+                        Section {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label("Note", systemImage: "note.text")
+                                Text(memo)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
             }
+            .padding(.top, -8)
             .listStyle(.insetGrouped)
+            .listSectionSpacing(18)
             .navigationTitle(expense.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
