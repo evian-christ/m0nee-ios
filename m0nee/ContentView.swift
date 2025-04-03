@@ -65,7 +65,7 @@ struct ContentView: View {
     @State private var showingAddExpense = false
     @State private var showingSettings = false
     @State private var showingInsights = false
-    @State private var selectedMonth: String = ""
+    @State private var selectedMonth: String
     private var monthsWithExpenses: [String] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
@@ -82,6 +82,13 @@ struct ContentView: View {
                 formatter.string(from: $0.wrappedValue.date) == selectedMonth
             }
         }
+    }
+
+    init() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        let recentMonth = formatter.string(from: Date())
+        _selectedMonth = State(initialValue: recentMonth)
     }
 
     var body: some View {
@@ -148,12 +155,9 @@ struct ContentView: View {
                                 Text(displayMonth(month))
                             }
                         }
-                        Button("All Months") {
-                            selectedMonth = ""
-                        }
                     } label: {
                         HStack {
-                            Text(selectedMonth.isEmpty ? "All Months" : displayMonth(selectedMonth))
+                            Text(displayMonth(selectedMonth))
                                 .font(.headline)
                             Image(systemName: "chevron.down")
                                 .font(.caption)
