@@ -93,41 +93,58 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(filteredExpenses) { $expense in
-                    NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(expense.name)
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                                Text(expense.category)
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
+            VStack(spacing: 0) {
+                // Summary view moved into List as Section header
+
+                List {
+                    Section {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(.systemGray6))
+                                .frame(height: 200)
+                            Text("Summary / Graph Placeholder")
+                                .foregroundColor(.gray)
+                        }
+                        .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+                    
+                    ForEach(filteredExpenses) { $expense in
+                        NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(expense.name)
+                                        .font(.subheadline)
+                                        .foregroundColor(.primary)
+                                    Text(expense.category)
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+                                        .font(.subheadline)
+                                        .foregroundColor(.green)
+                                    Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
                             }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                    .font(.subheadline)
-                                    .foregroundColor(.green)
-                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
+                            .padding(.vertical, 6)
+                        }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                store.delete(expense)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
                         }
-                        .padding(.vertical, 6)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            store.delete(expense)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .padding(.top, 2)
                 }
-                .padding(.top, 2)
             }
             .listStyle(.plain)
             .toolbar {
@@ -606,4 +623,5 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
     }
-}
+                    }
+                    
