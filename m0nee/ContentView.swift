@@ -563,6 +563,7 @@ struct SettingsView: View {
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
     @AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
+    @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
     
     let currencyOptions: [(symbol: String, country: String)] = [
         ("£", "United Kingdom"),
@@ -595,6 +596,9 @@ struct SettingsView: View {
         Form {
             Section(header: Text("Budget")) {
                 Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
+                    .onChange(of: budgetEnabled) { newValue in
+                        if !newValue { budgetByCategory = false }
+                    }
                 if budgetEnabled {
                     NavigationLink(destination: BudgetFrequencyView()) {
                         Text("Budget Period")
@@ -621,6 +625,9 @@ struct SettingsView: View {
                             }
                         }
                     }
+                }
+                if budgetEnabled {
+                    Toggle("Budget by Category", isOn: $budgetByCategory)
                 }
             }
                 
