@@ -632,40 +632,9 @@ struct SettingsView: View {
             }
                 
                 Section(header: Text("Categories")) {
-                    List {
-                        ForEach(categoryList, id: \.self) { category in
-                            HStack {
-                                Image(systemName: "line.3.horizontal")
-                                    .foregroundColor(.gray)
-                                Text(category)
-                                Spacer()
-                                Button(role: .destructive) {
-                                    let updated = categoryList.filter { $0 != category }
-                                    saveCategories(updated)
-                                } label: {
-                                    Image(systemName: "trash")
-                                }
-                            }
-                        }
-                        .onMove { indices, newOffset in
-                            var updated = categoryList
-                            updated.move(fromOffsets: indices, toOffset: newOffset)
-                            saveCategories(updated)
-                        }
-                        
-                        HStack {
-                            TextField("New category", text: $newCategory)
-                            Button("Add") {
-                                var updated = categoryList
-                                if !newCategory.isEmpty && !updated.contains(newCategory) {
-                                    updated.append(newCategory)
-                                    saveCategories(updated)
-                                    newCategory = ""
-                                }
-                            }
-                        }
+                    NavigationLink(destination: ManageCategoriesView()) {
+                        Text("Manage Categories")
                     }
-                    .environment(\.editMode, .constant(.active))
                 }
                 
                 Section(header: Text("Appearance")) {
@@ -705,3 +674,59 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
     }
+
+struct ManageCategoriesView: View {
+    @AppStorage("categories") private var categories: String = "Food,Transport,Other"
+    @State private var newCategory = ""
+    
+    var categoryList: [String] {
+        categories.split(separator: ",").map { String($0) }
+    }
+    
+    func saveCategories(_ updated: [String]) {
+        categories = updated.joined(separator: ",")
+    }
+    
+    var body: some View {
+        Form {
+            Section {
+                List {
+                    ForEach(categoryList, id: \.self) { category in
+                        HStack {
+                            Image(systemName: "line.3.horizontal")
+                                .foregroundColor(.gray)
+                            Text(category)
+                            Spacer()
+                            Button(role: .destructive) {
+                                let updated = categoryList.filter { $0 != category }
+                                saveCategories(updated)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                        }
+                    }
+                    .onMove { indices, newOffset in
+                        var updated = categoryList
+                        updated.move(fromOffsets: indices, toOffset: newOffset)
+                        saveCategories(updated)
+                    }
+                    
+                    HStack {
+                        TextField("New category", text: $newCategory)
+                        Button("Add") {
+                            var updated = categoryList
+                            if !newCategory.isEmpty && !updated.contains(newCategory) {
+                                updated.append(newCategory)
+                                saveCategories(updated)
+                                newCategory = ""
+                            }
+                        }
+                    }
+                }
+                .environment(\.editMode, .constant(.active))
+            }
+        }
+        .navigationTitle("Manage Categories")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
