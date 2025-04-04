@@ -598,7 +598,7 @@ struct SettingsView: View {
                     HStack {
                         Text("\(budgetPeriod) Budget")
                         Spacer()
-                        Text("\(monthlyBudget, specifier: "%.2f")")
+                        Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
                             .foregroundColor(.gray)
                     }
                 }
