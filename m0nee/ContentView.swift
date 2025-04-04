@@ -11,6 +11,23 @@ struct Expense: Identifiable, Codable {
     var memo: String?
 }
 
+struct BudgetFrequencyView: View {
+    @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
+    let frequencies = ["Weekly", "Biweekly", "Monthly"]
+    
+    var body: some View {
+        Form {
+        Picker("Select Period", selection: $budgetPeriod) {
+                ForEach(frequencies, id: \.self) { frequency in
+                    Text(frequency).tag(frequency)
+                }
+            }
+            .pickerStyle(.inline)
+        }
+        .navigationTitle("Budget Period")
+    }
+}
+
 class ExpenseStore: ObservableObject {
     @Published var expenses: [Expense] = []
 
@@ -571,7 +588,10 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-    Section(header: Text("Budget")) {
+            Section(header: Text("Budget")) {
+                NavigationLink(destination: BudgetFrequencyView()) {
+                    Text("Budget Period")
+                }
                 TextField("Enter monthly budget", value: $monthlyBudget, format: .number)
                     .keyboardType(.decimalPad)
                 Picker("Start day of month", selection: $monthlyStartDay) {
