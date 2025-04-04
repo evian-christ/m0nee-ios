@@ -571,37 +571,17 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Monthly Budget")) {
-                TextField("Enter budget", value: $monthlyBudget, format: .number)
+    Section(header: Text("Budget")) {
+                TextField("Enter monthly budget", value: $monthlyBudget, format: .number)
                     .keyboardType(.decimalPad)
-            }
-
-            Section(header: Text("Month Start Day")) {
-                Picker("Start Day", selection: $monthlyStartDay) {
+                Picker("Start day of month", selection: $monthlyStartDay) {
                     ForEach(1...31, id: \.self) {
                         Text("\($0)")
                     }
                 }
             }
-
-            Section(header: Text("Currency")) {
-                Picker("Select Currency", selection: $currencySymbol) {
-                    ForEach(currencyOptions, id: \.symbol) { option in
-                        Text("\(option.symbol) - \(option.country)").tag(option.symbol)
-                    }
-                }
-            }
-        
-        Section(header: Text("Appearance")) {
-            Picker("Appearance", selection: $appearanceMode) {
-                Text("Automatic").tag("Automatic")
-                Text("Light").tag("Light")
-                Text("Dark").tag("Dark")
-            }
-            .pickerStyle(.segmented)
-        }
-
-            Section(header: Text("Manage Categories")) {
+            
+            Section(header: Text("Categories")) {
                 List {
                     ForEach(categoryList, id: \.self) { category in
                         HStack {
@@ -622,9 +602,9 @@ struct SettingsView: View {
                         updated.move(fromOffsets: indices, toOffset: newOffset)
                         saveCategories(updated)
                     }
-
+                    
                     HStack {
-                        TextField("New Category", text: $newCategory)
+                        TextField("New category", text: $newCategory)
                         Button("Add") {
                             var updated = categoryList
                             if !newCategory.isEmpty && !updated.contains(newCategory) {
@@ -636,6 +616,23 @@ struct SettingsView: View {
                     }
                 }
                 .environment(\.editMode, .constant(.active))
+            }
+            
+            Section(header: Text("Appearance")) {
+                Picker("Currency", selection: $currencySymbol) {
+                    ForEach(currencyOptions, id: \.symbol) { option in
+                        Text("\(option.symbol) - \(option.country)").tag(option.symbol)
+                    }
+                }
+                Picker("Theme", selection: $appearanceMode) {
+                    Text("Automatic").tag("Automatic")
+                    Text("Light").tag("Light")
+                    Text("Dark").tag("Dark")
+                }
+                .pickerStyle(.segmented)
+            }
+            Section(header: Text("Other")) {
+                Text("Coming soon...")
             }
         }
         .navigationTitle("Settings")
