@@ -13,7 +13,7 @@ struct Expense: Identifiable, Codable {
 
 struct BudgetFrequencyView: View {
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
-    let frequencies = ["Weekly", "Biweekly", "Monthly"]
+    let frequencies = ["Weekly", "Monthly"]
     
     var body: some View {
         Form {
@@ -561,6 +561,9 @@ struct SettingsView: View {
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
+    @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
+    
     let currencyOptions: [(symbol: String, country: String)] = [
         ("£", "United Kingdom"),
         ("$", "United States"),
@@ -577,109 +580,121 @@ struct SettingsView: View {
         ("₲", "Paraguay"),
         ("₵", "Ghana")
     ]
-
+    
     @State private var newCategory = ""
-
+    
     var categoryList: [String] {
         categories.split(separator: ",").map { String($0) }
     }
-
+    
     func saveCategories(_ updated: [String]) {
         categories = updated.joined(separator: ",")
     }
-
+    
     var body: some View {
         Form {
             Section(header: Text("Budget")) {
-                NavigationLink(destination: BudgetFrequencyView()) {
-                    Text("Budget Period")
-                }
-                NavigationLink(destination: MonthlyBudgetView()) {
-                    HStack {
-                        Text("\(budgetPeriod) Budget")
-                        Spacer()
-                        Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
-                            .foregroundColor(.gray)
+                Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
+                if budgetEnabled {
+                    NavigationLink(destination: BudgetFrequencyView()) {
+                        Text("Budget Period")
                     }
-                }
-                Picker("Start day of month", selection: $monthlyStartDay) {
-                    ForEach(1...31, id: \.self) {
-                        Text("\($0)")
-                    }
-                }
-            }
-            
-            Section(header: Text("Categories")) {
-                List {
-                    ForEach(categoryList, id: \.self) { category in
+                    NavigationLink(destination: MonthlyBudgetView()) {
                         HStack {
-                            Image(systemName: "line.3.horizontal")
-                                .foregroundColor(.gray)
-                            Text(category)
+                            Text("\(budgetPeriod) Budget")
                             Spacer()
-                            Button(role: .destructive) {
-                                let updated = categoryList.filter { $0 != category }
-                                saveCategories(updated)
-                            } label: {
-                                Image(systemName: "trash")
+                            Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    if budgetPeriod == "Monthly" {
+                        Picker("Start day of month", selection: $monthlyStartDay) {
+                            ForEach(1...31, id: \.self) {
+                                Text("\($0)")
                             }
                         }
                     }
-                    .onMove { indices, newOffset in
-                        var updated = categoryList
-                        updated.move(fromOffsets: indices, toOffset: newOffset)
-                        saveCategories(updated)
+                    if budgetPeriod == "Weekly" {
+                        Picker("Start day of week", selection: $weeklyStartDay) {
+                            ForEach(0..<Calendar.current.weekdaySymbols.count, id: \.self) { index in
+                                Text(Calendar.current.weekdaySymbols[index]).tag(index + 1)
+                            }
+                        }
                     }
-                    
-                    HStack {
-                        TextField("New category", text: $newCategory)
-                        Button("Add") {
+                }
+            }
+                
+                Section(header: Text("Categories")) {
+                    List {
+                        ForEach(categoryList, id: \.self) { category in
+                            HStack {
+                                Image(systemName: "line.3.horizontal")
+                                    .foregroundColor(.gray)
+                                Text(category)
+                                Spacer()
+                                Button(role: .destructive) {
+                                    let updated = categoryList.filter { $0 != category }
+                                    saveCategories(updated)
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                            }
+                        }
+                        .onMove { indices, newOffset in
                             var updated = categoryList
-                            if !newCategory.isEmpty && !updated.contains(newCategory) {
-                                updated.append(newCategory)
-                                saveCategories(updated)
-                                newCategory = ""
+                            updated.move(fromOffsets: indices, toOffset: newOffset)
+                            saveCategories(updated)
+                        }
+                        
+                        HStack {
+                            TextField("New category", text: $newCategory)
+                            Button("Add") {
+                                var updated = categoryList
+                                if !newCategory.isEmpty && !updated.contains(newCategory) {
+                                    updated.append(newCategory)
+                                    saveCategories(updated)
+                                    newCategory = ""
+                                }
                             }
                         }
                     }
+                    .environment(\.editMode, .constant(.active))
                 }
-                .environment(\.editMode, .constant(.active))
-            }
-            
-            Section(header: Text("Appearance")) {
-                Picker("Currency", selection: $currencySymbol) {
-                    ForEach(currencyOptions, id: \.symbol) { option in
-                        Text("\(option.symbol) - \(option.country)").tag(option.symbol)
+                
+                Section(header: Text("Appearance")) {
+                    Picker("Currency", selection: $currencySymbol) {
+                        ForEach(currencyOptions, id: \.symbol) { option in
+                            Text("\(option.symbol) - \(option.country)").tag(option.symbol)
+                        }
                     }
+                    Picker("Theme", selection: $appearanceMode) {
+                        Text("Automatic").tag("Automatic")
+                        Text("Light").tag("Light")
+                        Text("Dark").tag("Dark")
+                    }
+                    .pickerStyle(.segmented)
                 }
-                Picker("Theme", selection: $appearanceMode) {
-                    Text("Automatic").tag("Automatic")
-                    Text("Light").tag("Light")
-                    Text("Dark").tag("Dark")
+                Section(header: Text("Other")) {
+                    Text("Coming soon...")
                 }
-                .pickerStyle(.segmented)
             }
-            Section(header: Text("Other")) {
-                Text("Coming soon...")
-            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Settings")
     }
-}
-
-struct MonthlyBudgetView: View {
-    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-    @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
-
-    var body: some View {
-        Form {
-            Section {
-                TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
-                    .keyboardType(.decimalPad)
+    
+    struct MonthlyBudgetView: View {
+        @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+        @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
+        
+        var body: some View {
+            Form {
+                Section {
+                    TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
+                        .keyboardType(.decimalPad)
+                }
             }
+            .navigationTitle("\(budgetPeriod) Budget")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("\(budgetPeriod) Budget")
-        .navigationBarTitleDisplayMode(.inline)
     }
-}
-                    
