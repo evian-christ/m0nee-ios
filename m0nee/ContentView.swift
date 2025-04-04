@@ -697,11 +697,13 @@ struct ManageCategoriesView: View {
                                 .foregroundColor(.gray)
                             Text(category)
                             Spacer()
+                        }
+                        .swipeActions {
                             Button(role: .destructive) {
                                 let updated = categoryList.filter { $0 != category }
                                 saveCategories(updated)
                             } label: {
-                                Image(systemName: "trash")
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                     }
