@@ -678,6 +678,7 @@ struct SettingsView: View {
 struct ManageCategoriesView: View {
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @State private var newCategory = ""
+    @State private var showingAddSheet = false
     
     var categoryList: [String] {
         categories.split(separator: ",").map { String($0) }
@@ -689,46 +690,70 @@ struct ManageCategoriesView: View {
     
     var body: some View {
         Form {
-            Section {
-                List {
-                    ForEach(categoryList, id: \.self) { category in
-                        HStack {
-                            Image(systemName: "line.3.horizontal")
-                                .foregroundColor(.gray)
-                            Text(category)
-                            Spacer()
-                        }
-                        .swipeActions {
-                            Button(role: .destructive) {
-                                let updated = categoryList.filter { $0 != category }
-                                saveCategories(updated)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
-                    .onMove { indices, newOffset in
-                        var updated = categoryList
-                        updated.move(fromOffsets: indices, toOffset: newOffset)
-                        saveCategories(updated)
-                    }
-                    
+        Section {
+            List {
+                ForEach(categoryList, id: \.self) { category in
                     HStack {
-                        TextField("New category", text: $newCategory)
-                        Button("Add") {
-                            var updated = categoryList
-                            if !newCategory.isEmpty && !updated.contains(newCategory) {
-                                updated.append(newCategory)
-                                saveCategories(updated)
-                                newCategory = ""
-                            }
+                        Image(systemName: "line.3.horizontal")
+                            .foregroundColor(.gray)
+                        Text(category)
+                        Spacer()
+                    }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            let updated = categoryList.filter { $0 != category }
+                            saveCategories(updated)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }
-                .environment(\.editMode, .constant(.active))
+                .onMove { indices, newOffset in
+                    var updated = categoryList
+                    updated.move(fromOffsets: indices, toOffset: newOffset)
+                    saveCategories(updated)
+                }
+            }
+            .environment(\.editMode, .constant(.active))
+            }
+            Section {
+                Button("Add New") {
+                    showingAddSheet = true
+                }
+                .foregroundColor(.blue)
+            }
+    }
+    .navigationTitle("Manage Categories")
+    .navigationBarTitleDisplayMode(.inline)
+    .sheet(isPresented: $showingAddSheet) {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Category Name", text: $newCategory)
+                }
+            }
+            .navigationTitle("New Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        newCategory = ""
+                        showingAddSheet = false
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        let trimmed = newCategory.trimmingCharacters(in: .whitespaces)
+                        guard !trimmed.isEmpty, !categoryList.contains(trimmed) else { return }
+                        var updated = categoryList
+                        updated.append(trimmed)
+                        saveCategories(updated)
+                        newCategory = ""
+                        showingAddSheet = false
+                    }
+                }
             }
         }
-        .navigationTitle("Manage Categories")
-        .navigationBarTitleDisplayMode(.inline)
+    }
     }
 }
