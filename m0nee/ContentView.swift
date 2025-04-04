@@ -78,6 +78,7 @@ class ExpenseStore: ObservableObject {
 
 struct ContentView: View {
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
     @StateObject var store = ExpenseStore()
     @State private var showingAddExpense = false
@@ -558,6 +559,7 @@ struct SettingsView: View {
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
+    @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
     let currencyOptions: [(symbol: String, country: String)] = [
         ("£", "United Kingdom"),
@@ -592,8 +594,14 @@ struct SettingsView: View {
                 NavigationLink(destination: BudgetFrequencyView()) {
                     Text("Budget Period")
                 }
-                TextField("Enter monthly budget", value: $monthlyBudget, format: .number)
-                    .keyboardType(.decimalPad)
+                NavigationLink(destination: MonthlyBudgetView()) {
+                    HStack {
+                        Text("\(budgetPeriod) Budget")
+                        Spacer()
+                        Text("\(monthlyBudget, specifier: "%.2f")")
+                            .foregroundColor(.gray)
+                    }
+                }
                 Picker("Start day of month", selection: $monthlyStartDay) {
                     ForEach(1...31, id: \.self) {
                         Text("\($0)")
@@ -656,7 +664,22 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+    }
+}
+
+struct MonthlyBudgetView: View {
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
+
+    var body: some View {
+        Form {
+            Section {
+                TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
+                    .keyboardType(.decimalPad)
+            }
+        }
+        .navigationTitle("\(budgetPeriod) Budget")
         .navigationBarTitleDisplayMode(.inline)
     }
-                    }
+}
                     
