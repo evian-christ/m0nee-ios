@@ -11,6 +11,43 @@ struct Expense: Identifiable, Codable {
     var memo: String?
 }
 
+struct InsightsView: View {
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Label("This Month's Total Spending", systemImage: "creditcard")
+                            .font(.headline)
+                        Spacer()
+                    }
+                    VStack(alignment: .leading) {
+                        Text("£356.00 / £500.00")
+                            .font(.title2)
+                            .bold()
+                        ProgressView(value: 356, total: 500)
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .frame(height: 240)
+                .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
+                .padding(.horizontal, 16)
+            }
+            .padding(.vertical)
+        }
+        .navigationTitle("Insights")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Edit") {
+                    // Handle edit toggle here (implement state if needed)
+                }
+            }
+        }
+    }
+}
+
 extension NumberFormatter {
     static var currency: NumberFormatter {
         let formatter = NumberFormatter()
@@ -234,9 +271,7 @@ struct ContentView: View {
                 SettingsView()
             }
             .navigationDestination(isPresented: $showingInsights) {
-                Text("Insights View") // Placeholder
-                    .font(.largeTitle)
-                    .padding()
+                InsightsView()
             }
         }
         .preferredColorScheme(
