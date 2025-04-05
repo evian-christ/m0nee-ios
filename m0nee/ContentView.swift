@@ -582,7 +582,6 @@ struct SettingsView: View {
         ("₵", "Ghana")
     ]
     
-    @State private var newCategory = ""
     
     var categoryList: [String] {
         categories.split(separator: ",").map { String($0) }
@@ -628,6 +627,11 @@ struct SettingsView: View {
                 }
                 if budgetEnabled {
                     Toggle("Budget by Category", isOn: $budgetByCategory)
+                    if budgetByCategory {
+                        NavigationLink(destination: Text("Set Category Budgets")) {
+                            Text("Category Budgets")
+                        }
+                    }
                 }
             }
                 
