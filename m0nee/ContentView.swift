@@ -11,6 +11,15 @@ struct Expense: Identifiable, Codable {
     var memo: String?
 }
 
+extension NumberFormatter {
+    static var currency: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencySymbol = UserDefaults.standard.string(forKey: "currencySymbol") ?? "£"
+        return formatter
+    }
+}
+
 struct BudgetFrequencyView: View {
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     let frequencies = ["Weekly", "Monthly"]
@@ -622,7 +631,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                // Removed category budgeting from main Budget section. 
+                // Removed category budgeting from main Budget section.
             }
                 
                 Section(header: Text("Categories")) {
@@ -657,12 +666,43 @@ struct SettingsView: View {
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
+    @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
+    
+    var totalCategoryBudget: Double {
+        categoryBudgets
+            .split(separator: ",")
+            .compactMap { pair in
+                let parts = pair.split(separator: ":")
+                return parts.count == 2 ? Double(parts[1]) : nil
+            }
+            .reduce(0, +)
+    }
+
+    var formattedBudget: String {
+        String(format: "\(currencySymbol)%.2f", monthlyBudget)
+    }
         
     var body: some View {
         Form {
             Section {
-                TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
-                    .keyboardType(.decimalPad)
+                if budgetByCategory {
+                    Text("\(currencySymbol)  \(totalCategoryBudget, specifier: "%.0f")")
+                        .font(.title2)
+                        .bold()
+                        .foregroundColor(.gray)
+                        .opacity(0.6)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    HStack {
+                        Text(currencySymbol)
+                        TextField("Budget", value: $monthlyBudget, format: .number)
+                            .keyboardType(.decimalPad)
+                    }
+                    .font(.title2)
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             Section {
                 Toggle("Budget by Category", isOn: $budgetByCategory)
@@ -675,6 +715,11 @@ struct SettingsView: View {
         }
         .navigationTitle("\(budgetPeriod) Budget")
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: budgetByCategory) { newValue in
+            if newValue {
+                monthlyBudget = totalCategoryBudget
+            }
+        }
     }
     }
     
@@ -838,3 +883,4 @@ struct SettingsView: View {
         }
     }
 }
+                      
