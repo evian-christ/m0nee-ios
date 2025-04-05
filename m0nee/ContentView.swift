@@ -761,11 +761,12 @@ struct SettingsView: View {
                         TextField("0", text: Binding(
                             get: { budgetDict[category, default: "0"] },
                             set: {
-                                budgetDict[category] = $0
+                                let cleaned = String(Int($0) ?? 0)
+                                budgetDict[category] = cleaned
                                 saveBudgets()
                             }
                         ))
-                        .keyboardType(.decimalPad)
+                        .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .padding(8)
                         .background(Color(.systemGray6))
@@ -775,6 +776,9 @@ struct SettingsView: View {
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                         .frame(width: 100)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .textSelection(.disabled)
                     }
                 }
             }
@@ -786,6 +790,7 @@ struct SettingsView: View {
     }
     
     struct ManageCategoriesView: View {
+    @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @State private var newCategory = ""
     @State private var showingAddSheet = false
@@ -879,6 +884,17 @@ struct SettingsView: View {
                 if let category = categoryToDelete {
                     let updated = categoryList.filter { $0 != category }
                     saveCategories(updated)
+
+                    // Remove from categoryBudgets
+                    let updatedBudgetDict = categoryBudgets
+                        .split(separator: ",")
+                        .compactMap { pair -> (String, String)? in
+                            let parts = pair.split(separator: ":")
+                            guard parts.count == 2 else { return nil }
+                            return (String(parts[0]), String(parts[1]))
+                        }
+                        .filter { $0.0 != category }
+                    categoryBudgets = updatedBudgetDict.map { "\($0):\($1)" }.joined(separator: ",")
                 }
                 categoryToDelete = nil
             }
