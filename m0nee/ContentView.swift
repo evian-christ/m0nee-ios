@@ -94,6 +94,9 @@ struct ContentView: View {
     @State private var showingSettings = false
     @State private var showingInsights = false
     @State private var selectedMonth: String
+    @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
+    @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     private var monthsWithExpenses: [String] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
@@ -111,6 +114,7 @@ struct ContentView: View {
             }
         }
     }
+    
 
     init() {
         let formatter = DateFormatter()
@@ -738,6 +742,11 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: budgetByCategory) { newValue in
             if newValue {
+                monthlyBudget = totalCategoryBudget
+            }
+        }
+        .onChange(of: categoryBudgets) { _ in
+            if budgetByCategory {
                 monthlyBudget = totalCategoryBudget
             }
         }
