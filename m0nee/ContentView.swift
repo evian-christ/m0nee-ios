@@ -767,6 +767,13 @@ struct SettingsView: View {
                         ))
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
+                        .padding(8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
                         .frame(width: 100)
                     }
                 }
