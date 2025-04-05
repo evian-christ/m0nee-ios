@@ -595,9 +595,6 @@ struct SettingsView: View {
         Form {
             Section(header: Text("Budget")) {
                 Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
-                    .onChange(of: budgetEnabled) { newValue in
-                        if !newValue { budgetByCategory = false }
-                    }
                 if budgetEnabled {
                     NavigationLink(destination: BudgetFrequencyView()) {
                         Text("Budget Period")
@@ -625,14 +622,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                if budgetEnabled {
-                    Toggle("Budget by Category", isOn: $budgetByCategory)
-                    if budgetByCategory {
-                        NavigationLink(destination: Text("Set Category Budgets")) {
-                            Text("Category Budgets")
-                        }
-                    }
-                }
+                // Removed category budgeting from main Budget section. 
             }
                 
                 Section(header: Text("Categories")) {
@@ -664,22 +654,84 @@ struct SettingsView: View {
     }
     
     struct MonthlyBudgetView: View {
-        @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-        @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
+    @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
         
         var body: some View {
             Form {
-                Section {
+            Section {
                     TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
                         .keyboardType(.decimalPad)
-                }
+                    Toggle("Budget by Category", isOn: $budgetByCategory)
+                    if budgetByCategory {
+                        NavigationLink(destination: CategoryBudgetView()) {
+                            Text("Category Budgets")
+                        }
+                    }
+            }
             }
             .navigationTitle("\(budgetPeriod) Budget")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-
-struct ManageCategoriesView: View {
+    
+    struct CategoryBudgetView: View {
+        @AppStorage("categories") private var categories: String = "Food,Transport,Other"
+        @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
+        
+        @State private var budgetDict: [String: String] = [:]
+        
+        var categoryList: [String] {
+            categories.split(separator: ",").map { String($0) }
+        }
+        
+        func loadBudgets() {
+            let pairs = categoryBudgets.split(separator: ",").map { $0.split(separator: ":") }
+            for pair in pairs {
+                if pair.count == 2 {
+                    let category = String(pair[0])
+                    let amount = String(pair[1])
+                    budgetDict[category] = amount
+                }
+            }
+            for category in categoryList where budgetDict[category] == nil {
+                budgetDict[category] = "0"
+            }
+        }
+        
+        func saveBudgets() {
+            let validEntries = budgetDict.map { "\($0.key):\($0.value)" }
+            categoryBudgets = validEntries.joined(separator: ",")
+        }
+        
+        var body: some View {
+            Form {
+                ForEach(categoryList, id: \.self) { category in
+                    HStack {
+                        Text(category)
+                        Spacer()
+                        TextField("0", text: Binding(
+                            get: { budgetDict[category, default: "0"] },
+                            set: {
+                                budgetDict[category] = $0
+                                saveBudgets()
+                            }
+                        ))
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 100)
+                    }
+                }
+            }
+            .navigationTitle("Category Budgets")
+            .onAppear {
+                loadBudgets()
+            }
+        }
+    }
+    
+    struct ManageCategoriesView: View {
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @State private var newCategory = ""
     @State private var showingAddSheet = false
