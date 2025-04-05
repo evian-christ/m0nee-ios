@@ -658,22 +658,24 @@ struct SettingsView: View {
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
         
-        var body: some View {
-            Form {
+    var body: some View {
+        Form {
             Section {
-                    TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
-                        .keyboardType(.decimalPad)
-                    Toggle("Budget by Category", isOn: $budgetByCategory)
-                    if budgetByCategory {
-                        NavigationLink(destination: CategoryBudgetView()) {
-                            Text("Category Budgets")
-                        }
+                TextField("\(budgetPeriod) Budget", value: $monthlyBudget, format: .number)
+                    .keyboardType(.decimalPad)
+            }
+            Section {
+                Toggle("Budget by Category", isOn: $budgetByCategory)
+                if budgetByCategory {
+                    NavigationLink(destination: CategoryBudgetView()) {
+                        Text("Category Budgets")
                     }
+                }
             }
-            }
-            .navigationTitle("\(budgetPeriod) Budget")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationTitle("\(budgetPeriod) Budget")
+        .navigationBarTitleDisplayMode(.inline)
+    }
     }
     
     struct CategoryBudgetView: View {
