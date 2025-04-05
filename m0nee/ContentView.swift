@@ -574,6 +574,7 @@ struct SettingsView: View {
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
     @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
+    @State private var showResetAlert = false
     
     let currencyOptions: [(symbol: String, country: String)] = [
         ("£", "United Kingdom"),
@@ -656,21 +657,29 @@ struct SettingsView: View {
                 }
                 Section(header: Text("Other")) {
                     Button("Restore Settings") {
-                        appearanceMode = "Automatic"
-                        currencySymbol = "£"
-                        budgetPeriod = "Monthly"
-                        monthlyStartDay = 1
-                        weeklyStartDay = 1
-                        monthlyBudget = 0
-                        budgetEnabled = true
-                        budgetByCategory = false
-                        categoryBudgets = ""
+                        showResetAlert = true
                     }
                     .foregroundColor(.red)
                 }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .alert("Restore Settings", isPresented: $showResetAlert) {
+                Button("Restore", role: .destructive) {
+                    appearanceMode = "Automatic"
+                    currencySymbol = "£"
+                    budgetPeriod = "Monthly"
+                    monthlyStartDay = 1
+                    weeklyStartDay = 1
+                    monthlyBudget = 0
+                    budgetEnabled = true
+                    budgetByCategory = false
+                    categoryBudgets = ""
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Are you sure you want to restore all settings to default?")
+            }
         }
     }
     
