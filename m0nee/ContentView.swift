@@ -12,6 +12,8 @@ struct Expense: Identifiable, Codable {
 }
 
 struct InsightsView: View {
+    @State private var isEditing = false
+    @State private var showingAddBlockScreen = false
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -39,10 +41,37 @@ struct InsightsView: View {
         .navigationTitle("Insights")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Edit") {
-                    // Handle edit toggle here (implement state if needed)
+            if isEditing {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack {
+                        Button("Add") {
+                            showingAddBlockScreen = true
+                        }
+                        Button("Done") {
+                            isEditing = false
+                        }
+                    }
                 }
+            } else {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Edit") {
+                        isEditing = true
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingAddBlockScreen) {
+            NavigationStack {
+                Text("Block Picker View (Coming Soon)")
+                    .navigationTitle("Add Insight Block")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") {
+                                showingAddBlockScreen = false
+                            }
+                        }
+                    }
             }
         }
     }
