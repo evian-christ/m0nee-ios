@@ -573,6 +573,7 @@ struct SettingsView: View {
     @AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
+    @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
     
     let currencyOptions: [(symbol: String, country: String)] = [
         ("£", "United Kingdom"),
@@ -654,7 +655,18 @@ struct SettingsView: View {
                     .pickerStyle(.segmented)
                 }
                 Section(header: Text("Other")) {
-                    Text("Coming soon...")
+                    Button("Restore Settings") {
+                        appearanceMode = "Automatic"
+                        currencySymbol = "£"
+                        budgetPeriod = "Monthly"
+                        monthlyStartDay = 1
+                        weeklyStartDay = 1
+                        monthlyBudget = 0
+                        budgetEnabled = true
+                        budgetByCategory = false
+                        categoryBudgets = ""
+                    }
+                    .foregroundColor(.red)
                 }
             }
             .navigationTitle("Settings")
