@@ -709,7 +709,9 @@ struct ManageCategoriesView: View {
                                 Button(role: .destructive) {
                                     categoryToDelete = category
                                 } label: {
-                                    Text("Delete")
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
                                 }
                             }
                         }
