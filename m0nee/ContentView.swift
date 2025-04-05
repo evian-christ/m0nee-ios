@@ -679,6 +679,9 @@ struct ManageCategoriesView: View {
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @State private var newCategory = ""
     @State private var showingAddSheet = false
+    @State private var categoryToDelete: String? = nil
+    @State private var isEditing = false
+    
     
     var categoryList: [String] {
         categories.split(separator: ",").map { String($0) }
@@ -689,71 +692,89 @@ struct ManageCategoriesView: View {
     }
     
     var body: some View {
-        Form {
-        Section {
+        NavigationStack {
             List {
-                ForEach(categoryList, id: \.self) { category in
-                    HStack {
-                        Image(systemName: "line.3.horizontal")
-                            .foregroundColor(.gray)
-                        Text(category)
-                        Spacer()
-                    }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            let updated = categoryList.filter { $0 != category }
-                            saveCategories(updated)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                Section {
+                    ForEach(categoryList, id: \.self) { category in
+                        HStack {
+                            Image(systemName: "line.3.horizontal")
+                                .foregroundColor(.gray)
+                            Text(category)
+                            Spacer()
+                            if isEditing {
+                                Button(role: .destructive) {
+                                    categoryToDelete = category
+                                } label: {
+                                    Text("Delete")
+                                }
+                            }
                         }
                     }
                 }
-                .onMove { indices, newOffset in
-                    var updated = categoryList
-                    updated.move(fromOffsets: indices, toOffset: newOffset)
-                    saveCategories(updated)
-                }
-            }
-            .environment(\.editMode, .constant(.active))
-            }
-            Section {
-                Button("Add New") {
-                    showingAddSheet = true
-                }
-                .foregroundColor(.blue)
-            }
-    }
-    .navigationTitle("Manage Categories")
-    .navigationBarTitleDisplayMode(.inline)
-    .sheet(isPresented: $showingAddSheet) {
-        NavigationStack {
-            Form {
                 Section {
-                    TextField("Category Name", text: $newCategory)
+                    Button("Add New") {
+                        showingAddSheet = true
+                    }
+                    .foregroundColor(.blue)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
-            .navigationTitle("New Category")
+            .navigationTitle("Manage Categories")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        newCategory = ""
-                        showingAddSheet = false
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(isEditing ? "Done" : "Edit") {
+                        isEditing.toggle()
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add") {
-                        let trimmed = newCategory.trimmingCharacters(in: .whitespaces)
-                        guard !trimmed.isEmpty, !categoryList.contains(trimmed) else { return }
-                        var updated = categoryList
-                        updated.append(trimmed)
-                        saveCategories(updated)
-                        newCategory = ""
-                        showingAddSheet = false
+            }
+            .sheet(isPresented: $showingAddSheet) {
+                NavigationStack {
+                    Form {
+                        Section {
+                            TextField("Category Name", text: $newCategory)
+                        }
+                    }
+                    .navigationTitle("New Category")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                newCategory = ""
+                                showingAddSheet = false
+                            }
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Add") {
+                                let trimmed = newCategory.trimmingCharacters(in: .whitespaces)
+                                guard !trimmed.isEmpty, !categoryList.contains(trimmed) else { return }
+                                var updated = categoryList
+                                updated.append(trimmed)
+                                saveCategories(updated)
+                                newCategory = ""
+                                showingAddSheet = false
+                            }
+                        }
                     }
                 }
             }
         }
-    }
+        .alert("Delete \"\(categoryToDelete ?? "")\"?", isPresented: Binding<Bool>(
+            get: { categoryToDelete != nil },
+            set: { if !$0 { categoryToDelete = nil } }
+        )) {
+            Button("Delete", role: .destructive) {
+                if let category = categoryToDelete {
+                    let updated = categoryList.filter { $0 != category }
+                    saveCategories(updated)
+                }
+                categoryToDelete = nil
+            }
+            Button("Cancel", role: .cancel) {
+                categoryToDelete = nil
+            }
+        } message: {
+            Text("Are you sure you want to delete this category?")
+        }
     }
 }
