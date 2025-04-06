@@ -1,4 +1,51 @@
 import SwiftUI
+ 
+enum InsightBlockType: String, CaseIterable, Identifiable, Codable {
+    case totalSpending
+ 
+    var id: String { self.rawValue }
+ 
+    var title: String {
+        switch self {
+        case .totalSpending: return "This Month's Total Spending"
+        }
+    }
+ 
+    var icon: String {
+        switch self {
+        case .totalSpending: return "creditcard"
+        }
+    }
+}
+
+struct InsightBlockView: View {
+    var type: InsightBlockType
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label(type.title, systemImage: type.icon)
+                    .font(.headline)
+                Spacer()
+            }
+
+            switch type {
+            case .totalSpending:
+                VStack(alignment: .leading) {
+                    Text("£356.00 / £500.00") // Static for now, will connect to data later
+                        .font(.title2)
+                        .bold()
+                    ProgressView(value: 356, total: 500)
+                }
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .frame(height: 240)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
+        .padding(.horizontal, 16)
+    }
+}
 
 struct Expense: Identifiable, Codable {
     let id: UUID
@@ -17,24 +64,7 @@ struct InsightsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Label("This Month's Total Spending", systemImage: "creditcard")
-                            .font(.headline)
-                        Spacer()
-                    }
-                    VStack(alignment: .leading) {
-                        Text("£356.00 / £500.00")
-                            .font(.title2)
-                            .bold()
-                        ProgressView(value: 356, total: 500)
-                    }
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .frame(height: 240)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
-                .padding(.horizontal, 16)
+                InsightBlockView(type: .totalSpending)
             }
             .padding(.vertical)
         }
@@ -62,16 +92,20 @@ struct InsightsView: View {
         }
         .sheet(isPresented: $showingAddBlockScreen) {
             NavigationStack {
-                Text("Block Picker View (Coming Soon)")
-                    .navigationTitle("Add Insight Block")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") {
-                                showingAddBlockScreen = false
-                            }
+                ScrollView {
+                    VStack(spacing: 16) {
+                        InsightBlockView(type: .totalSpending)
+                    }
+                }
+                .navigationTitle("Add Insight Block")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") {
+                            showingAddBlockScreen = false
                         }
                     }
+                }
             }
         }
     }
