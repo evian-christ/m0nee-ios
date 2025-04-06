@@ -4,9 +4,10 @@ import Charts
 enum InsightCardType: String, Identifiable, Codable {
     case totalSpending
     case spendingTrend
+    case categoryRating
  
     static var allCases: [InsightCardType] {
-        return [.totalSpending, .spendingTrend]
+        return [.totalSpending, .spendingTrend, .categoryRating]
     }
 
     var id: String { self.rawValue }
@@ -15,6 +16,7 @@ enum InsightCardType: String, Identifiable, Codable {
         switch self {
         case .totalSpending: return "This Month's Total Spending"
         case .spendingTrend: return "Spending Trend"
+        case .categoryRating: return "Category Satisfaction"
         }
     }
  
@@ -22,6 +24,52 @@ enum InsightCardType: String, Identifiable, Codable {
         switch self {
         case .totalSpending: return "creditcard"
         case .spendingTrend: return "chart.line.uptrend.xyaxis"
+        case .categoryRating: return "star.lefthalf.fill"
+        }
+    }
+}
+
+struct CategoryRatingCardView: View {
+    @ObservedObject var store: ExpenseStore
+
+    var body: some View {
+        let grouped = Dictionary(grouping: store.expenses) { $0.category }
+        let averageRatings = grouped.compactMapValues { items -> Double? in
+            let ratings = items.compactMap { $0.rating }
+            return ratings.isEmpty ? nil : Double(ratings.reduce(0, +)) / Double(ratings.count)
+        }
+
+        let sorted = averageRatings.sorted(by: { $0.value > $1.value })
+
+        return Chart {
+            ForEach(sorted, id: \.key) { category, avg in
+                BarMark(
+                    x: .value("Category", category),
+                    y: .value("Rating", avg)
+                )
+                .foregroundStyle(getColor(for: avg))
+            }
+        }
+        .chartYScale(domain: [0, 5])
+        .chartYAxis {
+            AxisMarks(values: Array(0...5)) { value in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel()
+            }
+        }
+        .chartLegend(.hidden)
+        .frame(height: 180)
+    }
+
+    func getColor(for rating: Double) -> Color {
+        switch Int(rating.rounded()) {
+        case 5: return Color.green
+        case 4: return Color.mint
+        case 3: return Color.yellow
+        case 2: return Color.orange
+        case 1: return Color.red
+        default: return Color.gray.opacity(0.4)
         }
     }
 }
@@ -54,6 +102,8 @@ struct InsightCardView: View {
                                       endDate: budgetDates.endDate,
                                       store: store,
                                       monthlyBudget: monthlyBudget)
+        case .categoryRating:
+            CategoryRatingCardView(store: store)
             }
         }
         .padding()
@@ -91,32 +141,34 @@ struct InsightsView: View {
         ScrollView {
             LazyVStack(spacing: 16) {
             ForEach(addedCards, id: \.self) { type in
-                    ZStack(alignment: .topLeading) {
-                        InsightCardView(type: type)
-                        
-                        if isEditing && removingCard != type {
-                            Button(action: {
-                                let cardToRemove = type
-                                removingCard = cardToRemove
-                                if let index = addedCards.firstIndex(of: cardToRemove) {
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                        addedCards.remove(at: index)
-                                        removingCard = nil
-                                    }
-                                }
-                            }) {
-                                Image(systemName: "minus")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 24, height: 24)
-                                    .background(Circle().fill(Color.red))
-                                    .shadow(radius: 2)
-                                    .offset(x: 16, y: 0)
+                ZStack(alignment: .topLeading) {
+                    InsightCardView(type: type)
+                    
+                    Button(action: {
+                        let cardToRemove = type
+                        removingCard = cardToRemove
+                        if let index = addedCards.firstIndex(of: cardToRemove) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                addedCards.remove(at: index)
+                                removingCard = nil
                             }
                         }
+                    }) {
+                        Image(systemName: "minus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(Color.red))
+                            .shadow(radius: 2)
+                            .offset(x: 16, y: 0)
+                            .scaleEffect(1.0)
                     }
-                    .scaleEffect(removingCard == type ? 0.01 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: removingCard)
+                    .opacity((isEditing && removingCard != type) ? 1 : 0)
+                    .disabled(!(isEditing && removingCard != type))
+                    .animation(nil, value: isEditing)
+                }
+                .scaleEffect(removingCard == type ? 0.01 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: removingCard)
                 }
             }
             .padding(.vertical)
