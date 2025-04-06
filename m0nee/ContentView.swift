@@ -93,16 +93,19 @@ struct InsightsView: View {
     @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            LazyVStack(spacing: 16) {
             ForEach(addedCards, id: \.self) { type in
                     ZStack(alignment: .topLeading) {
                         InsightCardView(type: type)
+                            .transition(.scale)
                         
                         if isEditing {
                             Button(action: {
-                                if let index = addedCards.firstIndex(of: type) {
-                                    addedCards.remove(at: index)
-                                }
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                    if let index = addedCards.firstIndex(of: type) {
+                                        addedCards.remove(at: index)
+                                    }
+                            }
                             }) {
                                 Image(systemName: "minus")
                                     .font(.system(size: 14, weight: .bold))
