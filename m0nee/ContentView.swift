@@ -91,21 +91,24 @@ struct InsightsView: View {
     @State private var isEditing = false
     @State private var showingAddBlockScreen = false
     @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
+    @State private var removingCard: InsightCardType? = nil
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
             ForEach(addedCards, id: \.self) { type in
                     ZStack(alignment: .topLeading) {
                         InsightCardView(type: type)
-                            .transition(.scale)
                         
-                        if isEditing {
+                        if isEditing && removingCard != type {
                             Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                    if let index = addedCards.firstIndex(of: type) {
+                                let cardToRemove = type
+                                removingCard = cardToRemove
+                                if let index = addedCards.firstIndex(of: cardToRemove) {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                                         addedCards.remove(at: index)
+                                        removingCard = nil
                                     }
-                            }
+                                }
                             }) {
                                 Image(systemName: "minus")
                                     .font(.system(size: 14, weight: .bold))
@@ -117,6 +120,8 @@ struct InsightsView: View {
                             }
                         }
                     }
+                    .scaleEffect(removingCard == type ? 0.01 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: removingCard)
                 }
             }
             .padding(.vertical)
