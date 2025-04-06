@@ -149,13 +149,28 @@ struct InsightsView: View {
         .sheet(isPresented: $showingAddBlockScreen) {
             NavigationStack {
                 ScrollView {
-                    VStack(spacing: 16) {
-                        ForEach(InsightCardType.allCases.filter { !addedCards.contains($0) }, id: \.self) { type in
-                                InsightCardView(type: type) // sample data
-                                           .onTapGesture {
-                                               addedCards.append(type)
-                                               showingAddBlockScreen = false
-                                           }
+                    let availableCards = InsightCardType.allCases.filter { !addedCards.contains($0) }
+                    ZStack {
+                        VStack(spacing: 16) {
+                            ForEach(availableCards, id: \.self) { type in
+                                InsightCardView(type: type)
+                                    .onTapGesture {
+                                        addedCards.append(type)
+                                        showingAddBlockScreen = false
+                                    }
+                            }
+                        }
+
+                        if availableCards.isEmpty {
+                            VStack {
+                                Text("More cards coming 👀")
+                                    .font(.title3)
+                                    .foregroundColor(.gray)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.top, 60)
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                     }
                     .padding(.top, 8)
@@ -1135,4 +1150,4 @@ struct SettingsView: View {
     }
 }
                       
-	
+    
