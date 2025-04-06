@@ -1,6 +1,6 @@
 import SwiftUI
  
-enum InsightBlockType: String, CaseIterable, Identifiable, Codable {
+enum InsightCardType: String, CaseIterable, Identifiable, Codable {
     case totalSpending
  
     var id: String { self.rawValue }
@@ -18,8 +18,10 @@ enum InsightBlockType: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-struct InsightBlockView: View {
-    var type: InsightBlockType
+struct InsightCardView: View {
+    var type: InsightCardType
+    var amountSpent: Double
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -32,10 +34,11 @@ struct InsightBlockView: View {
             switch type {
             case .totalSpending:
                 VStack(alignment: .leading) {
-                    Text("£356.00 / £500.00") // Static for now, will connect to data later
+                    Text(String(format: "£%.2f / £%.2f", amountSpent, monthlyBudget))
                         .font(.title2)
                         .bold()
-                    ProgressView(value: 356, total: 500)
+                    ProgressView(value: amountSpent, total: monthlyBudget)
+                        .accentColor(amountSpent > monthlyBudget ? .red : .blue)
                 }
             }
         }
@@ -64,7 +67,7 @@ struct InsightsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                InsightBlockView(type: .totalSpending)
+                InsightCardView(type: .totalSpending, amountSpent: ExpenseStore().totalSpent(forMonth: currentMonth()))
             }
             .padding(.vertical)
         }
@@ -94,10 +97,10 @@ struct InsightsView: View {
             NavigationStack {
                 ScrollView {
                     VStack(spacing: 16) {
-                        InsightBlockView(type: .totalSpending)
+                        InsightCardView(type: .totalSpending, amountSpent: ExpenseStore().totalSpent(forMonth: currentMonth()))
                     }
                 }
-                .navigationTitle("Add Insight Block")
+                .navigationTitle("Add Insight Card")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
@@ -108,6 +111,12 @@ struct InsightsView: View {
                 }
             }
         }
+    }
+    
+    func currentMonth() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: Date())
     }
 }
 
@@ -144,6 +153,16 @@ class ExpenseStore: ObservableObject {
 
     init() {
         load()
+    }
+}
+
+extension ExpenseStore {
+    func totalSpent(forMonth month: String) -> Double {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return expenses
+            .filter { formatter.string(from: $0.date) == month }
+            .reduce(0) { $0 + $1.amount }
     }
 
     func add(_ expense: Expense) {
