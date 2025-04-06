@@ -1,26 +1,34 @@
 import SwiftUI
+import Charts
  
-enum InsightCardType: String, CaseIterable, Identifiable, Codable {
+enum InsightCardType: String, Identifiable, Codable {
     case totalSpending
+    case spendingTrend
  
+    static var allCases: [InsightCardType] {
+        return [.totalSpending, .spendingTrend]
+    }
+
     var id: String { self.rawValue }
  
     var title: String {
         switch self {
         case .totalSpending: return "This Month's Total Spending"
+        case .spendingTrend: return "Spending Trend"
         }
     }
  
     var icon: String {
         switch self {
         case .totalSpending: return "creditcard"
+        case .spendingTrend: return "chart.line.uptrend.xyaxis"
         }
     }
 }
 
 struct InsightCardView: View {
     var type: InsightCardType
-    var amountSpent: Double
+    @StateObject private var store = ExpenseStore()
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 
     var body: some View {
@@ -33,6 +41,7 @@ struct InsightCardView: View {
 
             switch type {
             case .totalSpending:
+                let amountSpent = store.totalSpent(forMonth: currentMonth())
                 VStack(alignment: .leading) {
                     Text(String(format: "£%.2f / £%.2f", amountSpent, monthlyBudget))
                         .font(.title2)
@@ -40,13 +49,30 @@ struct InsightCardView: View {
                     ProgressView(value: amountSpent, total: monthlyBudget)
                         .accentColor(amountSpent > monthlyBudget ? .red : .blue)
                 }
+            case .spendingTrend:
+                let monthlyData = store.totalSpentByMonth()
+                Chart(monthlyData.sorted(by: { $0.key < $1.key }), id: \.key) { (month, total) in
+                    LineMark(
+                        x: .value("Month", month),
+                        y: .value("Total", total)
+                    )
+                }
+                .chartYScale(domain: 0...max(monthlyData.values.max() ?? 0, monthlyBudget))
+                .frame(height: 180)
             }
         }
         .padding()
         .frame(maxWidth: .infinity)
         .frame(height: 240)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 4)
+    }
+    
+    private func currentMonth() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: Date())
     }
 }
 
@@ -64,12 +90,39 @@ struct Expense: Identifiable, Codable {
 struct InsightsView: View {
     @State private var isEditing = false
     @State private var showingAddBlockScreen = false
+    @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                InsightCardView(type: .totalSpending, amountSpent: ExpenseStore().totalSpent(forMonth: currentMonth()))
+            ForEach(addedCards, id: \.self) { type in
+                    ZStack(alignment: .topLeading) {
+                        InsightCardView(type: type)
+                        
+                        if isEditing {
+                            Button(action: {
+                                if let index = addedCards.firstIndex(of: type) {
+                                    addedCards.remove(at: index)
+                                }
+                            }) {
+                                Image(systemName: "minus")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 24, height: 24)
+                                    .background(Circle().fill(Color.red))
+                                    .shadow(radius: 2)
+                                    .offset(x: 16, y: 0)
+                            }
+                        }
+                    }
+                }
             }
             .padding(.vertical)
+            .onChange(of: addedCards) { newValue in
+                InsightsView.saveAddedCards(newValue)
+            }
+.onAppear {
+    addedCards = InsightsView.loadAddedCards()
+}
         }
         .navigationTitle("Insights")
         .navigationBarTitleDisplayMode(.inline)
@@ -97,8 +150,15 @@ struct InsightsView: View {
             NavigationStack {
                 ScrollView {
                     VStack(spacing: 16) {
-                        InsightCardView(type: .totalSpending, amountSpent: ExpenseStore().totalSpent(forMonth: currentMonth()))
+                        ForEach(InsightCardType.allCases.filter { !addedCards.contains($0) }, id: \.self) { type in
+                                InsightCardView(type: type) // sample data
+                                           .onTapGesture {
+                                               addedCards.append(type)
+                                               showingAddBlockScreen = false
+                                           }
+                        }
                     }
+                    .padding()
                 }
                 .navigationTitle("Add Insight Card")
                 .navigationBarTitleDisplayMode(.inline)
@@ -117,6 +177,20 @@ struct InsightsView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
         return formatter.string(from: Date())
+    }
+
+    private static func loadAddedCards() -> [InsightCardType] {
+        guard let data = UserDefaults.standard.data(forKey: "addedInsightCards"),
+              let result = try? JSONDecoder().decode([InsightCardType].self, from: data) else {
+            return [.totalSpending]
+        }
+        return result
+    }
+
+    private static func saveAddedCards(_ cards: [InsightCardType]) {
+        if let data = try? JSONEncoder().encode(cards) {
+            UserDefaults.standard.set(data, forKey: "addedInsightCards")
+        }
     }
 }
 
@@ -201,6 +275,13 @@ extension ExpenseStore {
         } catch {
             print("Failed to load: \(error)")
         }
+    }
+
+    func totalSpentByMonth() -> [String: Double] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return Dictionary(grouping: expenses, by: { formatter.string(from: $0.date) })
+            .mapValues { $0.reduce(0) { $0 + $1.amount } }
     }
 }
 
