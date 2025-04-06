@@ -38,7 +38,7 @@ struct InsightCardView: View {
                     .font(.headline)
                 Spacer()
             }
-
+ 
             switch type {
             case .totalSpending:
                 let amountSpent = store.totalSpent(forMonth: currentMonth())
@@ -50,15 +50,10 @@ struct InsightCardView: View {
                         .accentColor(amountSpent > monthlyBudget ? .red : .blue)
                 }
             case .spendingTrend:
-                let monthlyData = store.totalSpentByMonth()
-                Chart(monthlyData.sorted(by: { $0.key < $1.key }), id: \.key) { (month, total) in
-                    LineMark(
-                        x: .value("Month", month),
-                        y: .value("Total", total)
-                    )
-                }
-                .chartYScale(domain: 0...max(monthlyData.values.max() ?? 0, monthlyBudget))
-                .frame(height: 180)
+                SpendingTrendCardView(startDate: budgetDates.startDate,
+                                      endDate: budgetDates.endDate,
+                                      store: store,
+                                      monthlyBudget: monthlyBudget)
             }
         }
         .padding()
@@ -1159,3 +1154,94 @@ struct SettingsView: View {
 }
                       
     
+
+extension Array where Element: Equatable {
+    func uniqued() -> [Element] {
+        var result = [Element]()
+        for value in self {
+            if !result.contains(value) {
+                result.append(value)
+            }
+        }
+        return result
+    }
+}
+
+    private var budgetDates: (startDate: Date, endDate: Date) {
+        let calendar = Calendar.current
+        let today = Date()
+        let startDay = UserDefaults.standard.integer(forKey: "monthlyStartDay")
+        var budgetStartDate: Date
+        if calendar.component(.day, from: today) >= startDay {
+            let thisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+            budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: thisMonth)!
+        } else {
+            let previousMonth = calendar.date(byAdding: .month, value: -1, to: today)!
+            let previousMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: previousMonth))!
+            budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: previousMonthStart)!
+        }
+        let nextCycleStart = calendar.date(byAdding: .month, value: 1, to: budgetStartDate)!
+        let endOfBudgetMonth = calendar.date(byAdding: .day, value: -1, to: nextCycleStart)!
+        return (budgetStartDate, endOfBudgetMonth)
+}
+
+struct SpendingTrendCardView: View {
+    let startDate: Date
+    let endDate: Date
+    @ObservedObject var store: ExpenseStore
+    let monthlyBudget: Double
+
+    var body: some View {
+        let calendar = Calendar.current
+        let spendingData = store.expenses
+            .filter { $0.date >= startDate && $0.date <= endDate }
+            .sorted(by: { $0.date < $1.date })
+
+        let grouped = Dictionary(grouping: spendingData) {
+            calendar.startOfDay(for: $0.date)
+        }
+
+        let dateRange = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        let sortedDates = (0...dateRange).compactMap {
+            calendar.date(byAdding: .day, value: $0, to: startDate)
+        }
+
+        let dailyTotals: [(date: Date, total: Double)] = {
+            var runningTotal: Double = 0
+            return sortedDates.map { date in
+                let dayTotal = grouped[date]?.reduce(0) { $0 + $1.amount } ?? 0
+                runningTotal += dayTotal
+                return (date, runningTotal)
+            }
+        }()
+
+        return VStack(alignment: .leading, spacing: 8) {
+            let today = calendar.startOfDay(for: Date())
+            Chart {
+                ForEach(Array(dailyTotals.enumerated()), id: \.1.date) { index, item in
+                    if item.date <= today {
+                        LineMark(
+                            x: .value("Date", item.date),
+                            y: .value("Total", item.total)
+                        )
+                    }
+                }
+            }
+            .chartYScale(domain: 0...max(monthlyBudget, dailyTotals.last?.total ?? 0))
+            .chartXAxis {
+                let calendar = Calendar.current
+                let uniqueDates = [startDate, Date(), endDate].map { calendar.startOfDay(for: $0) }.uniqued().sorted()
+                AxisMarks(values: uniqueDates) { date in
+                    AxisGridLine()
+                    AxisTick()
+                    AxisValueLabel {
+                        if let dateValue = date.as(Date.self) {
+                            Text(dateValue.formatted(.dateTime.day().month()))
+                        }
+                    }
+                }
+            }
+            .frame(height: 180)
+        }
+    }
+}
