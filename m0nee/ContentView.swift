@@ -29,6 +29,16 @@ enum InsightCardType: String, Identifiable, Codable {
     }
 }
 
+func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -> Int? {
+    let cardHeight: CGFloat = 248  // 240 height + 8 vertical padding
+    let relativeY = location.y
+    let toIndex = Int(relativeY / cardHeight)
+    if toIndex >= 0 && toIndex < list.count {
+        return toIndex
+    }
+    return nil
+}
+
 struct CategoryRatingCardView: View {
     @ObservedObject var store: ExpenseStore
 
@@ -110,8 +120,7 @@ struct InsightCardView: View {
         .frame(maxWidth: .infinity)
         .frame(height: 240)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
-        .padding(.horizontal, 20)
-        .padding(.vertical, 4)
+        .padding(.vertical, 0)
     }
     
     private func currentMonth() -> String {
@@ -138,39 +147,58 @@ struct InsightsView: View {
     @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
     @State private var removingCard: InsightCardType? = nil
     var body: some View {
-        ScrollView {
+        ZStack {
+            ScrollView {
             LazyVStack(spacing: 16) {
-            ForEach(addedCards, id: \.self) { type in
-                ZStack(alignment: .topLeading) {
-                    InsightCardView(type: type)
-                    
-                    Button(action: {
-                        let cardToRemove = type
-                        removingCard = cardToRemove
-                        if let index = addedCards.firstIndex(of: cardToRemove) {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                addedCards.remove(at: index)
-                                removingCard = nil
+                Section {
+                ForEach(addedCards, id: \.self) { type in
+                    ZStack(alignment: .topLeading) {
+                    VStack(spacing: 0) {
+                        InsightCardView(type: type)
+                            .contextMenu {
+                                Button {
+                                    // Add to favourite logic
+                                } label: {
+                                    Label("Add to Favourite", systemImage: "star")
+                                }
+                                Button(role: .cancel) {
+                                    // Cancel logic or nothing
+                                } label: {
+                                    Label("Cancel", systemImage: "xmark")
+                                }
                             }
-                        }
-                    }) {
-                        Image(systemName: "minus")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 24, height: 24)
-                            .background(Circle().fill(Color.red))
-                            .shadow(radius: 2)
-                            .offset(x: 16, y: 0)
-                            .scaleEffect(1.0)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
                     }
-                    .opacity((isEditing && removingCard != type) ? 1 : 0)
-                    .disabled(!(isEditing && removingCard != type))
-                    .animation(nil, value: isEditing)
-                }
-                .scaleEffect(removingCard == type ? 0.01 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: removingCard)
+                        Button(action: {
+                            let cardToRemove = type
+                            removingCard = cardToRemove
+                            if let index = addedCards.firstIndex(of: cardToRemove) {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                    addedCards.remove(at: index)
+                                    removingCard = nil
+                                }
+                            }
+                        }) {
+                            Image(systemName: "minus")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 24, height: 24)
+                                .background(Circle().fill(Color.red))
+                                .shadow(radius: 2)
+                                .offset(x: 16, y: 0)
+                                .scaleEffect(1.0)
+                        }
+                        .opacity((isEditing && removingCard != type) ? 1 : 0)
+                        .disabled(!(isEditing && removingCard != type))
+                        .animation(nil, value: isEditing)
+                    }
+                    .scaleEffect(removingCard == type ? 0.01 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: removingCard)
+                    }
                 }
             }
+            .environment(\.editMode, .constant(.active))
             .padding(.vertical)
             .onChange(of: addedCards) { newValue in
                 InsightsView.saveAddedCards(newValue)
@@ -178,34 +206,33 @@ struct InsightsView: View {
 .onAppear {
     addedCards = InsightsView.loadAddedCards()
 }
-        }
-        .navigationTitle("Insights")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if isEditing {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {
-                        Button("Add") {
-                            showingAddBlockScreen = true
-                        }
-                        Button("Done") {
-                            isEditing = false
+            }
+            .navigationTitle("Insights")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isEditing {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        HStack {
+                            Button("Add") {
+                                showingAddBlockScreen = true
+                            }
+                            Button("Done") {
+                                isEditing = false
+                            }
                         }
                     }
-                }
-            } else {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Edit") {
-                        isEditing = true
+                } else {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Edit") {
+                            isEditing = true
+                        }
                     }
                 }
             }
-        }
-        .sheet(isPresented: $showingAddBlockScreen) {
-            NavigationStack {
-                ScrollView {
-                    let availableCards = InsightCardType.allCases.filter { !addedCards.contains($0) }
-                    ZStack {
+            .sheet(isPresented: $showingAddBlockScreen) {
+                NavigationStack {
+                    ScrollView {
+                        let availableCards = InsightCardType.allCases.filter { !addedCards.contains($0) }
                         VStack(spacing: 16) {
                             ForEach(availableCards, id: \.self) { type in
                                 InsightCardView(type: type)
@@ -214,32 +241,34 @@ struct InsightsView: View {
                                         showingAddBlockScreen = false
                                     }
                             }
-                        }
-
-                        if availableCards.isEmpty {
-                            VStack {
-                                Text("More cards coming 👀")
-                                    .font(.title3)
-                                    .foregroundColor(.gray)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.top, 60)
-                                Spacer()
+                            
+                            if availableCards.isEmpty {
+                                VStack {
+                                    Text("More cards coming 👀")
+                                        .font(.title3)
+                                        .foregroundColor(.gray)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.top, 60)
+                                    Spacer()
+                                }
+                                .frame(maxWidth: .infinity)
                             }
-                            .frame(maxWidth: .infinity)
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
                     }
-                    .padding(.top, 8)
-                }
-                .navigationTitle("Add Insight Card")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
-                            showingAddBlockScreen = false
+                    .navigationTitle("Add Insight Card")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") {
+                                showingAddBlockScreen = false
+                            }
                         }
                     }
                 }
             }
+            
         }
     }
     
