@@ -158,7 +158,7 @@ struct InsightsView: View {
                                            }
                         }
                     }
-                    .padding()
+                    .padding(.top, 8)
                 }
                 .navigationTitle("Add Insight Card")
                 .navigationBarTitleDisplayMode(.inline)
@@ -1135,3 +1135,4 @@ struct SettingsView: View {
     }
 }
                       
+	
