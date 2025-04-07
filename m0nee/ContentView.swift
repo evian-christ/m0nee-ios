@@ -393,9 +393,31 @@ struct ContentView: View {
     @State private var showingSettings = false
     @State private var showingInsights = false
     @State private var selectedMonth: String
+    @State private var selectedWeekStart: Date = Calendar.current.startOfDay(for: Date())
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
     @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
+
+    private var displayedDateRange: String {
+        if budgetPeriod == "Weekly" {
+            let calendar = Calendar.current
+            let today = Date()
+            let startDay = weeklyStartDay
+            let weekdayToday = calendar.component(.weekday, from: today)
+            let delta = (weekdayToday - startDay + 7) % 7
+
+            guard let weekStart = calendar.date(byAdding: .day, value: -Int(delta), to: today) else {
+                return ""
+            }
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM d"
+            return "Week of \(formatter.string(from: weekStart))"
+        } else {
+            return displayMonth(selectedMonth)
+        }
+    }
     private var monthsWithExpenses: [String] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
@@ -405,12 +427,26 @@ struct ContentView: View {
     private var filteredExpenses: [Binding<Expense>] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
-        if selectedMonth.isEmpty {
-            return $store.expenses.map { $0 }
-        } else {
-            return $store.expenses.filter {
-                formatter.string(from: $0.wrappedValue.date) == selectedMonth
+        
+        if budgetPeriod == "Weekly" {
+            let calendar = Calendar.current
+            let weekStart = selectedWeekStart
+            guard let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
+                return []
             }
+            return $store.expenses
+                .filter {
+                    let startOfDay = calendar.startOfDay(for: $0.wrappedValue.date)
+                    return startOfDay >= calendar.startOfDay(for: weekStart) && startOfDay <= calendar.startOfDay(for: weekEnd)
+                }
+                .sorted { $0.wrappedValue.date > $1.wrappedValue.date }
+        } else if !selectedMonth.isEmpty {
+            return $store.expenses
+                .filter { formatter.string(from: $0.wrappedValue.date) == selectedMonth }
+                .sorted { $0.wrappedValue.date > $1.wrappedValue.date }
+        } else {
+            return $store.expenses
+                .sorted { $0.wrappedValue.date > $1.wrappedValue.date }
         }
     }
     
@@ -420,6 +456,14 @@ struct ContentView: View {
         formatter.dateFormat = "yyyy-MM"
         let recentMonth = formatter.string(from: Date())
         _selectedMonth = State(initialValue: recentMonth)
+
+        let calendar = Calendar.current
+        let today = Date()
+        let startDay = UserDefaults.standard.integer(forKey: "weeklyStartDay")
+        let weekdayToday = calendar.component(.weekday, from: today)
+        let delta = (weekdayToday - startDay + 7) % 7
+        let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) ?? today
+        _selectedWeekStart = State(initialValue: calendar.startOfDay(for: correctedWeekStart))
     }
 
     var body: some View {
@@ -442,6 +486,17 @@ struct ContentView: View {
             .tabViewStyle(.page)
             .indexViewStyle(.page(backgroundDisplayMode: .never))
             .padding(.vertical, 16)
+            
+            #if DEBUG
+            if budgetPeriod == "Weekly" {
+                let calendar = Calendar.current
+                let weekEnd = calendar.date(byAdding: .day, value: 6, to: selectedWeekStart)!
+                Text("DEBUG: Showing \(selectedWeekStart.formatted(date: .abbreviated, time: .omitted)) - \(weekEnd.formatted(date: .abbreviated, time: .omitted))")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.bottom, 8)
+            }
+            #endif
 
             LazyVStack(spacing: 0) {
                 ForEach(filteredExpenses, id: \.id) { $expense in
@@ -497,20 +552,39 @@ struct ContentView: View {
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    Menu {
-                        ForEach(monthsWithExpenses, id: \.self) { month in
-                            Button {
-                                selectedMonth = month
-                            } label: {
-                                Text(displayMonth(month))
+                    if budgetPeriod == "Weekly" {
+                        Menu {
+                            ForEach(recentWeeks(), id: \.self) { weekStart in
+                                Button {
+                                    selectedWeekStart = weekStart
+                                } label: {
+                                    Text("Week of \(weekStart.formatted(.dateTime.month().day()))")
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text("Week of \(selectedWeekStart.formatted(.dateTime.month().day()))")
+                                    .font(.headline)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
                             }
                         }
-                    } label: {
-                        HStack {
-                            Text(displayMonth(selectedMonth))
-                                .font(.headline)
-                            Image(systemName: "chevron.down")
-                                .font(.caption)
+                    } else {
+                        Menu {
+                            ForEach(monthsWithExpenses, id: \.self) { month in
+                                Button {
+                                    selectedMonth = month
+                                } label: {
+                                    Text(displayMonth(month))
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text(displayMonth(selectedMonth))
+                                    .font(.headline)
+                                Image(systemName: "chevron.down")
+                                    .font(.caption)
+                            }
                         }
                     }
                 }
@@ -532,14 +606,23 @@ struct ContentView: View {
             .navigationDestination(isPresented: $showingSettings) {
                 SettingsView()
             }
-            .navigationDestination(isPresented: $showingInsights) {
-                InsightsView()
+        .navigationDestination(isPresented: $showingInsights) {
+            InsightsView()
+        }
+        .onChange(of: weeklyStartDay) { _ in
+            let calendar = Calendar.current
+            let today = Date()
+            let weekdayToday = calendar.component(.weekday, from: today)
+            let delta = (weekdayToday - weeklyStartDay + 7) % 7
+            if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
+                selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
             }
         }
-        .preferredColorScheme(
-            appearanceMode == "Dark" ? .dark :
-            appearanceMode == "Light" ? .light : nil
-        )
+    }
+    .preferredColorScheme(
+        appearanceMode == "Dark" ? .dark :
+        appearanceMode == "Light" ? .light : nil
+    )
     }
 
     private func displayMonth(_ month: String) -> String {
@@ -1245,6 +1328,23 @@ extension Array where Element: Equatable {
             }
         }
         return result
+    }
+}
+
+extension ContentView {
+    private func recentWeeks() -> [Date] {
+        let calendar = Calendar.current
+        let startDay = weeklyStartDay
+        var weeks: [Date] = []
+
+        let allWeekStarts = store.expenses.map { expense -> Date in
+            let weekday = calendar.component(.weekday, from: expense.date)
+            let delta = (weekday - startDay + 7) % 7
+            return calendar.startOfDay(for: calendar.date(byAdding: .day, value: -delta, to: expense.date)!)
+        }
+
+        let uniqueWeekStarts = Set(allWeekStarts)
+        return uniqueWeekStarts.sorted(by: >)
     }
 }
 
