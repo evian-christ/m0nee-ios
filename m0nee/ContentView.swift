@@ -142,10 +142,9 @@ struct Expense: Identifiable, Codable {
 }
 
 struct InsightsView: View {
-    @State private var isEditing = false
     @State private var showingAddBlockScreen = false
     @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
-    @State private var removingCard: InsightCardType? = nil
+    @State private var deleteTrigger = UUID()
     var body: some View {
         ZStack {
             ScrollView {
@@ -153,8 +152,10 @@ struct InsightsView: View {
                 Section {
                 ForEach(addedCards, id: \.self) { type in
                     ZStack(alignment: .topLeading) {
-                    VStack(spacing: 0) {
                         InsightCardView(type: type)
+                            .id(type) // ensure stable identity
+                            .transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
+                            .animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
                             .contextMenu {
                                 Button {
                                     // Add to favourite logic
@@ -166,35 +167,19 @@ struct InsightsView: View {
                                 } label: {
                                     Label("Cancel", systemImage: "xmark")
                                 }
+                                Button(role: .destructive) {
+                                    if let index = addedCards.firstIndex(of: type) {
+                                        addedCards.remove(at: index)
+                                        deleteTrigger = UUID()
+                                    }
+                                } label: {
+                                    Label("Delete Card", systemImage: "trash")
+                                }
                             }
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
                     }
-                        Button(action: {
-                            let cardToRemove = type
-                            removingCard = cardToRemove
-                            if let index = addedCards.firstIndex(of: cardToRemove) {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                    addedCards.remove(at: index)
-                                    removingCard = nil
-                                }
-                            }
-                        }) {
-                            Image(systemName: "minus")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 24, height: 24)
-                                .background(Circle().fill(Color.red))
-                                .shadow(radius: 2)
-                                .offset(x: 16, y: 0)
-                                .scaleEffect(1.0)
-                        }
-                        .opacity((isEditing && removingCard != type) ? 1 : 0)
-                        .disabled(!(isEditing && removingCard != type))
-                        .animation(nil, value: isEditing)
-                    }
-                    .scaleEffect(removingCard == type ? 0.01 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: removingCard)
+                    
                     }
                 }
             }
@@ -210,22 +195,9 @@ struct InsightsView: View {
             .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if isEditing {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack {
-                            Button("Add") {
-                                showingAddBlockScreen = true
-                            }
-                            Button("Done") {
-                                isEditing = false
-                            }
-                        }
-                    }
-                } else {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Edit") {
-                            isEditing = true
-                        }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        showingAddBlockScreen = true
                     }
                 }
             }
