@@ -14,7 +14,9 @@ enum InsightCardType: String, Identifiable, Codable {
  
     var title: String {
         switch self {
-        case .totalSpending: return "This Month's Total Spending"
+        case .totalSpending:
+            let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
+            return period == "Weekly" ? "This Week's Total Spending" : "This Month's Total Spending"
         case .spendingTrend: return "Spending Trend"
         case .categoryRating: return "Category Satisfaction"
         }
@@ -99,13 +101,36 @@ struct InsightCardView: View {
  
             switch type {
             case .totalSpending:
-                let amountSpent = store.totalSpent(forMonth: currentMonth())
-                VStack(alignment: .leading) {
-                    Text(String(format: "£%.2f / £%.2f", amountSpent, monthlyBudget))
-                        .font(.title2)
-                        .bold()
-                    ProgressView(value: amountSpent, total: monthlyBudget)
-                        .accentColor(amountSpent > monthlyBudget ? .red : .blue)
+                Group {
+                    let calendar = Calendar.current
+                    let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
+                    let amountSpent: Double = {
+                        if period == "Weekly" {
+                            let today = Date()
+                            let startDay = UserDefaults.standard.integer(forKey: "weeklyStartDay")
+                            let weekdayToday = calendar.component(.weekday, from: today)
+                            let delta = (weekdayToday - startDay + 7) % 7
+                            let weekStart = calendar.date(byAdding: .day, value: -delta, to: today) ?? today
+                            let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? today
+                            return store.expenses
+                                .filter {
+                                    let expenseDate = calendar.startOfDay(for: $0.date)
+                                    return expenseDate >= calendar.startOfDay(for: weekStart) &&
+                                           expenseDate <= calendar.startOfDay(for: weekEnd)
+                                }
+                                .reduce(0) { $0 + $1.amount }
+                        } else {
+                            return store.totalSpent(forMonth: currentMonth())
+                        }
+                    }()
+            
+                    VStack(alignment: .leading) {
+                        Text(String(format: "£%.2f / £%.2f", amountSpent, monthlyBudget))
+                            .font(.title2)
+                            .bold()
+                        ProgressView(value: amountSpent, total: monthlyBudget)
+                            .accentColor(amountSpent > monthlyBudget ? .red : .blue)
+                    }
                 }
             case .spendingTrend:
                 SpendingTrendCardView(startDate: budgetDates.startDate,
@@ -459,16 +484,6 @@ struct ContentView: View {
             .indexViewStyle(.page(backgroundDisplayMode: .never))
             .padding(.vertical, 16)
             
-            #if DEBUG
-            if budgetPeriod == "Weekly" {
-                let calendar = Calendar.current
-                let weekEnd = calendar.date(byAdding: .day, value: 6, to: selectedWeekStart)!
-                Text("DEBUG: Showing \(selectedWeekStart.formatted(date: .abbreviated, time: .omitted)) - \(weekEnd.formatted(date: .abbreviated, time: .omitted))")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .padding(.bottom, 8)
-            }
-            #endif
 
             LazyVStack(spacing: 0) {
                 ForEach(filteredExpenses, id: \.id) { $expense in
@@ -1307,7 +1322,6 @@ extension ContentView {
     private func recentWeeks() -> [Date] {
         let calendar = Calendar.current
         let startDay = weeklyStartDay
-        var weeks: [Date] = []
 
         let allWeekStarts = store.expenses.map { expense -> Date in
             let weekday = calendar.component(.weekday, from: expense.date)
