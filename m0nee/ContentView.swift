@@ -450,6 +450,7 @@ struct ContentView: View {
     @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
+    @AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
     @State private var favouriteCards: [InsightCardType] = []
     @State private var cardRefreshTokens: [InsightCardType: UUID] = [:]
 
@@ -469,15 +470,38 @@ struct ContentView: View {
             formatter.dateFormat = "MMM d"
             return "Week of \(formatter.string(from: weekStart))"
         } else {
-            return displayMonth(selectedMonth)
+            return "\(displayMonth(selectedMonth)) (\(formattedRange(budgetDates)))"
         }
     }
     private var monthsWithExpenses: [String] {
+        let calendar = Calendar.current
+        let startDay = monthlyStartDay
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
-        let uniqueMonths = Set(store.expenses.map { formatter.string(from: $0.date) })
-        return uniqueMonths.sorted(by: >)
+
+        let adjustedMonths = store.expenses.map { expense -> String in
+            let date = expense.date
+            let monthStart: Date = {
+                if calendar.component(.day, from: date) >= startDay {
+                    let thisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
+                    return calendar.date(byAdding: .day, value: startDay - 1, to: thisMonth)!
+                } else {
+                    let previousMonth = calendar.date(byAdding: .month, value: -1, to: date)!
+                    let prevStart = calendar.date(from: calendar.dateComponents([.year, .month], from: previousMonth))!
+                    return calendar.date(byAdding: .day, value: startDay - 1, to: prevStart)!
+                }
+            }()
+            return formatter.string(from: monthStart)
+        }
+
+        return Set(adjustedMonths).sorted(by: >)
     }
+    private func formattedRange(_ range: (startDate: Date, endDate: Date)) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return "\(formatter.string(from: range.startDate)) - \(formatter.string(from: range.endDate))"
+    }
+
     private var filteredExpenses: [Binding<Expense>] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
@@ -495,8 +519,17 @@ struct ContentView: View {
                 }
                 .sorted { $0.wrappedValue.date > $1.wrappedValue.date }
         } else if !selectedMonth.isEmpty {
+            let dates = budgetDates
+            print("📆 Showing expenses from \(dates.startDate) to \(dates.endDate)")
+            let calendar = Calendar.current
+            let start = calendar.startOfDay(for: dates.startDate)
+            let end = calendar.startOfDay(for: dates.endDate)
+
             return $store.expenses
-                .filter { formatter.string(from: $0.wrappedValue.date) == selectedMonth }
+                .filter {
+                    let date = calendar.startOfDay(for: $0.wrappedValue.date)
+                    return date >= start && date <= end
+                }
                 .sorted { $0.wrappedValue.date > $1.wrappedValue.date }
         } else {
             return $store.expenses
@@ -649,15 +682,18 @@ struct ContentView: View {
         .navigationDestination(isPresented: $showingInsights) {
             InsightsView()
         }
-        .onChange(of: weeklyStartDay) { _ in
-            let calendar = Calendar.current
-            let today = Date()
-            let weekdayToday = calendar.component(.weekday, from: today)
-            let delta = (weekdayToday - weeklyStartDay + 7) % 7
-            if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
-                selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
+            .onChange(of: weeklyStartDay) { _ in
+                let calendar = Calendar.current
+                let today = Date()
+                let weekdayToday = calendar.component(.weekday, from: today)
+                let delta = (weekdayToday - weeklyStartDay + 7) % 7
+                if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
+                    selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
+                }
             }
-        }
+            .onChange(of: monthlyStartDay) { _ in
+                selectedMonth = selectedMonth + ""
+            }
         }
         .onAppear {
             if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
