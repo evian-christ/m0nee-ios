@@ -175,26 +175,7 @@ struct InsightsView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                #if DEBUG
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Favourites:")
-                        .font(.caption)
-                        .bold()
-                    if !favourites.isEmpty {
-                        ForEach(favourites, id: \.self) { item in
-                            Text("- \(item.id)")
-                                .font(.caption2)
-                                .foregroundColor(.gray)
-                        }
-                    } else {
-                        Text("No favourites yet.")
-                            .font(.caption2)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-                #endif
+                
                 LazyVStack(spacing: 16) {
                 Section {
                 ForEach(addedCards, id: \.self) { type in
@@ -409,12 +390,14 @@ extension ExpenseStore {
     func add(_ expense: Expense) {
         expenses.append(expense)
         save()
+        NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
     }
 
     func update(_ updated: Expense) {
         if let index = expenses.firstIndex(where: { $0.id == updated.id }) {
             expenses[index] = updated
             save()
+            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
         }
     }
 
@@ -422,6 +405,7 @@ extension ExpenseStore {
         if let index = expenses.firstIndex(where: { $0.id == expense.id }) {
             expenses.remove(at: index)
             save() // Update the saved data after deletion
+            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
         }
     }
 
@@ -466,6 +450,8 @@ struct ContentView: View {
     @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
+    @State private var favouriteCards: [InsightCardType] = []
+    @State private var cardRefreshTokens: [InsightCardType: UUID] = [:]
 
     private var displayedDateRange: String {
         if budgetPeriod == "Weekly" {
@@ -536,40 +522,14 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            #if DEBUG
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Favourites:")
-                    .font(.caption)
-                    .bold()
-                if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-                   let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data),
-                   !decoded.isEmpty {
-                    ForEach(decoded, id: \.self) { item in
-                        Text("- \(item.id)")
-                            .font(.caption2)
-                            .foregroundColor(.gray)
-                    }
-                } else {
-                    Text("No favourites yet.")
-                        .font(.caption2)
-                        .foregroundColor(.gray)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
-            #endif
+            
             ScrollView {
         VStack(spacing: 0) {
             TabView {
-                ForEach(1...3, id: \.self) { index in
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.systemGray6))
-                        Text("Summary Page \(index)")
-                            .foregroundColor(.gray)
-                    }
-                    .frame(height: 240)
-                    .padding(.horizontal, 16)
+                ForEach(favouriteCards, id: \.self) { type in
+                    InsightCardView(type: type)
+                        .id(cardRefreshTokens[type] ?? UUID())
+                        .padding(.horizontal, 16)
                 }
             }
             .frame(height: 240)
@@ -698,11 +658,38 @@ struct ContentView: View {
                 selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
             }
         }
-    }
-    .preferredColorScheme(
-        appearanceMode == "Dark" ? .dark :
-        appearanceMode == "Light" ? .light : nil
-    )
+        }
+        .onAppear {
+            if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+               let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
+                favouriteCards = decoded
+            } else {
+                favouriteCards = []
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("favouritesUpdated")), perform: { _ in
+            if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+               let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
+                favouriteCards = decoded
+            } else {
+                favouriteCards = []
+            }
+        })
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("expensesUpdated")), perform: { _ in
+            if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+               let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
+                favouriteCards = decoded
+                for type in decoded {
+                    cardRefreshTokens[type] = UUID()
+                }
+            } else {
+                favouriteCards = []
+            }
+        })
+        .preferredColorScheme(
+            appearanceMode == "Dark" ? .dark :
+            appearanceMode == "Light" ? .light : nil
+        )
     }
 
     private func displayMonth(_ month: String) -> String {
