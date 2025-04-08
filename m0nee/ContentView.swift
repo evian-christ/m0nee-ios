@@ -319,7 +319,16 @@ struct BudgetFrequencyView: View {
 class ExpenseStore: ObservableObject {
     @Published var expenses: [Expense] = []
 
-    private let saveURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
+    private let saveURL: URL = {
+        let fileManager = FileManager.default
+        if let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
+            try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
+            return containerURL.appendingPathComponent("expenses.json")
+        } else {
+            // fallback to local if iCloud not available
+            return fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
+        }
+    }()
 
     init() {
         load()
