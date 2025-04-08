@@ -167,13 +167,35 @@ struct Expense: Identifiable, Codable {
 }
 
 struct InsightsView: View {
+    @AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
+    @State private var favourites: [InsightCardType] = []
     @State private var showingAddBlockScreen = false
     @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
     @State private var deleteTrigger = UUID()
     var body: some View {
         ZStack {
             ScrollView {
-            LazyVStack(spacing: 16) {
+                #if DEBUG
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Favourites:")
+                        .font(.caption)
+                        .bold()
+                    if !favourites.isEmpty {
+                        ForEach(favourites, id: \.self) { item in
+                            Text("- \(item.id)")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                        }
+                    } else {
+                        Text("No favourites yet.")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                #endif
+                LazyVStack(spacing: 16) {
                 Section {
                 ForEach(addedCards, id: \.self) { type in
                     ZStack(alignment: .topLeading) {
@@ -182,10 +204,18 @@ struct InsightsView: View {
                             .transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
                             .animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
                             .contextMenu {
-                                Button {
-                                    // Add to favourite logic
-                                } label: {
-                                    Label("Add to Favourite", systemImage: "star")
+                                if isFavourited(type) {
+                                    Button {
+                                        toggleFavourite(type)
+                                    } label: {
+                                        Label("Remove from Favourite", systemImage: "star.slash")
+                                    }
+                                } else {
+                                    Button {
+                                        toggleFavourite(type)
+                                    } label: {
+                                        Label("Add to Favourite", systemImage: "star")
+                                    }
                                 }
                                 Button(role: .cancel) {
                                     // Cancel logic or nothing
@@ -213,9 +243,13 @@ struct InsightsView: View {
             .onChange(of: addedCards) { newValue in
                 InsightsView.saveAddedCards(newValue)
             }
-.onAppear {
-    addedCards = InsightsView.loadAddedCards()
-}
+            .onAppear {
+                addedCards = InsightsView.loadAddedCards()
+                favourites = loadFavourites()
+            }
+            .onChange(of: favourites) { _ in
+                saveFavourites()
+            }
             }
             .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.inline)
@@ -287,6 +321,34 @@ struct InsightsView: View {
         if let data = try? JSONEncoder().encode(cards) {
             UserDefaults.standard.set(data, forKey: "addedInsightCards")
         }
+    }
+
+    private func loadFavourites() -> [InsightCardType] {
+        guard let decoded = try? JSONDecoder().decode([InsightCardType].self, from: favouriteInsightCardsRaw) else {
+            return []
+        }
+        return decoded
+    }
+
+    private func saveFavourites() {
+        if let encoded = try? JSONEncoder().encode(favourites) {
+            favouriteInsightCardsRaw = encoded
+        }
+    }
+
+    private func toggleFavourite(_ type: InsightCardType) {
+        if let index = favourites.firstIndex(of: type) {
+            favourites.remove(at: index)
+        } else {
+            favourites.append(type)
+        }
+        saveFavourites()
+        favourites = loadFavourites()
+        NotificationCenter.default.post(name: Notification.Name("favouritesUpdated"), object: nil)
+    }
+
+    private func isFavourited(_ type: InsightCardType) -> Bool {
+        favourites.contains(type)
     }
 }
 
@@ -474,7 +536,29 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-        ScrollView {
+            #if DEBUG
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Favourites:")
+                    .font(.caption)
+                    .bold()
+                if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+                   let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data),
+                   !decoded.isEmpty {
+                    ForEach(decoded, id: \.self) { item in
+                        Text("- \(item.id)")
+                            .font(.caption2)
+                            .foregroundColor(.gray)
+                    }
+                } else {
+                    Text("No favourites yet.")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+            #endif
+            ScrollView {
         VStack(spacing: 0) {
             TabView {
                 ForEach(1...3, id: \.self) { index in
