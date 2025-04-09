@@ -5,9 +5,10 @@ enum InsightCardType: String, Identifiable, Codable {
     case totalSpending
     case spendingTrend
     case categoryRating
+    case budgetProgress
  
     static var allCases: [InsightCardType] {
-        return [.totalSpending, .spendingTrend, .categoryRating]
+        return [.totalSpending, .spendingTrend, .categoryRating, .budgetProgress]
     }
 
     var id: String { self.rawValue }
@@ -17,16 +18,26 @@ enum InsightCardType: String, Identifiable, Codable {
         case .totalSpending:
             let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
             return period == "Weekly" ? "This Week's Total Spending" : "This Month's Total Spending"
-        case .spendingTrend: return "Spending Trend"
-        case .categoryRating: return "Category Satisfaction"
+        case .spendingTrend:
+            return "Spending Trend"
+        case .categoryRating:
+            return "Category Satisfaction"
+        case .budgetProgress:
+            let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
+            return period == "Weekly" ? "Week's Progress" : "Month's Progress"
         }
     }
  
     var icon: String {
         switch self {
-        case .totalSpending: return "creditcard"
-        case .spendingTrend: return "chart.line.uptrend.xyaxis"
-        case .categoryRating: return "star.lefthalf.fill"
+        case .totalSpending:
+            return "creditcard"
+        case .spendingTrend:
+            return "chart.line.uptrend.xyaxis"
+        case .categoryRating:
+            return "star.lefthalf.fill"
+        case .budgetProgress:
+            return "gauge.with.needle"
         }
     }
 }
@@ -136,6 +147,48 @@ struct CategoryRatingCardView: View {
     }
 }
 
+struct BudgetProgressCardView: View {
+    let expenses: [Expense]
+    let startDate: Date
+    let endDate: Date
+    let monthlyBudget: Double
+
+    var body: some View {
+        let totalSpent = expenses.reduce(0) { $0 + $1.amount }
+        let today = Calendar.current.startOfDay(for: Date())
+        let cappedToday = min(max(today, startDate), endDate)
+ 
+        let daysElapsed = Calendar.current.dateComponents([.day], from: startDate, to: cappedToday).day ?? 0
+        let totalDays = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 1
+        let timeProgress = Double(daysElapsed + 1) / Double(totalDays + 1)
+        let spendingProgress = monthlyBudget > 0 ? totalSpent / monthlyBudget : 0
+ 
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Month's Progress", systemImage: "gauge.with.needle")
+                .font(.headline)
+ 
+            Text(String(format: "£%.2f / £%.2f", totalSpent, monthlyBudget))
+                .font(.title3)
+                .bold()
+                .foregroundColor(spendingProgress > timeProgress ? .red : .primary)
+ 
+            ProgressView(value: spendingProgress)
+                .accentColor(spendingProgress > timeProgress ? .red : .blue)
+ 
+            Text(String(format: "Time: %.0f%%", timeProgress * 100))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+ 
+            ProgressView(value: timeProgress)
+                .accentColor(.gray)
+        }
+        .padding(.horizontal, 0)
+        .frame(maxWidth: .infinity)
+        .frame(height: 240)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
+    }
+}
+
 struct InsightCardView: View {
     var type: InsightCardType
     let expenses: [Expense]
@@ -145,10 +198,12 @@ struct InsightCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Label(type.title, systemImage: type.icon)
-                    .font(.headline)
-                Spacer()
+            if type != .budgetProgress {
+                HStack {
+                    Label(type.title, systemImage: type.icon)
+                        .font(.headline)
+                    Spacer()
+                }
             }
  
             switch type {
@@ -171,8 +226,15 @@ struct InsightCardView: View {
                     endDate: endDate,
                     monthlyBudget: monthlyBudget
                 )
-        case .categoryRating:
-            CategoryRatingCardView(expenses: expenses)
+            case .categoryRating:
+                CategoryRatingCardView(expenses: expenses)
+            case .budgetProgress:
+                BudgetProgressCardView(
+                    expenses: expenses,
+                    startDate: startDate,
+                    endDate: endDate,
+                    monthlyBudget: monthlyBudget
+                )
             }
         }
         .padding()
