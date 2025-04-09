@@ -431,7 +431,7 @@ struct ContentView: View {
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-    @StateObject var store = ExpenseStore()
+    @ObservedObject var store: ExpenseStore
     @State private var showingAddExpense = false
     @State private var showingSettings = false
     @State private var showingInsights = false
@@ -552,12 +552,14 @@ struct ContentView: View {
     }
     
 
-    init() {
+    init(store: ExpenseStore) {
+        self.store = store
+ 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
         let recentMonth = formatter.string(from: Date())
         _selectedMonth = State(initialValue: recentMonth)
-
+ 
         let calendar = Calendar.current
         let today = Date()
         let startDay = UserDefaults.standard.integer(forKey: "weeklyStartDay")
@@ -696,7 +698,7 @@ struct ContentView: View {
                 }
             }
             .navigationDestination(isPresented: $showingSettings) {
-                SettingsView()
+                SettingsView(store: store)
             }
         .navigationDestination(isPresented: $showingInsights) {
             InsightsView()
@@ -1430,8 +1432,9 @@ struct SettingsView: View {
                         .filter { $0.0 != category }
                     categoryBudgets = updatedBudgetDict.map { "\($0):\($1)" }.joined(separator: ",")
 
-                    // Remove matching expenses
-                    store.expenses.removeAll { $0.category == category }
+                    // Remove matching expenses using store.delete() so it's properly saved
+                    let toDelete = store.expenses.filter { $0.category == category }
+                    toDelete.forEach { store.delete($0) }
                 }
                 categoryToDelete = nil
             }
@@ -1442,7 +1445,11 @@ struct SettingsView: View {
             let count = categoryToDelete.map { category in
                 store.expenses.filter { $0.category == category }.count
             } ?? 0
-            Text("This will also delete \(count) expense(s) under this category.")
+            if count > 0 {
+                Text("This will also delete \(count) expense(s) under this category.")
+            } else {
+                Text("Are you sure you want to delete this category?")
+            }
         }
     }
 }

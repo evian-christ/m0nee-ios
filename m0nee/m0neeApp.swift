@@ -10,10 +10,11 @@ import SwiftUI
 @main
 struct m0neeApp: App {
     let persistenceController = PersistenceController.shared
+    let store = ExpenseStore()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(store: store)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
