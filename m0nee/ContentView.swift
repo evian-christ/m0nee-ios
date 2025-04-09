@@ -1478,15 +1478,16 @@ struct SpendingTrendCardView: View {
 
     var body: some View {
         let calendar = Calendar.current
+        let cappedEndDate = min(endDate, Date())
         let spendingData = expenses
-            .filter { $0.date >= startDate && $0.date <= endDate }
+            .filter { $0.date >= startDate && $0.date <= cappedEndDate }
             .sorted(by: { $0.date < $1.date })
 
         let grouped = Dictionary(grouping: spendingData) {
             calendar.startOfDay(for: $0.date)
         }
 
-        let dateRange = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        let dateRange = calendar.dateComponents([.day], from: startDate, to: cappedEndDate).day ?? 0
         let sortedDates = (0...dateRange).compactMap {
             calendar.date(byAdding: .day, value: $0, to: startDate)
         }
@@ -1501,10 +1502,9 @@ struct SpendingTrendCardView: View {
         }()
 
         return VStack(alignment: .leading, spacing: 8) {
-            let today = calendar.startOfDay(for: Date())
             Chart {
                 ForEach(Array(dailyTotals.enumerated()), id: \.1.date) { index, item in
-                    if item.date <= today {
+                    if item.date <= cappedEndDate {
                         LineMark(
                             x: .value("Date", item.date),
                             y: .value("Total", item.total)
@@ -1514,9 +1514,19 @@ struct SpendingTrendCardView: View {
             }
             .chartYScale(domain: 0...max(monthlyBudget, dailyTotals.last?.total ?? 0))
             .chartXAxis {
-                let calendar = Calendar.current
-                let uniqueDates = [startDate, Date(), endDate].map { calendar.startOfDay(for: $0) }.uniqued().sorted()
-                AxisMarks(values: uniqueDates) { date in
+                let today = Calendar.current.startOfDay(for: Date())
+                let axisDates: [Date] = {
+                    if startDate <= today && today <= endDate {
+                        return [startDate, today, endDate]
+                    } else {
+                        let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+                        return stride(from: 0, through: days, by: 10).compactMap {
+                            Calendar.current.date(byAdding: .day, value: $0, to: startDate)
+                        }
+                    }
+                }()
+ 
+                AxisMarks(values: axisDates) { date in
                     AxisGridLine()
                     AxisTick()
                     AxisValueLabel {
