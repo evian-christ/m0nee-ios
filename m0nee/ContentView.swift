@@ -31,6 +31,56 @@ enum InsightCardType: String, Identifiable, Codable {
     }
 }
 
+#if DEBUG
+struct InsightCardView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleExpenses = [
+            Expense(id: UUID(), date: Date(), name: "Groceries", amount: 40, category: "Food", details: nil, rating: 4, memo: nil),
+            Expense(id: UUID(), date: Date(), name: "Bus", amount: 15, category: "Transport", details: nil, rating: 3, memo: nil)
+        ]
+        let now = Date()
+        return InsightCardView(
+            type: .totalSpending,
+            expenses: sampleExpenses,
+            startDate: now.addingTimeInterval(-86400 * 7),
+            endDate: now
+        )
+        .padding()
+        .previewLayout(.sizeThatFits)
+    }
+}
+
+struct SpendingTrendCardView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleExpenses = [
+            Expense(id: UUID(), date: Date(), name: "Lunch", amount: 12, category: "Food", details: nil, rating: nil, memo: nil),
+            Expense(id: UUID(), date: Date().addingTimeInterval(-86400), name: "Coffee", amount: 4, category: "Food", details: nil, rating: nil, memo: nil)
+        ]
+        let now = Date()
+        return SpendingTrendCardView(
+            expenses: sampleExpenses,
+            startDate: now.addingTimeInterval(-86400 * 5),
+            endDate: now,
+            monthlyBudget: 300
+        )
+        .padding()
+        .previewLayout(.sizeThatFits)
+    }
+}
+
+struct CategoryRatingCardView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleExpenses = [
+            Expense(id: UUID(), date: Date(), name: "Dinner", amount: 30, category: "Food", details: nil, rating: 5, memo: nil),
+            Expense(id: UUID(), date: Date(), name: "Taxi", amount: 20, category: "Transport", details: nil, rating: 2, memo: nil)
+        ]
+        return CategoryRatingCardView(expenses: sampleExpenses)
+            .padding()
+            .previewLayout(.sizeThatFits)
+    }
+}
+#endif
+
 func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -> Int? {
     let cardHeight: CGFloat = 248  // 240 height + 8 vertical padding
     let relativeY = location.y
@@ -42,10 +92,10 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 }
 
 struct CategoryRatingCardView: View {
-    @ObservedObject var store: ExpenseStore
+    var expenses: [Expense]
 
     var body: some View {
-        let grouped = Dictionary(grouping: store.expenses) { $0.category }
+        let grouped = Dictionary(grouping: expenses) { $0.category }
         let averageRatings = grouped.compactMapValues { items -> Double? in
             let ratings = items.compactMap { $0.rating }
             return ratings.isEmpty ? nil : Double(ratings.reduce(0, +)) / Double(ratings.count)
@@ -88,7 +138,9 @@ struct CategoryRatingCardView: View {
 
 struct InsightCardView: View {
     var type: InsightCardType
-    @StateObject private var store = ExpenseStore()
+    let expenses: [Expense]
+    let startDate: Date
+    let endDate: Date
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 
     var body: some View {
@@ -102,27 +154,7 @@ struct InsightCardView: View {
             switch type {
             case .totalSpending:
                 Group {
-                    let calendar = Calendar.current
-                    let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
-                    let amountSpent: Double = {
-                        if period == "Weekly" {
-                            let today = Date()
-                            let startDay = UserDefaults.standard.integer(forKey: "weeklyStartDay")
-                            let weekdayToday = calendar.component(.weekday, from: today)
-                            let delta = (weekdayToday - startDay + 7) % 7
-                            let weekStart = calendar.date(byAdding: .day, value: -delta, to: today) ?? today
-                            let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? today
-                            return store.expenses
-                                .filter {
-                                    let expenseDate = calendar.startOfDay(for: $0.date)
-                                    return expenseDate >= calendar.startOfDay(for: weekStart) &&
-                                           expenseDate <= calendar.startOfDay(for: weekEnd)
-                                }
-                                .reduce(0) { $0 + $1.amount }
-                        } else {
-                            return store.totalSpent(forMonth: currentMonth())
-                        }
-                    }()
+                    let amountSpent = expenses.reduce(0) { $0 + $1.amount }
             
                     VStack(alignment: .leading) {
                         Text(String(format: "£%.2f / £%.2f", amountSpent, monthlyBudget))
@@ -133,12 +165,14 @@ struct InsightCardView: View {
                     }
                 }
             case .spendingTrend:
-                SpendingTrendCardView(startDate: budgetDates.startDate,
-                                      endDate: budgetDates.endDate,
-                                      store: store,
-                                      monthlyBudget: monthlyBudget)
+                SpendingTrendCardView(
+                    expenses: expenses,
+                    startDate: startDate,
+                    endDate: endDate,
+                    monthlyBudget: monthlyBudget
+                )
         case .categoryRating:
-            CategoryRatingCardView(store: store)
+            CategoryRatingCardView(expenses: expenses)
             }
         }
         .padding()
@@ -148,11 +182,7 @@ struct InsightCardView: View {
         .padding(.vertical, 0)
     }
     
-    private func currentMonth() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM"
-        return formatter.string(from: Date())
-    }
+    
 }
 
 struct Expense: Identifiable, Codable {
@@ -170,6 +200,35 @@ struct InsightsView: View {
     @AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
     @State private var favourites: [InsightCardType] = []
     @State private var deleteTrigger = UUID()
+    @StateObject private var store = ExpenseStore()
+
+    private var currentBudgetDates: (startDate: Date, endDate: Date) {
+        let calendar = Calendar.current
+        let today = Date()
+        let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
+        let startDay = UserDefaults.standard.integer(forKey: period == "Weekly" ? "weeklyStartDay" : "monthlyStartDay")
+
+        if period == "Weekly" {
+            let weekdayToday = calendar.component(.weekday, from: today)
+            let delta = (weekdayToday - startDay + 7) % 7
+            let weekStart = calendar.date(byAdding: .day, value: -delta, to: today)!
+            let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart)!
+            return (calendar.startOfDay(for: weekStart), calendar.startOfDay(for: weekEnd))
+        } else {
+            let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+            let monthStart = calendar.date(byAdding: .day, value: startDay - 1, to: currentMonth)!
+            let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+            let endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth)!
+            return (calendar.startOfDay(for: monthStart), calendar.startOfDay(for: endDate))
+        }
+    }
+
+    private var currentExpenses: [Expense] {
+        store.expenses.filter {
+            let date = Calendar.current.startOfDay(for: $0.date)
+            return date >= currentBudgetDates.startDate && date <= currentBudgetDates.endDate
+        }
+    }
     var body: some View {
         ZStack {
             ScrollView {
@@ -178,7 +237,12 @@ struct InsightsView: View {
                 Section {
                 ForEach(InsightCardType.allCases, id: \.rawValue) { type in
                     ZStack(alignment: .topLeading) {
-                        InsightCardView(type: type)
+                        InsightCardView(
+                            type: type,
+                            expenses: currentExpenses,
+                            startDate: currentBudgetDates.startDate,
+                            endDate: currentBudgetDates.endDate
+                        )
                             .id(type) // ensure stable identity
                             .transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
                             .animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
@@ -487,7 +551,12 @@ struct ContentView: View {
         VStack(spacing: 0) {
             TabView {
                 ForEach(favouriteCards, id: \.self) { type in
-                    InsightCardView(type: type)
+                    InsightCardView(
+                        type: type,
+                        expenses: filteredExpenses.map(\.wrappedValue),
+                        startDate: budgetDates.startDate,
+                        endDate: budgetDates.endDate
+                    )
                         .id(cardRefreshTokens[type] ?? UUID())
                         .padding(.horizontal, 16)
                 }
@@ -1396,14 +1465,14 @@ private var budgetDates: (startDate: Date, endDate: Date) {
 }
 
 struct SpendingTrendCardView: View {
+    let expenses: [Expense]
     let startDate: Date
     let endDate: Date
-    @ObservedObject var store: ExpenseStore
     let monthlyBudget: Double
 
     var body: some View {
         let calendar = Calendar.current
-        let spendingData = store.expenses
+        let spendingData = expenses
             .filter { $0.date >= startDate && $0.date <= endDate }
             .sorted(by: { $0.date < $1.date })
 
