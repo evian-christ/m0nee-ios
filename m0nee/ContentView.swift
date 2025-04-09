@@ -1076,6 +1076,7 @@ struct SettingsView: View {
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @StateObject var store = ExpenseStore()
     @AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
@@ -1143,7 +1144,7 @@ struct SettingsView: View {
             }
                 
                 Section(header: Text("Categories")) {
-                    NavigationLink(destination: ManageCategoriesView()) {
+                NavigationLink(destination: ManageCategoriesView(store: store)) {
                         Text("Manage Categories")
                     }
                 }
@@ -1322,6 +1323,7 @@ struct SettingsView: View {
     }
     
     struct ManageCategoriesView: View {
+    @ObservedObject var store: ExpenseStore
     @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @State private var newCategory = ""
@@ -1427,6 +1429,9 @@ struct SettingsView: View {
                         }
                         .filter { $0.0 != category }
                     categoryBudgets = updatedBudgetDict.map { "\($0):\($1)" }.joined(separator: ",")
+
+                    // Remove matching expenses
+                    store.expenses.removeAll { $0.category == category }
                 }
                 categoryToDelete = nil
             }
@@ -1434,7 +1439,10 @@ struct SettingsView: View {
                 categoryToDelete = nil
             }
         } message: {
-            Text("Are you sure you want to delete this category?")
+            let count = categoryToDelete.map { category in
+                store.expenses.filter { $0.category == category }.count
+            } ?? 0
+            Text("This will also delete \(count) expense(s) under this category.")
         }
     }
 }
