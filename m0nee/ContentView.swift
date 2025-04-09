@@ -169,8 +169,6 @@ struct Expense: Identifiable, Codable {
 struct InsightsView: View {
     @AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
     @State private var favourites: [InsightCardType] = []
-    @State private var showingAddBlockScreen = false
-    @State private var addedCards: [InsightCardType] = InsightsView.loadAddedCards()
     @State private var deleteTrigger = UUID()
     var body: some View {
         ZStack {
@@ -178,7 +176,7 @@ struct InsightsView: View {
                 
                 LazyVStack(spacing: 16) {
                 Section {
-                ForEach(addedCards, id: \.self) { type in
+                ForEach(InsightCardType.allCases, id: \.rawValue) { type in
                     ZStack(alignment: .topLeading) {
                         InsightCardView(type: type)
                             .id(type) // ensure stable identity
@@ -203,29 +201,16 @@ struct InsightsView: View {
                                 } label: {
                                     Label("Cancel", systemImage: "xmark")
                                 }
-                                Button(role: .destructive) {
-                                    if let index = addedCards.firstIndex(of: type) {
-                                        addedCards.remove(at: index)
-                                        deleteTrigger = UUID()
-                                    }
-                                } label: {
-                                    Label("Delete Card", systemImage: "trash")
-                                }
                             }
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
+                            .padding(.vertical, 2)
                     }
-                    
-                    }
+                }
                 }
             }
             .environment(\.editMode, .constant(.active))
             .padding(.vertical)
-            .onChange(of: addedCards) { newValue in
-                InsightsView.saveAddedCards(newValue)
-            }
             .onAppear {
-                addedCards = InsightsView.loadAddedCards()
                 favourites = loadFavourites()
             }
             .onChange(of: favourites) { _ in
@@ -234,52 +219,6 @@ struct InsightsView: View {
             }
             .navigationTitle("Insights")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add") {
-                        showingAddBlockScreen = true
-                    }
-                }
-            }
-            .sheet(isPresented: $showingAddBlockScreen) {
-                NavigationStack {
-                    ScrollView {
-                        let availableCards = InsightCardType.allCases.filter { !addedCards.contains($0) }
-                        VStack(spacing: 16) {
-                            ForEach(availableCards, id: \.self) { type in
-                                InsightCardView(type: type)
-                                    .onTapGesture {
-                                        addedCards.append(type)
-                                        showingAddBlockScreen = false
-                                    }
-                            }
-                            
-                            if availableCards.isEmpty {
-                                VStack {
-                                    Text("More cards coming 👀")
-                                        .font(.title3)
-                                        .foregroundColor(.gray)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.top, 60)
-                                    Spacer()
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 8)
-                    }
-                    .navigationTitle("Add Insight Card")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") {
-                                showingAddBlockScreen = false
-                            }
-                        }
-                    }
-                }
-            }
             
         }
     }
@@ -290,19 +229,7 @@ struct InsightsView: View {
         return formatter.string(from: Date())
     }
 
-    private static func loadAddedCards() -> [InsightCardType] {
-        guard let data = UserDefaults.standard.data(forKey: "addedInsightCards"),
-              let result = try? JSONDecoder().decode([InsightCardType].self, from: data) else {
-            return [.totalSpending]
-        }
-        return result
-    }
-
-    private static func saveAddedCards(_ cards: [InsightCardType]) {
-        if let data = try? JSONEncoder().encode(cards) {
-            UserDefaults.standard.set(data, forKey: "addedInsightCards")
-        }
-    }
+    
 
     private func loadFavourites() -> [InsightCardType] {
         guard let decoded = try? JSONDecoder().decode([InsightCardType].self, from: favouriteInsightCardsRaw) else {
@@ -1450,22 +1377,22 @@ extension ContentView {
     }
 }
 
-    private var budgetDates: (startDate: Date, endDate: Date) {
-        let calendar = Calendar.current
-        let today = Date()
-        let startDay = UserDefaults.standard.integer(forKey: "monthlyStartDay")
-        var budgetStartDate: Date
-        if calendar.component(.day, from: today) >= startDay {
-            let thisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
-            budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: thisMonth)!
-        } else {
-            let previousMonth = calendar.date(byAdding: .month, value: -1, to: today)!
-            let previousMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: previousMonth))!
-            budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: previousMonthStart)!
-        }
-        let nextCycleStart = calendar.date(byAdding: .month, value: 1, to: budgetStartDate)!
-        let endOfBudgetMonth = calendar.date(byAdding: .day, value: -1, to: nextCycleStart)!
-        return (budgetStartDate, endOfBudgetMonth)
+private var budgetDates: (startDate: Date, endDate: Date) {
+    let calendar = Calendar.current
+    let today = Date()
+    let startDay = UserDefaults.standard.integer(forKey: "monthlyStartDay")
+    var budgetStartDate: Date
+    if calendar.component(.day, from: today) >= startDay {
+        let thisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+        budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: thisMonth)!
+    } else {
+        let previousMonth = calendar.date(byAdding: .month, value: -1, to: today)!
+        let previousMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: previousMonth))!
+        budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: previousMonthStart)!
+    }
+    let nextCycleStart = calendar.date(byAdding: .month, value: 1, to: budgetStartDate)!
+    let endOfBudgetMonth = calendar.date(byAdding: .day, value: -1, to: nextCycleStart)!
+    return (budgetStartDate, endOfBudgetMonth)
 }
 
 struct SpendingTrendCardView: View {
