@@ -464,6 +464,29 @@ struct ContentView: View {
             return "\(displayMonth(selectedMonth)) (\(formattedRange(budgetDates)))"
         }
     }
+
+    private var budgetDates: (startDate: Date, endDate: Date) {
+        let calendar = Calendar.current
+        let startDay = budgetPeriod == "Weekly" ? weeklyStartDay : monthlyStartDay
+
+        if budgetPeriod == "Weekly" {
+            let start = calendar.startOfDay(for: selectedWeekStart)
+            let end = calendar.date(byAdding: .day, value: 6, to: start)!
+            return (start, end)
+        } else {
+            let inputFormatter = DateFormatter()
+            inputFormatter.dateFormat = "yyyy-MM"
+
+            guard let baseDate = inputFormatter.date(from: selectedMonth) else {
+                return (Date(), Date())
+            }
+
+            let monthStart = calendar.date(byAdding: .day, value: startDay - 1, to: baseDate)!
+            let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+            let endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth)!
+            return (calendar.startOfDay(for: monthStart), calendar.startOfDay(for: endDate))
+        }
+    }
     private var monthsWithExpenses: [String] {
         let calendar = Calendar.current
         let startDay = monthlyStartDay
@@ -1446,23 +1469,6 @@ extension ContentView {
     }
 }
 
-private var budgetDates: (startDate: Date, endDate: Date) {
-    let calendar = Calendar.current
-    let today = Date()
-    let startDay = UserDefaults.standard.integer(forKey: "monthlyStartDay")
-    var budgetStartDate: Date
-    if calendar.component(.day, from: today) >= startDay {
-        let thisMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
-        budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: thisMonth)!
-    } else {
-        let previousMonth = calendar.date(byAdding: .month, value: -1, to: today)!
-        let previousMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: previousMonth))!
-        budgetStartDate = calendar.date(byAdding: .day, value: startDay - 1, to: previousMonthStart)!
-    }
-    let nextCycleStart = calendar.date(byAdding: .month, value: 1, to: budgetStartDate)!
-    let endOfBudgetMonth = calendar.date(byAdding: .day, value: -1, to: nextCycleStart)!
-    return (budgetStartDate, endOfBudgetMonth)
-}
 
 struct SpendingTrendCardView: View {
     let expenses: [Expense]
