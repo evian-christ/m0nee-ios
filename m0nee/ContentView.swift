@@ -1334,6 +1334,7 @@ struct SettingsView: View {
     @AppStorage("groupByDay") private var groupByDay: Bool = false
     @AppStorage("showRating") private var showRating: Bool = true
     @AppStorage("simpleMode") private var simpleMode: Bool = false
+    @AppStorage("displayMode") private var displayMode: String = "Standard"
     @State private var showResetAlert = false
     
     let currencyOptions: [(symbol: String, country: String)] = [
@@ -1363,10 +1364,28 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        Form {
+    Form {
         Section(header: Text("Main Screen Settings")) {
+            NavigationLink(destination: {
+                Form {
+                    Picker("Display Mode", selection: $displayMode) {
+                        Text("Compact").tag("Compact")
+                        Text("Standard").tag("Standard")
+                        Text("Detailed").tag("Detailed")
+                    }
+                    .pickerStyle(.inline)
+                }
+                .navigationTitle("Display Mode")
+            }) {
+                HStack {
+                    Text("Display Mode")
+                    Spacer()
+                    Text(displayMode)
+                        .foregroundColor(.gray)
+                }
+            }
+            
             Toggle("Group expenses by day", isOn: $groupByDay)
-            Toggle("Simple mode", isOn: $simpleMode)
         }
         Section(header: Text("Budget")) {
             Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
