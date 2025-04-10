@@ -878,6 +878,17 @@ struct ContentView: View {
                 favouriteCards = []
             }
         })
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("categoriesUpdated")), perform: { _ in
+            if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+               let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
+                favouriteCards = decoded
+                for type in decoded {
+                    cardRefreshTokens[type] = UUID()
+                }
+            } else {
+                favouriteCards = []
+            }
+        })
         .preferredColorScheme(
             appearanceMode == "Dark" ? .dark :
             appearanceMode == "Light" ? .light : nil
@@ -1539,6 +1550,7 @@ struct SettingsView: View {
                                 var updated = categoryList
                                 updated.append(trimmed)
                                 saveCategories(updated)
+                                NotificationCenter.default.post(name: Notification.Name("categoriesUpdated"), object: nil)
                                 newCategory = ""
                                 showingAddSheet = false
                             }
