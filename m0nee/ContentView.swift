@@ -839,10 +839,13 @@ struct ContentView: View {
                                         .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(expense.amount > 100 ? .red : .primary)
  
-                                    Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-                                        .font(.caption2)
-                                        .foregroundColor(.gray)
-                                }
+                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.gray)
                             }
                             Divider()
                         }
