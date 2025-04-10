@@ -654,6 +654,7 @@ extension ExpenseStore {
 
 struct ContentView: View {
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @AppStorage("displayMode") private var displayMode: String = "Standard"
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
     @ObservedObject var store: ExpenseStore
@@ -818,46 +819,72 @@ struct ContentView: View {
 
             LazyVStack(spacing: 0) {
                 ForEach(filteredExpenses, id: \.id) { $expense in
-                    NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-                        VStack(spacing: 8) {
-                            HStack(alignment: .center, spacing: 12) {
-                                VStack(alignment: .leading, spacing: 2) {
+                    if displayMode == "Compact" {
+                        VStack(spacing: 0) {
+                            NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+                                HStack(spacing: 8) {
                                     Text(expense.name)
-                                        .font(.system(.body, design: .default))
-                                        .fontWeight(.semibold)
+                                        .font(.body)
                                         .foregroundColor(.primary)
+                                        .lineLimit(1)
  
-                                    Text(expense.category)
-                                        .font(.footnote)
-                                        .foregroundColor(.secondary)
-                                }
+                                    Spacer()
  
-                                Spacer()
- 
-                                VStack(alignment: .trailing, spacing: 2) {
                                     Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                        .font(.system(size: 17, weight: .medium))
+                                        .font(.callout)
                                         .foregroundColor(expense.amount > 100 ? .red : .primary)
  
-                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                            }
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.gray)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
                             }
                             Divider()
                         }
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                        .background(Color(.systemBackground))
-                    }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            store.delete(expense)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                    } else {
+                        NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+                            VStack(spacing: 8) {
+                                HStack(alignment: .center, spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(expense.name)
+                                            .font(.system(.body, design: .default))
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.primary)
+ 
+                                        Text(expense.category)
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                    }
+ 
+                                    Spacer()
+ 
+                                    VStack(alignment: .trailing, spacing: 2) {
+                                        Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+                                            .font(.system(size: 17, weight: .medium))
+                                            .foregroundColor(expense.amount > 100 ? .red : .primary)
+ 
+                                        Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                            .font(.caption2)
+                                            .foregroundColor(.gray)
+                                    }
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                                Divider()
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .background(Color(.systemBackground))
+                        }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                store.delete(expense)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
                 }
