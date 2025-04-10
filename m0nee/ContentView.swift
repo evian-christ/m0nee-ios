@@ -488,18 +488,42 @@ struct BudgetFrequencyView: View {
 class ExpenseStore: ObservableObject {
     @Published var expenses: [Expense] = []
 
-    private let saveURL: URL = {
-        let fileManager = FileManager.default
-        if let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
-            try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
-            return containerURL.appendingPathComponent("expenses.json")
-        } else {
-            // fallback to local if iCloud not available
-            return fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
-        }
-    }()
+    private var saveURL: URL
 
     init() {
+        let fileManager = FileManager.default
+        let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
+        let iCloudURL: URL
+        let useiCloud = UserDefaults.standard.bool(forKey: "useiCloud")
+
+        if useiCloud, let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
+            try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
+            iCloudURL = containerURL.appendingPathComponent("expenses.json")
+ 
+            let localExists = fileManager.fileExists(atPath: localURL.path)
+            let iCloudExists = fileManager.fileExists(atPath: iCloudURL.path)
+ 
+            if localExists {
+                let localDate = (try? fileManager.attributesOfItem(atPath: localURL.path)[.modificationDate] as? Date) ?? Date.distantPast
+                let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudURL.path)[.modificationDate] as? Date) ?? Date.distantPast
+ 
+                if !iCloudExists || localDate > iCloudDate {
+                    do {
+                        try fileManager.copyItem(at: localURL, to: iCloudURL)
+                        print("☁️ Copied local data to iCloud")
+                    } catch {
+                        print("❌ Failed to copy local data to iCloud: \(error)")
+                    }
+                }
+            }
+            self.saveURL = iCloudURL
+            // Sync storage if iCloud is enabled
+            syncStorageIfNeeded()
+        } else {
+            self.saveURL = localURL
+        }
+
+        print("💾 Using saveURL: \(saveURL.path)")
         load()
     }
 }
@@ -539,6 +563,8 @@ extension ExpenseStore {
         do {
             let data = try JSONEncoder().encode(expenses)
             try data.write(to: saveURL)
+            let isICloud = saveURL.path.contains("Mobile Documents")
+            print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
         } catch {
             print("Failed to save: \(error)")
         }
@@ -559,6 +585,70 @@ extension ExpenseStore {
         formatter.dateFormat = "yyyy-MM"
         return Dictionary(grouping: expenses, by: { formatter.string(from: $0.date) })
             .mapValues { $0.reduce(0) { $0 + $1.amount } }
+    }
+
+    func syncStorageIfNeeded() {
+        let fileManager = FileManager.default
+        let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
+        guard let iCloudDocsURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/expenses.json") else {
+            print("❌ iCloud URL not found")
+            return
+        }
+
+        let localExists = fileManager.fileExists(atPath: localURL.path)
+        let iCloudExists = fileManager.fileExists(atPath: iCloudDocsURL.path)
+
+        print("localExists:", localExists, ", iCloudExists:", iCloudExists)
+        if localExists {
+            let localDate = (try? fileManager.attributesOfItem(atPath: localURL.path)[.modificationDate] as? Date) ?? Date.distantPast
+            let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudDocsURL.path)[.modificationDate] as? Date) ?? Date.distantPast
+
+            print("localDate:", localDate, ", iCloudDate:", iCloudDate)
+
+            if localDate > iCloudDate {
+                do {
+                    try fileManager.removeItem(at: iCloudDocsURL) // remove old file if needed
+                } catch {
+                    // ignore if it doesn't exist
+                }
+                do {
+                    try fileManager.copyItem(at: localURL, to: iCloudDocsURL)
+                    print("☁️ Copied local to iCloud (sync)")
+                } catch {
+                    print("❌ Failed to copy local data to iCloud: \(error)")
+                }
+            } else if iCloudDate > localDate {
+                do {
+                    try fileManager.removeItem(at: localURL) // remove old file if needed
+                } catch {
+                    // ignore if it doesn't exist
+                }
+                do {
+                    try fileManager.copyItem(at: iCloudDocsURL, to: localURL)
+                    print("💾 Copied iCloud to local (sync)")
+                } catch {
+                    print("❌ Failed to copy iCloud data to local: \(error)")
+                }
+            } else {
+                print("No sync needed — same or no changes.")
+            }
+        } else if iCloudExists {
+            // local doesn't exist, but iCloud does
+            do {
+                try fileManager.removeItem(at: localURL) // ensure no leftover
+            } catch {
+                // ignore
+            }
+            do {
+                try fileManager.copyItem(at: iCloudDocsURL, to: localURL)
+                print("💾 Restored local from iCloud (sync)")
+            } catch {
+                print("❌ Failed to restore local from iCloud: \(error)")
+            }
+        } else {
+            print("❌ Neither local nor iCloud has a file. No data to sync.")
+        }
+        load() // Refresh in-memory data after sync
     }
 }
 
@@ -669,7 +759,6 @@ struct ContentView: View {
                 .sorted { $0.wrappedValue.date > $1.wrappedValue.date }
         } else if !selectedMonth.isEmpty {
             let dates = budgetDates
-            print("📆 Showing expenses from \(dates.startDate) to \(dates.endDate)")
             let calendar = Calendar.current
             let start = calendar.startOfDay(for: dates.startDate)
             let end = calendar.startOfDay(for: dates.endDate)
@@ -1224,6 +1313,7 @@ struct SettingsView: View {
     @AppStorage("categories") private var categories: String = "Food,Transport,Other"
     @AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
     @AppStorage("currencySymbol") private var currencySymbol: String = "£"
+    @AppStorage("useiCloud") private var useiCloud: Bool = true
     @StateObject var store = ExpenseStore()
     @AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
@@ -1310,31 +1400,37 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+        Section(header: Text("Storage")) {
+            Toggle("Use iCloud for Data", isOn: $useiCloud)
+        }
                 Section(header: Text("Other")) {
                     Button("Restore Settings") {
                         showResetAlert = true
                     }
                     .foregroundColor(.red)
                 }
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .alert("Restore Settings", isPresented: $showResetAlert) {
-                Button("Restore", role: .destructive) {
-                    appearanceMode = "Automatic"
-                    currencySymbol = "£"
-                    budgetPeriod = "Monthly"
-                    monthlyStartDay = 1
-                    weeklyStartDay = 1
-                    monthlyBudget = 0
-                    budgetEnabled = true
-                    budgetByCategory = false
-                    categoryBudgets = ""
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Are you sure you want to restore all settings to default?")
-            }
+    }
+    .onChange(of: useiCloud) { _ in
+        store.syncStorageIfNeeded()
+    }
+    .navigationTitle("Settings")
+    .navigationBarTitleDisplayMode(.inline)
+    .alert("Restore Settings", isPresented: $showResetAlert) {
+        Button("Restore", role: .destructive) {
+            appearanceMode = "Automatic"
+            currencySymbol = "£"
+            budgetPeriod = "Monthly"
+            monthlyStartDay = 1
+            weeklyStartDay = 1
+            monthlyBudget = 0
+            budgetEnabled = true
+            budgetByCategory = false
+            categoryBudgets = ""
+        }
+        Button("Cancel", role: .cancel) {}
+    } message: {
+        Text("Are you sure you want to restore all settings to default?")
+    }
         }
     }
     
