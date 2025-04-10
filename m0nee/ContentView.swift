@@ -819,6 +819,7 @@ struct ContentView: View {
 
             LazyVStack(spacing: 0) {
                 ForEach(filteredExpenses, id: \.id) { $expense in
+                    // COMPACT MODE
                     if displayMode == "Compact" {
                         VStack(spacing: 0) {
                             NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
@@ -827,13 +828,13 @@ struct ContentView: View {
                                         .font(.body)
                                         .foregroundColor(.primary)
                                         .lineLimit(1)
- 
+
                                     Spacer()
- 
+
                                     Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
                                         .font(.callout)
                                         .foregroundColor(expense.amount > 100 ? .red : .primary)
- 
+
                                     Image(systemName: "chevron.right")
                                         .font(.caption)
                                         .foregroundColor(.gray)
@@ -843,7 +844,9 @@ struct ContentView: View {
                             }
                             Divider()
                         }
-                    } else {
+                    }
+                    // STANDARD MODE
+                    else if displayMode == "Standard" {
                         NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
                             VStack(spacing: 8) {
                                 HStack(alignment: .center, spacing: 12) {
@@ -852,19 +855,19 @@ struct ContentView: View {
                                             .font(.system(.body, design: .default))
                                             .fontWeight(.semibold)
                                             .foregroundColor(.primary)
- 
+
                                         Text(expense.category)
                                             .font(.footnote)
                                             .foregroundColor(.secondary)
                                     }
- 
+
                                     Spacer()
- 
+
                                     VStack(alignment: .trailing, spacing: 2) {
                                         Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
                                             .font(.system(size: 17, weight: .medium))
                                             .foregroundColor(expense.amount > 100 ? .red : .primary)
- 
+
                                         Text(expense.date.formatted(date: .abbreviated, time: .shortened))
                                             .font(.caption2)
                                             .foregroundColor(.gray)
@@ -879,6 +882,82 @@ struct ContentView: View {
                             .padding(.vertical, 8)
                             .background(Color(.systemBackground))
                         }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                store.delete(expense)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                    }
+                    // DETAILED MODE
+                    else if displayMode == "Detailed" {
+                        NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+                            HStack(alignment: .top) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    // Top row: Name and Amount
+                                    HStack {
+                                        Text(expense.name)
+                                            .font(.headline)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white)
+                                        Spacer()
+                                        Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+                                            .font(.subheadline)
+                                            .foregroundColor(expense.amount > 100 ? .red : .primary)
+                                    }
+ 
+                                    // Middle row: Detail and Rating
+                                    HStack(alignment: .center) {
+                                        if let details = expense.details, !details.isEmpty {
+                                            Text(details)
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        } else {
+                                            Text(" ")
+                                                .font(.subheadline)
+                                        }
+ 
+                                        Spacer()
+ 
+                                        if let rating = expense.rating {
+                                            HStack(spacing: 2) {
+                                                ForEach(1...5, id: \.self) { star in
+                                                    Image(systemName: star <= rating ? "star.fill" : "star")
+                                                        .font(.caption2)
+                                                        .foregroundColor(.yellow)
+                                                }
+                                            }
+                                        }
+                                    }
+ 
+                                    // Bottom row: Category and Date
+                                    HStack {
+                                        Text(expense.category)
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                        Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+ 
+                                    Divider()
+                                }
+                                .padding(.trailing, 12)
+                                Spacer(minLength: 0)
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                        }
+                        .overlay(
+                            HStack {
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 8)
+                            }
+                        )
                         .swipeActions {
                             Button(role: .destructive) {
                                 store.delete(expense)
@@ -1873,3 +1952,4 @@ struct SpendingTrendCardView: View {
         }
     }
 }
+
