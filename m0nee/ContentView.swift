@@ -717,10 +717,10 @@ struct ContentView: View {
                         startDate: budgetDates.startDate,
                         endDate: budgetDates.endDate
                     )
-                        .id(cardRefreshTokens[type] ?? UUID())
-                        .padding(.horizontal, 16)
+                    .padding(.horizontal, 16)
                 }
             }
+            .id(cardRefreshTokens) // apply UUID refresh to entire TabView
             .frame(height: 240)
             .tabViewStyle(.page)
             .indexViewStyle(.page(backgroundDisplayMode: .never))
