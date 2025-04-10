@@ -836,8 +836,7 @@ struct ContentView: View {
  
                                 VStack(alignment: .trailing, spacing: 2) {
                                     Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                        .font(.system(.body, design: .monospaced))
-                                        .fontWeight(.semibold)
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(expense.amount > 100 ? .red : .primary)
  
                                     Text(expense.date.formatted(date: .abbreviated, time: .shortened))
