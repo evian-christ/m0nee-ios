@@ -1410,12 +1410,24 @@ struct SettingsView: View {
                     Text("\(option.symbol) - \(option.country)").tag(option.symbol)
                 }
             }
-            Picker("Theme", selection: $appearanceMode) {
-                Text("Automatic").tag("Automatic")
-                Text("Light").tag("Light")
-                Text("Dark").tag("Dark")
+            NavigationLink(destination: {
+                Form {
+                    Picker("Theme", selection: $appearanceMode) {
+                        Text("Automatic").tag("Automatic")
+                        Text("Light").tag("Light")
+                        Text("Dark").tag("Dark")
+                    }
+                    .pickerStyle(.inline)
+                }
+                .navigationTitle("Theme")
+            }) {
+                HStack {
+                    Text("Theme")
+                    Spacer()
+                    Text(appearanceMode)
+                        .foregroundColor(.gray)
+                }
             }
-            .pickerStyle(.segmented)
         }
         Section(header: Text("Storage")) {
             Toggle("Use iCloud for Data", isOn: $useiCloud)
