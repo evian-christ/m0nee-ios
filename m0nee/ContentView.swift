@@ -163,9 +163,10 @@ struct BudgetProgressCardView: View {
         let timeProgress = Double(daysElapsed + 1) / Double(totalDays + 1)
         let spendingProgress = monthlyBudget > 0 ? totalSpent / monthlyBudget : 0
  
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             Label("Month's Progress", systemImage: "gauge.with.needle")
                 .font(.headline)
+                .padding(.bottom, 4)
  
             Text(String(format: "£%.2f / £%.2f", totalSpent, monthlyBudget))
                 .font(.title3)
