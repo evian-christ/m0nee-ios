@@ -819,28 +819,38 @@ struct ContentView: View {
             LazyVStack(spacing: 0) {
                 ForEach(filteredExpenses, id: \.id) { $expense in
                     NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(expense.name)
-                                    .font(.subheadline)
-                                    .foregroundColor(.primary)
-                                Text(expense.category)
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
+                        VStack(spacing: 8) {
+                            HStack(alignment: .center, spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(expense.name)
+                                        .font(.system(.body, design: .default))
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.primary)
+ 
+                                    Text(expense.category)
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
+ 
+                                Spacer()
+ 
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+                                        .font(.system(.body, design: .monospaced))
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(expense.amount > 100 ? .red : .primary)
+ 
+                                    Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
                             }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                    .font(.subheadline)
-                                    .foregroundColor(.green)
-                                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                            }
+                            Divider()
                         }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        .background(Color(.systemBackground))
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 12)
                     .swipeActions {
                         Button(role: .destructive) {
                             store.delete(expense)
@@ -1319,6 +1329,9 @@ struct SettingsView: View {
     @AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
     @AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
     @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
+    @AppStorage("groupByDay") private var groupByDay: Bool = false
+    @AppStorage("showRating") private var showRating: Bool = true
+    @AppStorage("simpleMode") private var simpleMode: Bool = false
     @State private var showResetAlert = false
     
     let currencyOptions: [(symbol: String, country: String)] = [
@@ -1349,66 +1362,68 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Budget")) {
-                Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
-                if budgetEnabled {
-                    NavigationLink(destination: BudgetFrequencyView()) {
-                        Text("Budget Period")
+        Section(header: Text("Main Screen Settings")) {
+            Toggle("Group expenses by day", isOn: $groupByDay)
+            Toggle("Simple mode", isOn: $simpleMode)
+        }
+        Section(header: Text("Budget")) {
+            Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
+            if budgetEnabled {
+                NavigationLink(destination: BudgetFrequencyView()) {
+                    Text("Budget Period")
+                }
+                NavigationLink(destination: MonthlyBudgetView()) {
+                    HStack {
+                        Text("\(budgetPeriod) Budget")
+                        Spacer()
+                        Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
+                            .foregroundColor(.gray)
                     }
-                    NavigationLink(destination: MonthlyBudgetView()) {
-                        HStack {
-                            Text("\(budgetPeriod) Budget")
-                            Spacer()
-                            Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    if budgetPeriod == "Monthly" {
-                        Picker("Start day of month", selection: $monthlyStartDay) {
-                            ForEach(1...31, id: \.self) {
-                                Text("\($0)")
-                            }
-                        }
-                    }
-                    if budgetPeriod == "Weekly" {
-                        Picker("Start day of week", selection: $weeklyStartDay) {
-                            ForEach(0..<Calendar.current.weekdaySymbols.count, id: \.self) { index in
-                                Text(Calendar.current.weekdaySymbols[index]).tag(index + 1)
-                            }
+                }
+                if budgetPeriod == "Monthly" {
+                    Picker("Start day of month", selection: $monthlyStartDay) {
+                        ForEach(1...31, id: \.self) {
+                            Text("\($0)")
                         }
                     }
                 }
-                // Removed category budgeting from main Budget section.
+                if budgetPeriod == "Weekly" {
+                    Picker("Start day of week", selection: $weeklyStartDay) {
+                        ForEach(0..<Calendar.current.weekdaySymbols.count, id: \.self) { index in
+                            Text(Calendar.current.weekdaySymbols[index]).tag(index + 1)
+                        }
+                    }
+                }
             }
-                
-                Section(header: Text("Categories")) {
-                NavigationLink(destination: ManageCategoriesView(store: store)) {
-                        Text("Manage Categories")
-                    }
+            // Removed category budgeting from main Budget section.
+        }
+        Section(header: Text("Categories")) {
+            NavigationLink(destination: ManageCategoriesView(store: store)) {
+                Text("Manage Categories")
+            }
+        }
+        Section(header: Text("Appearance")) {
+            Picker("Currency", selection: $currencySymbol) {
+                ForEach(currencyOptions, id: \.symbol) { option in
+                    Text("\(option.symbol) - \(option.country)").tag(option.symbol)
                 }
-                
-                Section(header: Text("Appearance")) {
-                    Picker("Currency", selection: $currencySymbol) {
-                        ForEach(currencyOptions, id: \.symbol) { option in
-                            Text("\(option.symbol) - \(option.country)").tag(option.symbol)
-                        }
-                    }
-                    Picker("Theme", selection: $appearanceMode) {
-                        Text("Automatic").tag("Automatic")
-                        Text("Light").tag("Light")
-                        Text("Dark").tag("Dark")
-                    }
-                    .pickerStyle(.segmented)
-                }
+            }
+            Picker("Theme", selection: $appearanceMode) {
+                Text("Automatic").tag("Automatic")
+                Text("Light").tag("Light")
+                Text("Dark").tag("Dark")
+            }
+            .pickerStyle(.segmented)
+        }
         Section(header: Text("Storage")) {
             Toggle("Use iCloud for Data", isOn: $useiCloud)
         }
-                Section(header: Text("Other")) {
-                    Button("Restore Settings") {
-                        showResetAlert = true
-                    }
-                    .foregroundColor(.red)
-                }
+        Section(header: Text("Other")) {
+            Button("Restore Settings") {
+                showResetAlert = true
+            }
+            .foregroundColor(.red)
+        }
     }
     .onChange(of: useiCloud) { _ in
         store.syncStorageIfNeeded()
