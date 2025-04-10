@@ -6,9 +6,10 @@ enum InsightCardType: String, Identifiable, Codable {
     case spendingTrend
     case categoryRating
     case budgetProgress
+    case categoryBudgetProgress
  
     static var allCases: [InsightCardType] {
-        return [.totalSpending, .spendingTrend, .categoryRating, .budgetProgress]
+        return [.totalSpending, .spendingTrend, .categoryRating, .budgetProgress, .categoryBudgetProgress]
     }
 
     var id: String { self.rawValue }
@@ -25,6 +26,8 @@ enum InsightCardType: String, Identifiable, Codable {
         case .budgetProgress:
             let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
             return period == "Weekly" ? "Week's Progress" : "Month's Progress"
+        case .categoryBudgetProgress:
+            return "Category Budget Progress"
         }
     }
  
@@ -38,7 +41,52 @@ enum InsightCardType: String, Identifiable, Codable {
             return "star.lefthalf.fill"
         case .budgetProgress:
             return "gauge.with.needle"
+        case .categoryBudgetProgress:
+            return "chart.pie"
         }
+    }
+}
+
+struct CategoryBudgetProgressCardView: View {
+    let expenses: [Expense]
+    let startDate: Date
+    let endDate: Date
+    let categoryBudgets: [String: Double]
+
+    var body: some View {
+        let calendar = Calendar.current
+        let today = Date()
+        let cappedToday = min(max(today, startDate), endDate)
+
+        let daysElapsed = calendar.dateComponents([.day], from: startDate, to: cappedToday).day ?? 0
+        let totalDays = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 1
+        let timeProgress = Double(daysElapsed + 1) / Double(totalDays + 1)
+
+        let grouped = Dictionary(grouping: expenses) { $0.category }
+        let spendingPerCategory = grouped.mapValues { $0.reduce(0) { $0 + $1.amount } }
+
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 8) {
+                let allCategories = Set(categoryBudgets.keys)
+                ForEach(Array(allCategories).sorted(), id: \.self) { category in
+                    let budget = categoryBudgets[category] ?? 0
+                    let spent = spendingPerCategory[category] ?? 0
+                    let progress = budget > 0 ? spent / budget : (spent > 0 ? 1 : 0)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(category)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        ProgressView(value: progress)
+                            .accentColor(progress > timeProgress ? .red : .blue)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
     }
 }
 
@@ -196,6 +244,7 @@ struct InsightCardView: View {
     let startDate: Date
     let endDate: Date
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @AppStorage("categoryBudgets") private var categoryBudgets: String = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -235,6 +284,29 @@ struct InsightCardView: View {
                     startDate: startDate,
                     endDate: endDate,
                     monthlyBudget: monthlyBudget
+                )
+            case .categoryBudgetProgress:
+                let budgetPairs = categoryBudgets
+                    .split(separator: ",")
+                    .compactMap { pair -> (String, Double)? in
+                        let parts = pair.split(separator: ":")
+                        guard parts.count == 2, let value = Double(parts[1]) else { return nil }
+                        return (String(parts[0]), value)
+                    }
+                let categoriesString = UserDefaults.standard.string(forKey: "categories") ?? ""
+                let categoryList = categoriesString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                let categoryBudgetDict = Dictionary(uniqueKeysWithValues:
+                    categoryList.map { category in
+                        let budget = budgetPairs.first(where: { $0.0 == category })?.1 ?? 0
+                        return (category, budget)
+                    }
+                )
+
+                CategoryBudgetProgressCardView(
+                    expenses: expenses,
+                    startDate: startDate,
+                    endDate: endDate,
+                    categoryBudgets: categoryBudgetDict
                 )
             }
         }
