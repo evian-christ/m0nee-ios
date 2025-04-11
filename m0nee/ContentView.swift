@@ -832,7 +832,7 @@ struct ContentView: View {
                                     Spacer()
 
                                     Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                        .font(.callout)
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(expense.amount > 100 ? .red : .primary)
 
                                     Image(systemName: "chevron.right")
@@ -903,7 +903,7 @@ struct ContentView: View {
                                             .foregroundColor(Color.primary)
                                         Spacer()
                                         Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-                                            .font(.subheadline)
+                                            .font(.system(size: 17, weight: .medium))
                                             .foregroundColor(expense.amount > 100 ? .red : .primary)
                                     }
  
