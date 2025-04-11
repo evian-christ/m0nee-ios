@@ -900,7 +900,7 @@ struct ContentView: View {
                                         Text(expense.name)
                                             .font(.headline)
                                             .fontWeight(.semibold)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(Color.primary)
                                         Spacer()
                                         Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
                                             .font(.subheadline)
