@@ -16,29 +16,30 @@ struct ExpenseDetailView: View {
 			List {
 				Section(header: EmptyView()) {
 					HStack {
-						Label("Date", systemImage: "calendar")
+						Text("Date")
 						Spacer()
 						Text(expense.date.formatted(date: .abbreviated, time: .shortened))
 							.foregroundColor(.secondary)
 					}
 					
 					HStack {
-						Label("Amount", systemImage: "dollarsign.circle")
+						Text("Amount")
 						Spacer()
 						Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-							.foregroundColor(.green)
+							.foregroundColor(.secondary)
+							.fontWeight(.semibold)
 					}
 					
 					HStack {
-						Label("Category", systemImage: "tag")
+						Text("Category")
 						Spacer()
 						Text(expense.category)
-							.foregroundColor(.purple)
+							.foregroundColor(.secondary)
 					}
 					
 					if let rating = expense.rating {
 						HStack {
-							Label("Rating", systemImage: "star.fill")
+							Text("Rating")
 							Spacer()
 							HStack(spacing: 4) {
 								ForEach(1...5, id: \.self) { index in
@@ -52,8 +53,8 @@ struct ExpenseDetailView: View {
 				
 				if let details = expense.details, !details.isEmpty {
 					Section {
-						VStack(alignment: .leading, spacing: 15) {
-							Label("Details", systemImage: "text.alignleft")
+						VStack(alignment: .leading, spacing: 20) {
+							Text("Details")
 							Text(details)
 								.font(.body)
 								.foregroundColor(.secondary)
@@ -64,8 +65,8 @@ struct ExpenseDetailView: View {
 				
 				if let memo = expense.memo, !memo.isEmpty {
 					Section {
-						VStack(alignment: .leading, spacing: 15) {
-							Label("Note", systemImage: "note.text")
+						VStack(alignment: .leading, spacing: 20) {
+							Text("Note")
 							Text(memo)
 								.font(.body)
 								.foregroundColor(.secondary)
