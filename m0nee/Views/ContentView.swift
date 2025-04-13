@@ -283,24 +283,39 @@ struct ContentView: View {
 	}
 	
 	private var insightCardsView: some View {
-			TabView {
-					ForEach(favouriteCards, id: \.self) { type in
-							InsightCardView(
-									type: type,
-									expenses: filteredExpenses.map(\.wrappedValue),
-									startDate: budgetDates.startDate,
-									endDate: budgetDates.endDate
-							)
-							.padding(.horizontal, 16)
-					}
+		TabView {
+			if favouriteCards.isEmpty {
+				ZStack {
+					RoundedRectangle(cornerRadius: 16)
+						.fill(Color(.systemGray6))
+						.frame(height: 240)
+						.padding(.horizontal, 16)
+					
+					Text("Add cards to favourites to see here!")
+						.font(.subheadline)
+						.foregroundColor(.secondary)
+						.multilineTextAlignment(.center)
+						.padding(.horizontal, 24)
+				}
+			} else {
+				ForEach(favouriteCards, id: \.self) { type in
+					InsightCardView(
+						type: type,
+						expenses: filteredExpenses.map(\.wrappedValue),
+						startDate: budgetDates.startDate,
+						endDate: budgetDates.endDate
+					)
+					.padding(.horizontal, 16)
+				}
 			}
-			.id(cardRefreshTokens)
-			.tabViewStyle(.page)
-			.indexViewStyle(.page(backgroundDisplayMode: .never))
-			.padding(.top, 16)
-			.padding(.bottom, 16)
-			.frame(height: 272)
-			.background(Color(.systemBackground))
+		}
+		.id(cardRefreshTokens)
+		.tabViewStyle(.page)
+		.indexViewStyle(.page(backgroundDisplayMode: .never))
+		.padding(.top, 16)
+		.padding(.bottom, 16)
+		.frame(height: 272)
+		.background(Color(.systemBackground))
 	}
 	
 	@ViewBuilder
