@@ -134,6 +134,10 @@ struct SettingsView: View {
 			}
 			Section(header: Text("Storage")) {
 				Toggle("Use iCloud for Data", isOn: $useiCloud)
+				
+				NavigationLink(destination: ExportView().environmentObject(store)) {
+						Text("Export Data")
+				}
 			}
 			Section(header: Text("Other")) {
 				Button("Restore Settings") {
