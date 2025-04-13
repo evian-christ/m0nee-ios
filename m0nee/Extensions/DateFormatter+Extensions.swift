@@ -1,9 +1,17 @@
 import Foundation
 
 extension DateFormatter {
-		static let m0neeDefault: DateFormatter = {
+		/// 13-04-2025
+		static let m0neeCSV: DateFormatter = {
 				let formatter = DateFormatter()
-				formatter.dateFormat = "MMM d, yyyy" // 원하는 날짜 포맷으로 수정하세요.
+				formatter.dateFormat = "dd-MM-yyyy"
+				return formatter
+		}()
+
+		/// 13 Apr
+		static let m0neeListSection: DateFormatter = {
+				let formatter = DateFormatter()
+				formatter.dateFormat = "dd MMM"
 				return formatter
 		}()
 }

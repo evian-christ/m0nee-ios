@@ -3,27 +3,19 @@ import UniformTypeIdentifiers
 
 struct ExportView: View {
 		@EnvironmentObject var store: ExpenseStore
-		@State private var exportURL: URL?
 
 		var body: some View {
-				VStack(spacing: 16) {
-						if let exportURL = exportURL {
-								ShareLink(item: exportURL, preview: SharePreview("Monir_Export.csv")) {
-										Label("Share CSV", systemImage: "square.and.arrow.up")
-												.font(.body)
-								}
-						} else {
-								Button(action: {
-										exportURL = generateCSV()
-								}) {
-										Label("Export as CSV", systemImage: "doc.text")
-												.font(.body)
+				List {
+						Section {
+								Button {
+										if let url = generateCSV() {
+												shareCSV(url: url)
+										}
+								} label: {
+										Label("Export as CSV", systemImage: "square.and.arrow.up")
 								}
 						}
-
-						Spacer()
 				}
-				.padding()
 				.navigationTitle("Export Data")
 				.navigationBarTitleDisplayMode(.inline)
 		}
@@ -53,7 +45,14 @@ struct ExportView: View {
 				}
 		}
 
-		/// 필드 내 특수문자 처리
+		private func shareCSV(url: URL) {
+				let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+				if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+					 let rootVC = scene.windows.first?.rootViewController {
+						rootVC.present(activityVC, animated: true)
+				}
+		}
+
 		private func escape(_ field: String) -> String {
 				if field.contains(",") || field.contains("\"") || field.contains("\n") {
 						return "\"\(field.replacingOccurrences(of: "\"", with: "\"\""))\""
