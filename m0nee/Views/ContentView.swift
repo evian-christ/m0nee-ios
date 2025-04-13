@@ -454,9 +454,9 @@ struct ContentView: View {
 								ForEach(sortedDates, id: \.self) { date in
 									Section(header:
 										HStack {
-											Text(DateFormatter.m0neeDefault.string(from: date))
+											Text(DateFormatter.m0neeListSection.string(from: date))
 												.font(.caption)
-												.foregroundColor(Color(.systemGray))
+												.foregroundColor(Color.blue.opacity(0.7))
 											Spacer()
 										}
 										.padding(.horizontal, 16)
