@@ -145,6 +145,7 @@ struct ContentView: View {
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = false
+	@AppStorage("groupExpensesByDay") private var groupExpensesByDay: Bool = false
 	@ObservedObject var store: ExpenseStore
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
