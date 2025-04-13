@@ -291,11 +291,19 @@ struct ContentView: View {
 						.frame(height: 240)
 						.padding(.horizontal, 16)
 					
-					Text("Add cards to favourites to see here!")
-						.font(.subheadline)
-						.foregroundColor(.secondary)
-						.multilineTextAlignment(.center)
-						.padding(.horizontal, 24)
+					VStack(spacing: 6) {
+						Text("Add your favorite cards ⭐️")
+							.font(.subheadline)
+							.foregroundColor(.secondary)
+							.multilineTextAlignment(.center)
+							.padding(.horizontal, 24)
+						
+						Text("↖︎ From the Insights tab")
+							.font(.caption)
+							.foregroundColor(.gray)
+							.multilineTextAlignment(.center)
+							.padding(.horizontal, 24)
+					}
 				}
 			} else {
 				ForEach(favouriteCards, id: \.self) { type in
