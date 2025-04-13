@@ -465,27 +465,42 @@ struct ContentView: View {
 						let sortedDates = groupedByDate.keys.sorted(by: >)
 						
 						LazyVStack(spacing: 0) {
-							if groupByDay {
-								ForEach(sortedDates, id: \.self) { date in
-									Section(header:
-										HStack {
+							if filteredExpenses.isEmpty {
+								VStack(spacing: 16) {
+									Text("No expenses here yet 💸")
+										.font(.subheadline)
+										.foregroundColor(.secondary)
+										.padding(.top, 40)
+									Text("Tap the ➕ up there and record your first glorious impulse buy.")
+										.font(.footnote)
+										.foregroundColor(.gray)
+										.multilineTextAlignment(.center)
+										.padding(.horizontal, 40)
+								}
+								.frame(maxWidth: .infinity)
+							} else {
+								if groupByDay {
+									ForEach(sortedDates, id: \.self) { date in
+										Section(header:
+															HStack {
 											Text(DateFormatter.m0neeListSection.string(from: date))
 												.font(.caption)
 												.foregroundColor(Color.blue.opacity(0.7))
 											Spacer()
 										}
-										.padding(.horizontal, 16)
-										.padding(.top, 30)
-										.padding(.bottom, 8)
-									) {
-										ForEach(groupedByDate[date]!, id: \.id) { $expense in
-											expenseRow(for: $expense)
+											.padding(.horizontal, 16)
+											.padding(.top, 30)
+											.padding(.bottom, 8)
+										) {
+											ForEach(groupedByDate[date]!, id: \.id) { $expense in
+												expenseRow(for: $expense)
+											}
 										}
 									}
-								}
-							} else {
-								ForEach(filteredExpenses, id: \.id) { $expense in
-									expenseRow(for: $expense)
+								} else {
+									ForEach(filteredExpenses, id: \.id) { $expense in
+										expenseRow(for: $expense)
+									}
 								}
 							}
 						}
