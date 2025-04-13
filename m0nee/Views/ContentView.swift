@@ -144,6 +144,7 @@ struct ContentView: View {
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
+	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = false
 	@ObservedObject var store: ExpenseStore
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
@@ -263,7 +264,6 @@ struct ContentView: View {
 		}
 	}
 	
-	
 	init(store: ExpenseStore) {
 		self.store = store
 		
@@ -281,269 +281,280 @@ struct ContentView: View {
 		_selectedWeekStart = State(initialValue: calendar.startOfDay(for: correctedWeekStart))
 	}
 	
-	var body: some View {
-		NavigationStack {
-			
-			ScrollView {
-				VStack(spacing: 0) {
-					TabView {
-						ForEach(favouriteCards, id: \.self) { type in
+	private var insightCardsView: some View {
+			TabView {
+					ForEach(favouriteCards, id: \.self) { type in
 							InsightCardView(
-								type: type,
-								expenses: filteredExpenses.map(\.wrappedValue),
-								startDate: budgetDates.startDate,
-								endDate: budgetDates.endDate
+									type: type,
+									expenses: filteredExpenses.map(\.wrappedValue),
+									startDate: budgetDates.startDate,
+									endDate: budgetDates.endDate
 							)
 							.padding(.horizontal, 16)
-						}
 					}
-					.id(cardRefreshTokens) // apply UUID refresh to entire TabView
-					.frame(height: 240)
-					.tabViewStyle(.page)
-					.indexViewStyle(.page(backgroundDisplayMode: .never))
-					.padding(.vertical, 16)
-					
-					
-					LazyVStack(spacing: 0) {
-						ForEach(filteredExpenses, id: \.id) { $expense in
-							// COMPACT MODE
-							if displayMode == "Compact" {
-								VStack(spacing: 0) {
-									NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-										HStack(spacing: 8) {
-											Text(expense.name)
-												.font(.body)
-												.foregroundColor(.primary)
-												.lineLimit(1)
-											
-											Spacer()
-											
-											Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-												.font(.system(size: 17, weight: .medium))
-												.foregroundColor(expense.amount > 100 ? .red : .primary)
-											
-											Image(systemName: "chevron.right")
-												.font(.caption)
-												.foregroundColor(.gray)
-										}
-										.padding(.horizontal, 20)
-										.padding(.vertical, 10)
-									}
-									Divider()
-								}
-							}
-							// STANDARD MODE
-							else if displayMode == "Standard" {
-								NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-									VStack(spacing: 8) {
-										HStack(alignment: .center, spacing: 12) {
-											VStack(alignment: .leading, spacing: 2) {
+			}
+			.id(cardRefreshTokens)
+			.tabViewStyle(.page)
+			.indexViewStyle(.page(backgroundDisplayMode: .never))
+			.padding(.top, 16)
+			.padding(.bottom, 16)
+			.frame(height: 272)
+			.background(Color(.systemBackground))
+	}
+	
+	var body: some View {
+		NavigationStack {
+			ZStack(alignment: .top) {
+				ScrollView {
+					VStack(spacing: 0) {
+						if !useFixedInsightCards {
+							insightCardsView
+						}
+						LazyVStack(spacing: 0) {
+							ForEach(filteredExpenses, id: \.id) { $expense in
+								// COMPACT MODE
+								if displayMode == "Compact" {
+									VStack(spacing: 0) {
+										NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+											HStack(spacing: 8) {
 												Text(expense.name)
-													.font(.system(.body, design: .default))
-													.fontWeight(.semibold)
+													.font(.body)
 													.foregroundColor(.primary)
+													.lineLimit(1)
 												
-												Text(expense.category)
-													.font(.footnote)
-													.foregroundColor(.secondary)
-											}
-											
-											Spacer()
-											
-											VStack(alignment: .trailing, spacing: 2) {
+												Spacer()
+												
 												Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
 													.font(.system(size: 17, weight: .medium))
 													.foregroundColor(expense.amount > 100 ? .red : .primary)
 												
-												Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-													.font(.caption2)
+												Image(systemName: "chevron.right")
+													.font(.caption)
 													.foregroundColor(.gray)
 											}
-											Image(systemName: "chevron.right")
-												.font(.caption)
-												.foregroundColor(.gray)
+											.padding(.horizontal, 20)
+											.padding(.vertical, 10)
 										}
 										Divider()
 									}
-									.padding(.horizontal)
-									.padding(.vertical, 8)
-									.background(Color(.systemBackground))
 								}
-								.swipeActions {
-									Button(role: .destructive) {
-										store.delete(expense)
-									} label: {
-										Label("Delete", systemImage: "trash")
-									}
-								}
-							}
-							// DETAILED MODE
-							else if displayMode == "Detailed" {
-								NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
-									HStack(alignment: .top) {
-										VStack(alignment: .leading, spacing: 8) {
-											// Top row: Name and Amount
-											HStack {
-												Text(expense.name)
-													.font(.headline)
-													.fontWeight(.semibold)
-													.foregroundColor(Color.primary)
-												Spacer()
-												Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-													.font(.system(size: 17, weight: .medium))
-													.foregroundColor(expense.amount > 100 ? .red : .primary)
-											}
-											
-											// Middle row: Detail and Rating
-											HStack(alignment: .center) {
-												if let details = expense.details, !details.isEmpty {
-													Text(details)
-														.font(.subheadline)
+								// STANDARD MODE
+								else if displayMode == "Standard" {
+									NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+										VStack(spacing: 8) {
+											HStack(alignment: .center, spacing: 12) {
+												VStack(alignment: .leading, spacing: 2) {
+													Text(expense.name)
+														.font(.system(.body, design: .default))
+														.fontWeight(.semibold)
+														.foregroundColor(.primary)
+													
+													Text(expense.category)
+														.font(.footnote)
 														.foregroundColor(.secondary)
-												} else {
-													Text(" ")
-														.font(.subheadline)
 												}
 												
 												Spacer()
 												
-												if let rating = expense.rating {
-													HStack(spacing: 2) {
-														ForEach(1...5, id: \.self) { star in
-															Image(systemName: star <= rating ? "star.fill" : "star")
-																.font(.caption2)
-																.foregroundColor(.yellow)
+												VStack(alignment: .trailing, spacing: 2) {
+													Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+														.font(.system(size: 17, weight: .medium))
+														.foregroundColor(expense.amount > 100 ? .red : .primary)
+													
+													Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+														.font(.caption2)
+														.foregroundColor(.gray)
+												}
+												Image(systemName: "chevron.right")
+													.font(.caption)
+													.foregroundColor(.gray)
+											}
+											Divider()
+										}
+										.padding(.horizontal)
+										.padding(.vertical, 8)
+										.background(Color(.systemBackground))
+									}
+									.swipeActions {
+										Button(role: .destructive) {
+											store.delete(expense)
+										} label: {
+											Label("Delete", systemImage: "trash")
+										}
+									}
+								}
+								// DETAILED MODE
+								else if displayMode == "Detailed" {
+									NavigationLink(destination: ExpenseDetailView(expenseID: expense.id, store: store)) {
+										HStack(alignment: .top) {
+											VStack(alignment: .leading, spacing: 8) {
+												// Top row: Name and Amount
+												HStack {
+													Text(expense.name)
+														.font(.headline)
+														.fontWeight(.semibold)
+														.foregroundColor(Color.primary)
+													Spacer()
+													Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+														.font(.system(size: 17, weight: .medium))
+														.foregroundColor(expense.amount > 100 ? .red : .primary)
+												}
+												
+												// Middle row: Detail and Rating
+												HStack(alignment: .center) {
+													if let details = expense.details, !details.isEmpty {
+														Text(details)
+															.font(.subheadline)
+															.foregroundColor(.secondary)
+													} else {
+														Text(" ")
+															.font(.subheadline)
+													}
+													
+													Spacer()
+													
+													if let rating = expense.rating {
+														HStack(spacing: 2) {
+															ForEach(1...5, id: \.self) { star in
+																Image(systemName: star <= rating ? "star.fill" : "star")
+																	.font(.caption2)
+																	.foregroundColor(.yellow)
+															}
 														}
 													}
 												}
+												
+												// Bottom row: Category and Date
+												HStack {
+													Text(expense.category)
+														.font(.subheadline)
+														.foregroundColor(.secondary)
+													Spacer()
+													Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+														.font(.subheadline)
+														.foregroundColor(.secondary)
+												}
+												
+												Divider()
 											}
-											
-											// Bottom row: Category and Date
-											HStack {
-												Text(expense.category)
-													.font(.subheadline)
-													.foregroundColor(.secondary)
-												Spacer()
-												Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-													.font(.subheadline)
-													.foregroundColor(.secondary)
-											}
-											
-											Divider()
+											.padding(.trailing, 12)
+											Spacer(minLength: 0)
 										}
-										.padding(.trailing, 12)
-										Spacer(minLength: 0)
+										.padding()
+										.background(Color(.systemBackground))
 									}
-									.padding()
-									.background(Color(.systemBackground))
+									.overlay(
+										HStack {
+											Spacer()
+											Image(systemName: "chevron.right")
+												.foregroundColor(.gray)
+												.padding(.trailing, 8)
+										}
+									)
+									.swipeActions {
+										Button(role: .destructive) {
+											store.delete(expense)
+										} label: {
+											Label("Delete", systemImage: "trash")
+										}
+									}
 								}
-								.overlay(
-									HStack {
-										Spacer()
-										Image(systemName: "chevron.right")
-											.foregroundColor(.gray)
-											.padding(.trailing, 8)
-									}
-								)
-								.swipeActions {
-									Button(role: .destructive) {
-										store.delete(expense)
+							}
+						}
+					}
+					.padding(.top, useFixedInsightCards ? 272 : 0)
+				}
+				.toolbar {
+					ToolbarItemGroup(placement: .navigationBarLeading) {
+						HStack(spacing: 12) {
+							Button {
+								showingSettings = true
+							} label: {
+								Image(systemName: "gearshape")
+							}
+							
+							Button {
+								showingInsights = true
+							} label: {
+								Image(systemName: "chart.bar")
+							}
+						}
+					}
+					ToolbarItem(placement: .principal) {
+						if budgetPeriod == "Weekly" {
+							Menu {
+								ForEach(recentWeeks(), id: \.self) { weekStart in
+									Button {
+										selectedWeekStart = weekStart
 									} label: {
-										Label("Delete", systemImage: "trash")
+										Text("Week of \(weekStart.formatted(.dateTime.month().day()))")
 									}
 								}
-							}
-						}
-					}
-				}
-				.padding(.top, -43)
-			}
-			.toolbar {
-				ToolbarItemGroup(placement: .navigationBarLeading) {
-					HStack(spacing: 12) {
-						Button {
-							showingSettings = true
-						} label: {
-							Image(systemName: "gearshape")
-						}
-						
-						Button {
-							showingInsights = true
-						} label: {
-							Image(systemName: "chart.bar")
-						}
-					}
-				}
-				ToolbarItem(placement: .principal) {
-					if budgetPeriod == "Weekly" {
-						Menu {
-							ForEach(recentWeeks(), id: \.self) { weekStart in
-								Button {
-									selectedWeekStart = weekStart
-								} label: {
-									Text("Week of \(weekStart.formatted(.dateTime.month().day()))")
+							} label: {
+								HStack {
+									Text("Week of \(selectedWeekStart.formatted(.dateTime.month().day()))")
+										.font(.headline)
+									Image(systemName: "chevron.down")
+										.font(.caption)
 								}
 							}
-						} label: {
-							HStack {
-								Text("Week of \(selectedWeekStart.formatted(.dateTime.month().day()))")
-									.font(.headline)
-								Image(systemName: "chevron.down")
-									.font(.caption)
-							}
-						}
-					} else {
-						Menu {
-							ForEach(monthsWithExpenses, id: \.self) { month in
-								Button {
-									selectedMonth = month
-								} label: {
-									Text(displayMonth(month))
+						} else {
+							Menu {
+								ForEach(monthsWithExpenses, id: \.self) { month in
+									Button {
+										selectedMonth = month
+									} label: {
+										Text(displayMonth(month))
+									}
+								}
+							} label: {
+								HStack {
+									Text(displayMonth(selectedMonth))
+										.font(.headline)
+									Image(systemName: "chevron.down")
+										.font(.caption)
 								}
 							}
+						}
+					}
+					ToolbarItem(placement: .navigationBarTrailing) {
+						Button {
+							showingAddExpense = true
 						} label: {
-							HStack {
-								Text(displayMonth(selectedMonth))
-									.font(.headline)
-								Image(systemName: "chevron.down")
-									.font(.caption)
-							}
+							Image(systemName: "plus")
 						}
 					}
 				}
-				ToolbarItem(placement: .navigationBarTrailing) {
-					Button {
-						showingAddExpense = true
-					} label: {
-						Image(systemName: "plus")
+				.sheet(isPresented: $showingAddExpense) {
+					NavigationStack {
+						AddExpenseView { newExpense in
+							store.add(newExpense)
+						}
 					}
 				}
-			}
-			.sheet(isPresented: $showingAddExpense) {
-				NavigationStack {
-					AddExpenseView { newExpense in
-						store.add(newExpense)
+				.navigationDestination(isPresented: $showingSettings) {
+					SettingsView(store: store)
+				}
+				.navigationDestination(isPresented: $showingInsights) {
+					InsightsView()
+				}
+				.onChange(of: weeklyStartDay) { _ in
+					let calendar = Calendar.current
+					let today = Date()
+					let weekdayToday = calendar.component(.weekday, from: today)
+					let delta = (weekdayToday - weeklyStartDay + 7) % 7
+					if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
+						selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
 					}
 				}
-			}
-			.navigationDestination(isPresented: $showingSettings) {
-				SettingsView(store: store)
-			}
-			.navigationDestination(isPresented: $showingInsights) {
-				InsightsView()
-			}
-			.onChange(of: weeklyStartDay) { _ in
-				let calendar = Calendar.current
-				let today = Date()
-				let weekdayToday = calendar.component(.weekday, from: today)
-				let delta = (weekdayToday - weeklyStartDay + 7) % 7
-				if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
-					selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
+				.onChange(of: monthlyStartDay) { _ in
+					selectedMonth = selectedMonth + ""
+				}
+				if useFixedInsightCards {
+					insightCardsView
 				}
 			}
-			.onChange(of: monthlyStartDay) { _ in
-				selectedMonth = selectedMonth + ""
-			}
+			.navigationBarTitleDisplayMode(.inline)
 		}
 		.onAppear {
 			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
@@ -587,6 +598,7 @@ struct ContentView: View {
 			appearanceMode == "Dark" ? .dark :
 				appearanceMode == "Light" ? .light : nil
 		)
+		
 	}
 	
 	private func displayMonth(_ month: String) -> String {
