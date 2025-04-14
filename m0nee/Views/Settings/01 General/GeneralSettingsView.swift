@@ -85,5 +85,6 @@ struct GeneralSettingsView: View {
 			CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
 			CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
 		]
+		store.save()
 	}
 }

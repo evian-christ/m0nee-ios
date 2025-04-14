@@ -50,7 +50,7 @@ class ExpenseStore: ObservableObject {
 }
 
 extension ExpenseStore {
-		private func save() {
+		func save() {
 				do {
 						let storeData = StoreData(expenses: expenses, categories: categories)
 						let data = try JSONEncoder().encode(storeData)

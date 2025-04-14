@@ -8,6 +8,7 @@ struct CategorySettingsView: View {
 	@State private var isEditing = false
 	@State private var selectedSymbol = "folder"
 	@State private var selectedColor: Color = .gray
+	@State private var showingCustomPicker = false
 	
 	var body: some View {
 		NavigationStack {
@@ -19,7 +20,7 @@ struct CategorySettingsView: View {
 								Circle()
 									.fill(category.color.color)
 									.frame(width: 36, height: 36)
-								Text(category.symbol)
+								Image(systemName: category.symbol)
 									.font(.system(size: 18))
 							}
 							
@@ -66,11 +67,11 @@ struct CategorySettingsView: View {
 								Spacer()
 								ZStack {
 									Circle()
-										.fill(Color(UIColor.systemGray5))
+										.fill(selectedColor)
 										.frame(width: 60, height: 60)
 									Image(systemName: selectedSymbol)
 										.font(.system(size: 28))
-										.foregroundColor(.primary)
+										.foregroundColor(.white)
 								}
 								Spacer()
 							}
@@ -84,12 +85,14 @@ struct CategorySettingsView: View {
 							NavigationLink("Change Icon") {
 								IconPickerView(selectedSymbol: $selectedSymbol)
 							}
-							// Updated ColorPickerSection
-							ColorPickerView(selectedColor: $selectedColor)
+							NavigationLink("Change Color") {
+								ColorPickerView(selectedColor: $selectedColor)
+							}
 						}
 					}
 					.navigationTitle("New Category")
 					.navigationBarTitleDisplayMode(.inline)
+					.navigationBarBackButtonHidden(true)
 					.toolbar {
 						ToolbarItem(placement: .cancellationAction) {
 							Button("Cancel") {
@@ -145,6 +148,7 @@ struct CategorySettingsView: View {
 struct ColorPickerView: View {
 	@Binding var selectedColor: Color
 	@State private var showingColorPicker = false
+	@Environment(\.dismiss) var dismiss
 	
 	let presetColors: [(name: String, color: Color)] = [
 		("Red", .red), ("Orange", .orange), ("Yellow", .yellow),
@@ -157,12 +161,14 @@ struct ColorPickerView: View {
 			ForEach(presetColors, id: \.name) { item in
 				Button {
 					selectedColor = item.color
+					dismiss()
 				} label: {
-					HStack {
+					HStack(spacing: 16) {
 						Circle()
 							.fill(item.color)
 							.frame(width: 24, height: 24)
 						Text(item.name)
+							.foregroundColor(.primary)
 						if selectedColor == item.color {
 							Spacer()
 							Image(systemName: "checkmark")
@@ -171,47 +177,84 @@ struct ColorPickerView: View {
 					}
 				}
 			}
-
-			NavigationLink {
-				Form {
-					ColorPicker("Pick a color", selection: $selectedColor, supportsOpacity: false)
-						.padding()
-				}
-				.navigationTitle("Custom Color")
-				.navigationBarTitleDisplayMode(.inline)
-			} label: {
-				HStack {
-					Image(systemName: "slider.horizontal.3")
-						.foregroundColor(.gray)
-					Text("Custom")
-					Spacer()
-					Circle()
-						.fill(selectedColor)
-						.frame(width: 20, height: 20)
-				}
+			
+			Section {
+				ColorPicker("Custom", selection: $selectedColor, supportsOpacity: false)
 			}
 		}
-		.navigationTitle("Choose Colour")
+		.navigationTitle("Choose Color")
 		.navigationBarTitleDisplayMode(.inline)
+	}
+}
+
+struct UIKitColorPickerView: UIViewControllerRepresentable {
+	@Binding var selectedColor: Color
+	
+	func makeUIViewController(context: Context) -> UIColorPickerViewController {
+		let picker = UIColorPickerViewController()
+		picker.delegate = context.coordinator
+		picker.selectedColor = UIColor(selectedColor)
+		picker.view.backgroundColor = .systemBackground
+		return picker
+	}
+	
+	func updateUIViewController(_ uiViewController: UIColorPickerViewController, context: Context) {}
+	
+	func makeCoordinator() -> Coordinator {
+		Coordinator(self)
+	}
+	
+	class Coordinator: NSObject, UIColorPickerViewControllerDelegate {
+		var parent: UIKitColorPickerView
+		
+		init(_ parent: UIKitColorPickerView) {
+			self.parent = parent
+		}
+		
+		func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
+			parent.selectedColor = Color(viewController.selectedColor)
+		}
 	}
 }
 
 struct IconPickerView: View {
 	@Binding var selectedSymbol: String
+	@State private var searchText = ""
 	@Environment(\.dismiss) var dismiss
 	
-	let symbols = ["folder", "cart", "house", "car", "gamecontroller", "heart", "airplane", "gift", "bag", "music.note", "doc", "camera", "paintbrush", "wrench", "flame", "globe", "lightbulb", "leaf", "bicycle", "creditcard"]
+	let symbols = [
+		// Most used first: food, rent, transport
+		"fork.knife", "takeoutbag.and.cup.and.straw", "cup.and.saucer", "cart", "bag", "gift",
+		"house", "house.fill", "building.2", "bed.double", "lamp.desk",
+		"car", "car.fill", "fuelpump", "bicycle", "bus", "airplane",
+
+		// Finance / payments
+		"creditcard", "dollarsign.circle", "bitcoinsign.circle", "wallet.pass", "banknote",
+
+		// Entertainment & leisure
+		"gamecontroller", "gamecontroller.fill", "puzzlepiece", "music.note", "paintpalette", "film", "video",
+
+		// Communication
+		"phone", "message", "envelope", "bell", "megaphone",
+
+		// People & tools
+		"person", "person.crop.circle", "person.badge.plus", "wrench", "hammer", "gear",
+
+		// Other
+		"heart", "globe", "leaf", "camera", "photo", "book", "calendar", "doc"
+	]
 	
 	var body: some View {
 		ScrollView {
 			LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 24) {
-				ForEach(symbols, id: \.self) { symbol in
+				ForEach(symbols.filter { searchText.isEmpty || $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { symbol in
 					Button {
 						selectedSymbol = symbol
 						dismiss()
 					} label: {
 						Image(systemName: symbol)
 							.font(.system(size: 28))
+							.foregroundColor(.primary)
 							.frame(width: 60, height: 60)
 							.background(Color(UIColor.systemGray5))
 							.clipShape(RoundedRectangle(cornerRadius: 12))
@@ -222,5 +265,12 @@ struct IconPickerView: View {
 		}
 		.navigationTitle("Choose Icon")
 		.navigationBarTitleDisplayMode(.inline)
+		.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search icons")
+		.navigationBarBackButtonHidden(false)
+		.toolbar {
+			ToolbarItem(placement: .navigationBarLeading) {
+				Text("")
+			}
+		}
 	}
 }
