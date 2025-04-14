@@ -8,7 +8,6 @@ struct CategorySettingsView: View {
 	@State private var isEditing = false
 	@State private var selectedSymbol = "folder"
 	@State private var selectedColor: Color = .gray
-	@State private var showingCustomPicker = false
 	
 	var body: some View {
 		NavigationStack {
@@ -105,6 +104,7 @@ struct CategorySettingsView: View {
 								let trimmed = newCategory.trimmingCharacters(in: .whitespaces)
 								guard !trimmed.isEmpty, !store.categories.contains(where: { $0.name == trimmed }) else { return }
 								store.categories.append(CategoryItem(name: trimmed, symbol: selectedSymbol, color: CodableColor(selectedColor)))
+								store.save()
 								NotificationCenter.default.post(name: Notification.Name("categoriesUpdated"), object: nil)
 								newCategory = ""
 								showingAddSheet = false
@@ -122,6 +122,7 @@ struct CategorySettingsView: View {
 				if let category = categoryToDelete {
 					let updated = store.categories.filter { $0.id != category.id }
 					store.categories = updated
+					store.save()
 					
 					// Remove matching expenses using store.delete() so it's properly saved
 					let toDelete = store.expenses.filter { $0.category == category.name }
@@ -187,36 +188,6 @@ struct ColorPickerView: View {
 	}
 }
 
-struct UIKitColorPickerView: UIViewControllerRepresentable {
-	@Binding var selectedColor: Color
-	
-	func makeUIViewController(context: Context) -> UIColorPickerViewController {
-		let picker = UIColorPickerViewController()
-		picker.delegate = context.coordinator
-		picker.selectedColor = UIColor(selectedColor)
-		picker.view.backgroundColor = .systemBackground
-		return picker
-	}
-	
-	func updateUIViewController(_ uiViewController: UIColorPickerViewController, context: Context) {}
-	
-	func makeCoordinator() -> Coordinator {
-		Coordinator(self)
-	}
-	
-	class Coordinator: NSObject, UIColorPickerViewControllerDelegate {
-		var parent: UIKitColorPickerView
-		
-		init(_ parent: UIKitColorPickerView) {
-			self.parent = parent
-		}
-		
-		func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
-			parent.selectedColor = Color(viewController.selectedColor)
-		}
-	}
-}
-
 struct IconPickerView: View {
 	@Binding var selectedSymbol: String
 	@State private var searchText = ""
@@ -240,8 +211,12 @@ struct IconPickerView: View {
 		// People & tools
 		"person", "person.crop.circle", "person.badge.plus", "wrench", "hammer", "gear",
 
+		// Essentials (health & personal items)
+		"pills", "bandage", "cross.case", "cross",
+
 		// Other
-		"heart", "globe", "leaf", "camera", "photo", "book", "calendar", "doc"
+		"heart", "globe", "leaf", "camera", "photo", "book", "calendar", "doc",
+		"pawprint", "tortoise", "hare", "ant", "ladybug", "bird", "fish", "dog", "cat"
 	]
 	
 	var body: some View {
