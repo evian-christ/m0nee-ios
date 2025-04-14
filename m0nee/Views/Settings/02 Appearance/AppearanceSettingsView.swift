@@ -24,12 +24,13 @@ struct AppearanceSettingsView: View {
 		var body: some View {
 				Form {
 						Section(header: Text("Theme")) {
-								Picker("Theme", selection: $appearanceMode) {
+								Picker("", selection: $appearanceMode) {
 										Text("Automatic").tag("Automatic")
 										Text("Light").tag("Light")
 										Text("Dark").tag("Dark")
 								}
 								.pickerStyle(.inline)
+								.labelsHidden()
 						}
 
 						Section(header: Text("Currency Symbol")) {
