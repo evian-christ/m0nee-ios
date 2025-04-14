@@ -56,90 +56,114 @@ struct AddExpenseView: View {
 	}
 	
 	var body: some View {
-		VStack(alignment: .leading, spacing: 16) {
-			VStack {
-				Spacer().frame(height: 24)
-				
-				Text(formattedAmount)
-					.font(.system(size: 50, weight: .bold))
-					.foregroundColor(.primary)
-					.frame(maxWidth: .infinity, alignment: .center)
-					.padding(.vertical, 16)
-					.contentShape(Rectangle())
-					.background(Color(.systemBackground))
-					.onTapGesture {
-						isAmountFocused = true
-					}
-				
-				TextField("", text: $rawAmount)
-					.keyboardType(.numberPad)
-					.focused($isAmountFocused)
-					.opacity(0.01)
-					.frame(height: 1)
-					.disabled(false)
-			}
-			
-			HStack {
-				GeometryReader { geometry in
-					HStack(spacing: 8) {
-						Spacer()
-						ForEach(1...5, id: \.self) { index in
-							Image(systemName: index <= rating ? "star.fill" : "star")
-								.resizable()
-								.frame(width: 32, height: 32)
-								.foregroundColor(.yellow)
-						}
-						Spacer()
-					}
-					.contentShape(Rectangle())
-					.gesture(
-						DragGesture(minimumDistance: 0)
-							.onChanged { value in
-								let spacing: CGFloat = 8
-								let starWidth: CGFloat = 32
-								let totalWidth = (starWidth * 5) + (spacing * 4)
-								let startX = (geometry.size.width - totalWidth) / 2
-								let relativeX = value.location.x - startX
-								let fullStarWidth = starWidth + spacing
-								let newRating = min(5, max(1, Int(relativeX / fullStarWidth) + 1))
-								if newRating != rating {
-									rating = newRating
-								}
-							}
-					)
+		ScrollView {
+			VStack(spacing: 24) {
+				VStack(spacing: 8) {
+					Text(formattedAmount)
+						.font(.system(size: 48, weight: .bold))
+						.foregroundColor(.primary)
+						.padding(.top, 16)
+						.onTapGesture { isAmountFocused = true }
+
+					TextField("", text: $rawAmount)
+						.keyboardType(.numberPad)
+						.focused($isAmountFocused)
+						.opacity(0.01)
+						.frame(height: 1)
 				}
-				.frame(height: 40)
-			}
-			.padding(.bottom, 8)
-			
-			Form {
-				Section(header: Text("Required")) {
+
+				VStack(spacing: 8) {
+					GeometryReader { geometry in
+						HStack(spacing: 8) {
+							Spacer()
+							ForEach(1...5, id: \.self) { index in
+								Image(systemName: index <= rating ? "star.fill" : "star")
+									.resizable()
+									.frame(width: 32, height: 32)
+									.foregroundColor(.yellow)
+							}
+							Spacer()
+						}
+						.contentShape(Rectangle())
+						.gesture(
+							DragGesture(minimumDistance: 0)
+								.onChanged { value in
+									let spacing: CGFloat = 8
+									let starWidth: CGFloat = 32
+									let totalWidth = (starWidth * 5) + (spacing * 4)
+									let startX = (geometry.size.width - totalWidth) / 2
+									let relativeX = value.location.x - startX
+									let fullStarWidth = starWidth + spacing
+									let newRating = min(5, max(1, Int(relativeX / fullStarWidth) + 1))
+									if newRating != rating {
+										rating = newRating
+									}
+								}
+						)
+					}
+					.frame(height: 40)
+
+					Text("How much did you enjoy this spending?")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+
+				VStack(alignment: .leading, spacing: 16) {
+					Text("Required")
+						.font(.caption)
+						.foregroundColor(.secondary)
+
 					TextField("Name", text: $name)
+						.padding(10)
+						.background(Color(.secondarySystemBackground))
+						.cornerRadius(8)
 						.overlay(
-							RoundedRectangle(cornerRadius: 4)
+							RoundedRectangle(cornerRadius: 8)
 								.stroke(showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.red : Color.clear, lineWidth: 1)
 						)
+
 					DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
-					Picker("Category", selection: $category) {
-						ForEach(categoryList, id: \.self) { Text($0) }
+						.padding(.leading, 10)
+
+					HStack {
+						Text("Category")
+							.font(.body)
+							.foregroundColor(.primary)
+
+						Spacer()
+
+						Picker("", selection: $category) {
+							ForEach(categoryList, id: \.self) { Text($0) }
+						}
+						.pickerStyle(.menu)
 					}
-					.pickerStyle(.menu)
+					.padding(.leading, 10)
+					.padding(.trailing, -4)
 				}
-				
-				Section(header: Text("Optional")) {
+
+				VStack(alignment: .leading, spacing: 16) {
+					Text("Optional")
+						.font(.caption)
+						.foregroundColor(.secondary)
+
 					TextField("Details", text: $details)
+						.padding(10)
+						.background(Color(.secondarySystemBackground))
+						.cornerRadius(8)
+
 					TextField("Note", text: $memo)
+						.padding(10)
+						.background(Color(.secondarySystemBackground))
+						.cornerRadius(8)
 				}
-				
-			}
-			if let id = expenseID {
-				VStack {
+
+				if let id = expenseID {
 					Button(role: .destructive) {
 						onSave(Expense(
 							id: id,
 							date: date,
 							name: name,
-							amount: -1, // sentinel to mark deletion
+							amount: -1,
 							category: category,
 							details: details,
 							rating: rating,
@@ -151,9 +175,12 @@ struct AddExpenseView: View {
 							.foregroundColor(.red)
 							.frame(maxWidth: .infinity)
 					}
-					.padding()
+					.padding(.top, 16)
 				}
+
+				Spacer(minLength: 24)
 			}
+			.padding()
 		}
 		.navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
 		.navigationBarTitleDisplayMode(.inline)
@@ -167,7 +194,7 @@ struct AddExpenseView: View {
 				Button("Save") {
 					showFieldValidation = true
 					guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
-								!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty else {
+							!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty else {
 						return
 					}
 					let parsedAmount = (Double(rawAmount.filter { $0.isWholeNumber }) ?? 0) / 100
@@ -186,6 +213,5 @@ struct AddExpenseView: View {
 				}
 			}
 		}
-		
 	}
 }
