@@ -13,7 +13,7 @@ struct AddExpenseView: View {
 	@State private var memo: String
 	@State private var showFieldValidation = false
 	@State private var isRecurring: Bool = false
-	@AppStorage("currencySymbol") private var currencySymbol: String = "£"
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@FocusState private var isAmountFocused: Bool
 	@State private var rawAmount: String = ""
 	
@@ -50,6 +50,19 @@ struct AddExpenseView: View {
 		_memo = State(initialValue: memo)
 		_isRecurring = State(initialValue: isRecurring)
 		self.onSave = onSave
+	}
+	
+	private var currencySymbol: String {
+		let currencyOptions: [(symbol: String, code: String)] = [
+			("$", "USD"), ("€", "EUR"), ("£", "GBP"), ("¥", "JPY"),
+			("₩", "KRW"), ("¥", "CNY"), ("A$", "AUD"), ("C$", "CAD"),
+			("R$", "BRL"), ("CHF", "CHF"), ("₵", "GHS"), ("₪", "ILS"),
+			("₹", "INR"), ("₦", "NGN"), ("NOK", "NOK"), ("₱", "PHP"),
+			("₽", "RUB"), ("S$", "SGD"), ("SEK", "SEK"), ("฿", "THB"),
+			("₺", "TRY"), ("₴", "UAH"), ("₫", "VND"), ("R", "ZAR"),
+			("د.إ", "AED"), ("DKK", "DKK"), ("NZ$", "NZD"), ("₲", "PYG")
+		]
+		return currencyOptions.first(where: { $0.code == currencyCode })?.symbol ?? "£"
 	}
 	
 	private var formattedAmount: String {
