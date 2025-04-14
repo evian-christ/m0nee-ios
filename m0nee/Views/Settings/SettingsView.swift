@@ -37,7 +37,6 @@ struct SettingsView: View {
 		("₵", "Ghana")
 	]
 	
-	
 	var categoryList: [String] {
 		categories.split(separator: ",").map { String($0) }
 	}
@@ -47,110 +46,38 @@ struct SettingsView: View {
 	}
 	
 	var body: some View {
-		Form {
-			Section(header: Text("Main Screen Settings")) {
-				NavigationLink(destination: {
-					Form {
-						Picker("Display Mode", selection: $displayMode) {
-							Text("Compact").tag("Compact")
-							Text("Standard").tag("Standard")
-							Text("Detailed").tag("Detailed")
-						}
-						.pickerStyle(.inline)
-					}
-					.navigationTitle("Display Mode")
-				}) {
-					HStack {
-						Text("Display Mode")
-						Spacer()
-						Text(displayMode)
-							.foregroundColor(.gray)
-					}
+		List {
+			Section {
+				NavigationLink(destination: AppearanceSettingsView()) {
+					Label("Appearance", systemImage: "paintbrush")
 				}
-				
-				Toggle("Group expenses by day", isOn: $groupByDay)
-				Toggle("Pin Insight Cards", isOn: $useFixedInsightCards)
-			}
-			Section(header: Text("Budget")) {
-				Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
-				if budgetEnabled {
-					NavigationLink(destination: BudgetFrequencyView()) {
-						Text("Budget Period")
-					}
-					NavigationLink(destination: MonthlyBudgetView()) {
-						HStack {
-							Text("\(budgetPeriod) Budget")
-							Spacer()
-							Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
-								.foregroundColor(.gray)
-						}
-					}
-					if budgetPeriod == "Monthly" {
-						Picker("Start day of month", selection: $monthlyStartDay) {
-							ForEach(1...31, id: \.self) {
-								Text("\($0)")
-							}
-						}
-					}
-					if budgetPeriod == "Weekly" {
-						Picker("Start day of week", selection: $weeklyStartDay) {
-							ForEach(0..<Calendar.current.weekdaySymbols.count, id: \.self) { index in
-								Text(Calendar.current.weekdaySymbols[index]).tag(index + 1)
-							}
-						}
-					}
+
+				NavigationLink(destination: ExpenseInputSettingsView()) {
+					Label("Expense", systemImage: "square.and.pencil")
 				}
-				// Removed category budgeting from main Budget section.
-			}
-			Section(header: Text("Categories")) {
-				NavigationLink(destination: ManageCategoriesView(store: store)) {
-					Text("Manage Categories")
+
+				NavigationLink(destination: BudgetSettingsView()) {
+					Label("Budget", systemImage: "chart.pie.fill")
+				}
+
+				NavigationLink(destination: CategorySettingsView(store: store)) {
+					Label("Categories", systemImage: "folder")
+				}
+
+				NavigationLink(destination: StorageSettingsView(store: store)) {
+					Label("Storage", systemImage: "externaldrive")
+				}
+
+				NavigationLink(destination: AdvancedSettingsView()) {
+					Label("Advanced", systemImage: "gearshape")
 				}
 			}
-			Section(header: Text("Appearance")) {
-				Picker("Currency", selection: $currencySymbol) {
-					ForEach(currencyOptions, id: \.symbol) { option in
-						Text("\(option.symbol) - \(option.country)").tag(option.symbol)
-					}
-				}
-				NavigationLink(destination: {
-					Form {
-						Picker("Theme", selection: $appearanceMode) {
-							Text("Automatic").tag("Automatic")
-							Text("Light").tag("Light")
-							Text("Dark").tag("Dark")
-						}
-						.pickerStyle(.inline)
-					}
-					.navigationTitle("Theme")
-				}) {
-					HStack {
-						Text("Theme")
-						Spacer()
-						Text(appearanceMode)
-							.foregroundColor(.gray)
-					}
-				}
-			}
-			Section(header: Text("Storage")) {
-				Toggle("Use iCloud for Data", isOn: $useiCloud)
-				
-				NavigationLink(destination: ExportView().environmentObject(store)) {
-						Text("Export Data")
-				}
-			}
-			Section(header: Text("Other")) {
-				Button("Restore Settings") {
-					showResetAlert = true
-				}
-				.foregroundColor(.red)
-			}
-		}
-		.onChange(of: useiCloud) { _ in
-			store.syncStorageIfNeeded()
 		}
 		.navigationTitle("Settings")
 		.navigationBarTitleDisplayMode(.inline)
+		.onChange(of: useiCloud) { _ in
+			store.syncStorageIfNeeded()
+		}
 		.alert("Restore Settings", isPresented: $showResetAlert) {
 			Button("Restore", role: .destructive) {
 				appearanceMode = "Automatic"
