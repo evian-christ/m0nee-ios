@@ -15,6 +15,9 @@ struct GeneralSettingsView: View {
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
 	
 	@State private var showResetAlert = false
+	@State private var showFullResetAlert = false
+	
+	@EnvironmentObject var store: ExpenseStore
 	
 	var body: some View {
 		Form {
@@ -32,6 +35,11 @@ struct GeneralSettingsView: View {
 					showResetAlert = true
 				}
 				.foregroundColor(.red)
+				
+				Button("Erase All Settings & Data") {
+					showFullResetAlert = true
+				}
+				.foregroundColor(.red)
 			}
 		}
 		.navigationTitle("General")
@@ -44,6 +52,14 @@ struct GeneralSettingsView: View {
 		} message: {
 			Text("Are you sure you want to restore all settings to default?")
 		}
+		.alert("Erase Everything", isPresented: $showFullResetAlert) {
+			Button("Erase", role: .destructive) {
+				eraseAllData()
+			}
+			Button("Cancel", role: .cancel) {}
+		} message: {
+			Text("This will delete all expenses and reset all settings and categories to default. This action cannot be undone.")
+		}
 	}
 	
 	private func restoreDefaults() {
@@ -52,9 +68,22 @@ struct GeneralSettingsView: View {
 		budgetPeriod = "Monthly"
 		monthlyStartDay = 1
 		weeklyStartDay = 1
-		monthlyBudget = 500
+		monthlyBudget = 0
 		budgetEnabled = true
 		budgetByCategory = false
 		categoryBudgets = ""
+	}
+	
+	private func eraseAllData() {
+		restoreDefaults()
+		store.expenses = []
+		store.categories = [
+			CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
+			CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
+			CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
+			CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
+			CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
+			CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
+		]
 	}
 }

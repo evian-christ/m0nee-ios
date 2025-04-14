@@ -1,8 +1,14 @@
 import Foundation
 import SwiftUI
 
+private struct StoreData: Codable {
+		var expenses: [Expense]
+		var categories: [CategoryItem]
+}
+
 class ExpenseStore: ObservableObject {
 		@Published var expenses: [Expense] = []
+		@Published var categories: [CategoryItem] = []
 		
 		private var saveURL: URL
 		
@@ -33,7 +39,6 @@ class ExpenseStore: ObservableObject {
 								}
 						}
 						self.saveURL = iCloudURL
-						// iCloud가 활성화된 경우 스토리지 동기화 실행
 						syncStorageIfNeeded()
 				} else {
 						self.saveURL = localURL
@@ -45,6 +50,30 @@ class ExpenseStore: ObservableObject {
 }
 
 extension ExpenseStore {
+		private func save() {
+				do {
+						let storeData = StoreData(expenses: expenses, categories: categories)
+						let data = try JSONEncoder().encode(storeData)
+						try data.write(to: saveURL)
+						let isICloud = saveURL.path.contains("Mobile Documents")
+						print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
+				} catch {
+						print("Failed to save: \(error)")
+				}
+		}
+		
+		private func load() {
+				guard FileManager.default.fileExists(atPath: saveURL.path) else { return }
+				do {
+						let data = try Data(contentsOf: saveURL)
+						let storeData = try JSONDecoder().decode(StoreData.self, from: data)
+						self.expenses = storeData.expenses
+						self.categories = storeData.categories
+				} catch {
+						print("Failed to load: \(error)")
+				}
+		}
+		
 		func totalSpent(forMonth month: String) -> Double {
 				let formatter = DateFormatter()
 				formatter.dateFormat = "yyyy-MM"
@@ -72,27 +101,6 @@ extension ExpenseStore {
 						expenses.remove(at: index)
 						save()
 						NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
-				}
-		}
-		
-		private func save() {
-				do {
-						let data = try JSONEncoder().encode(expenses)
-						try data.write(to: saveURL)
-						let isICloud = saveURL.path.contains("Mobile Documents")
-						print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
-				} catch {
-						print("Failed to save: \(error)")
-				}
-		}
-		
-		private func load() {
-				guard FileManager.default.fileExists(atPath: saveURL.path) else { return }
-				do {
-						let data = try Data(contentsOf: saveURL)
-						expenses = try JSONDecoder().decode([Expense].self, from: data)
-				} catch {
-						print("Failed to load: \(error)")
 				}
 		}
 		
@@ -163,6 +171,6 @@ extension ExpenseStore {
 				} else {
 						print("❌ Neither local nor iCloud has a file. No data to sync.")
 				}
-				load() // 동기화 후 메모리 내 데이터를 새로 불러옴
+				load()
 		}
 }
