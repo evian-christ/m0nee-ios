@@ -12,6 +12,7 @@ struct AddExpenseView: View {
 	@State private var rating: Int
 	@State private var memo: String
 	@State private var showFieldValidation = false
+	@State private var isRecurring: Bool = false
 	@AppStorage("currencySymbol") private var currencySymbol: String = "£"
 	@FocusState private var isAmountFocused: Bool
 	@State private var rawAmount: String = ""
@@ -33,6 +34,7 @@ struct AddExpenseView: View {
 		details: String = "",
 		rating: Int = 3,
 		memo: String = "",
+		isRecurring: Bool = false,
 		onSave: @escaping (Expense) -> Void
 	) {
 		_expenseID = State(initialValue: expenseID)
@@ -46,6 +48,7 @@ struct AddExpenseView: View {
 		_details = State(initialValue: details)
 		_rating = State(initialValue: rating)
 		_memo = State(initialValue: memo)
+		_isRecurring = State(initialValue: isRecurring)
 		self.onSave = onSave
 	}
 	
@@ -155,6 +158,26 @@ struct AddExpenseView: View {
 						.padding(10)
 						.background(Color(.secondarySystemBackground))
 						.cornerRadius(8)
+
+					if expenseID == nil {
+						Toggle("Recurring Expense", isOn: $isRecurring)
+
+						if isRecurring {
+							VStack(alignment: .leading, spacing: 8) {
+								Text("Repeat every...")
+									.font(.subheadline)
+									.foregroundColor(.secondary)
+								Picker("Frequency", selection: .constant("Monthly")) {
+									Text("Daily").tag("Daily")
+									Text("Weekly").tag("Weekly")
+									Text("Monthly").tag("Monthly")
+									Text("Yearly").tag("Yearly")
+								}
+								.pickerStyle(.segmented)
+							}
+							.padding(.top, 8)
+						}
+					}
 				}
 
 				if let id = expenseID {
@@ -167,7 +190,8 @@ struct AddExpenseView: View {
 							category: category,
 							details: details,
 							rating: rating,
-							memo: memo
+							memo: memo,
+							isRecurring: isRecurring
 						))
 						dismiss()
 					} label: {
@@ -206,7 +230,8 @@ struct AddExpenseView: View {
 						category: category,
 						details: details.isEmpty ? nil : details,
 						rating: rating,
-						memo: memo.isEmpty ? nil : memo
+						memo: memo.isEmpty ? nil : memo,
+						isRecurring: isRecurring
 					)
 					onSave(newExpense)
 					dismiss()

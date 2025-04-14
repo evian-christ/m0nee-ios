@@ -48,13 +48,13 @@ struct SettingsView: View {
 	var body: some View {
 		List {
 			Section {
-				NavigationLink(destination: AppearanceSettingsView()) {
-					Label("Appearance", systemImage: "paintbrush")
+				NavigationLink(destination: GeneralSettingsView()) {
+					Label("General", systemImage: "gearshape")
 						.frame(minHeight: 44)
 				}
-
-				NavigationLink(destination: ExpenseInputSettingsView()) {
-					Label("Expense", systemImage: "square.and.pencil")
+				
+				NavigationLink(destination: AppearanceSettingsView()) {
+					Label("Appearance", systemImage: "paintbrush")
 						.frame(minHeight: 44)
 				}
 
@@ -70,11 +70,6 @@ struct SettingsView: View {
 
 				NavigationLink(destination: StorageSettingsView(store: store)) {
 					Label("Storage", systemImage: "externaldrive")
-						.frame(minHeight: 44)
-				}
-
-				NavigationLink(destination: AdvancedSettingsView()) {
-					Label("Advanced", systemImage: "gearshape")
 						.frame(minHeight: 44)
 				}
 			}
