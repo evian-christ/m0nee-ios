@@ -140,7 +140,11 @@ struct InsightsView: View {
 }
 
 struct ContentView: View {
-	@AppStorage("currencySymbol") private var currencySymbol: String = "£"
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	
+	private var currencySymbol: String {
+			CurrencyManager.symbol(for: currencyCode)
+	}
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"

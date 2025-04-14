@@ -1,10 +1,16 @@
 import SwiftUI
+import Foundation
 
 struct MonthlyBudgetView: View {
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
-	@AppStorage("currencySymbol") private var currencySymbol: String = "£"
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+
+	private var currencySymbol: String {
+		CurrencyManager.symbol(for: currencyCode)
+	}
+	
 	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
 	
 	var totalCategoryBudget: Double {

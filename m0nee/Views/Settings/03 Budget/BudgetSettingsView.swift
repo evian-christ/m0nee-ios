@@ -4,7 +4,12 @@ struct BudgetSettingsView: View {
 		@AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
 		@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 		@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-		@AppStorage("currencySymbol") private var currencySymbol: String = "£"
+		@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+
+		private var currencySymbol: String {
+				CurrencyManager.symbol(for: currencyCode)
+		}
+		
 		@AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
 		@AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
 

@@ -53,16 +53,7 @@ struct AddExpenseView: View {
 	}
 	
 	private var currencySymbol: String {
-		let currencyOptions: [(symbol: String, code: String)] = [
-			("$", "USD"), ("€", "EUR"), ("£", "GBP"), ("¥", "JPY"),
-			("₩", "KRW"), ("¥", "CNY"), ("A$", "AUD"), ("C$", "CAD"),
-			("R$", "BRL"), ("CHF", "CHF"), ("₵", "GHS"), ("₪", "ILS"),
-			("₹", "INR"), ("₦", "NGN"), ("NOK", "NOK"), ("₱", "PHP"),
-			("₽", "RUB"), ("S$", "SGD"), ("SEK", "SEK"), ("฿", "THB"),
-			("₺", "TRY"), ("₴", "UAH"), ("₫", "VND"), ("R", "ZAR"),
-			("د.إ", "AED"), ("DKK", "DKK"), ("NZ$", "NZD"), ("₲", "PYG")
-		]
-		return currencyOptions.first(where: { $0.code == currencyCode })?.symbol ?? "£"
+		CurrencyManager.symbol(for: currencyCode)
 	}
 	
 	private var formattedAmount: String {

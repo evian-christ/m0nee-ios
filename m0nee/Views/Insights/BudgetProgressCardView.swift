@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct BudgetProgressCardView: View {
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+
+	private var currencySymbol: String {
+		CurrencyManager.symbol(for: currencyCode)
+	}
+
 	let expenses: [Expense]
 	let startDate: Date
 	let endDate: Date
@@ -21,7 +27,7 @@ struct BudgetProgressCardView: View {
 				.font(.headline)
 				.padding(.bottom, 4)
 			
-			Text(String(format: "£%.2f / £%.2f", totalSpent, monthlyBudget))
+			Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", totalSpent, monthlyBudget))
 				.font(.title3)
 				.bold()
 				.foregroundColor(spendingProgress > timeProgress ? .red : .primary)

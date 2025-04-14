@@ -53,6 +53,11 @@ struct InsightCardView: View {
 	let endDate: Date
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+
+	private var currencySymbol: String {
+		CurrencyManager.symbol(for: currencyCode)
+	}
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 12) {
@@ -70,7 +75,7 @@ struct InsightCardView: View {
 					let amountSpent = expenses.reduce(0) { $0 + $1.amount }
 					
 					VStack(alignment: .leading) {
-						Text(String(format: "£%.2f / £%.2f", amountSpent, monthlyBudget))
+						Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
 							.font(.title2)
 							.bold()
 						ProgressView(value: amountSpent, total: monthlyBudget)

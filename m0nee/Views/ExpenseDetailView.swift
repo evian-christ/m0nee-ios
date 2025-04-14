@@ -1,7 +1,12 @@
 import SwiftUI
 
 struct ExpenseDetailView: View {
-	@AppStorage("currencySymbol") private var currencySymbol: String = "£"
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+
+	private var currencySymbol: String {
+			CurrencyManager.symbol(for: currencyCode)
+	}
+	
 	@Environment(\.dismiss) private var dismiss
 	let expenseID: UUID
 	@ObservedObject var store: ExpenseStore
