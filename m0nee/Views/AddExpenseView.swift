@@ -33,7 +33,7 @@ struct AddExpenseView: View {
 		date: Date = Date(),
 		name: String = "",
 		amount: String = "",
-		category: String = "Food",
+		category: String = "",
 		details: String = "",
 		rating: Int = 3,
 		memo: String = "",
@@ -125,8 +125,19 @@ struct AddExpenseView: View {
 				}
 			}
 
-			Section("Required") {
-				TextField("Name", text: $name)
+			Section {
+				ZStack(alignment: .trailing) {
+					TextField("Name", text: $name)
+						.padding(.trailing, 28)
+
+					if showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty {
+						Image(systemName: "exclamationmark.circle.fill")
+							.foregroundColor(.red)
+							.padding(.trailing, 4)
+							.transition(.opacity)
+							.animation(.easeInOut(duration: 0.25), value: showFieldValidation)
+					}
+				}
 
 				DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
 
@@ -157,36 +168,35 @@ struct AddExpenseView: View {
 				}
 				.navigationTitle("Select Category")
 				, isActive: $showingCategorySelection) {
-					HStack {
-						Text("Category")
-						Spacer()
-						Text(category)
-							.foregroundColor(.secondary)
+					ZStack(alignment: .trailing) {
+						HStack {
+							Text("Category")
+							Spacer()
+							Text(category)
+								.foregroundColor(.secondary)
+								.padding(.trailing, 28)
+						}
+
+						if showFieldValidation && category.isEmpty {
+							Image(systemName: "exclamationmark.circle.fill")
+								.foregroundColor(.red)
+								.padding(.trailing, 4)
+								.transition(.opacity)
+								.animation(.easeInOut(duration: 0.25), value: showFieldValidation)
+						}
 					}
 				}
 			}
 
-			Section("Optional") {
+			Section {
 				TextField("Details", text: $details)
 				TextField("Note", text: $memo)
+			}
 
-				if expenseID == nil {
-					Toggle("Recurring Expense", isOn: $isRecurring)
-
-					if isRecurring {
-						VStack(alignment: .leading, spacing: 8) {
-							Text("Repeat every...")
-								.font(.subheadline)
-								.foregroundColor(.secondary)
-							Picker("Frequency", selection: .constant("Monthly")) {
-								Text("Daily").tag("Daily")
-								Text("Weekly").tag("Weekly")
-								Text("Monthly").tag("Monthly")
-								Text("Yearly").tag("Yearly")
-							}
-							.pickerStyle(.segmented)
-						}
-					}
+			Section {
+				NavigationLink("Repeat") {
+					Text("Repeat Settings View (Placeholder)")
+						.navigationTitle("Repeat")
 				}
 			}
 
@@ -224,7 +234,8 @@ struct AddExpenseView: View {
 				Button("Save") {
 					showFieldValidation = true
 					guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
-							!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty else {
+							!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty,
+							!category.isEmpty else {
 						return
 					}
 					let parsedAmount = (Double(rawAmount.filter { $0.isWholeNumber }) ?? 0) / 100
