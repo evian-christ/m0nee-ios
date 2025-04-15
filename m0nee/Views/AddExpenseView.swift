@@ -16,6 +16,8 @@ struct AddExpenseView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@FocusState private var isAmountFocused: Bool
 	@State private var rawAmount: String = ""
+	@State private var showingCategorySelection = false
+	@EnvironmentObject var store: ExpenseStore
 	
 	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
 	
@@ -63,13 +65,14 @@ struct AddExpenseView: View {
 	}
 	
 	var body: some View {
-		ScrollView {
-			VStack(spacing: 24) {
+		Form {
+			Section {
 				VStack(spacing: 8) {
 					Text(formattedAmount)
 						.font(.system(size: 48, weight: .bold))
 						.foregroundColor(.primary)
-						.padding(.top, 16)
+						.frame(maxWidth: .infinity, alignment: .center)
+						.padding(.top, 8)
 						.onTapGesture { isAmountFocused = true }
 
 					TextField("", text: $rawAmount)
@@ -78,15 +81,16 @@ struct AddExpenseView: View {
 						.opacity(0.01)
 						.frame(height: 1)
 				}
+				.listRowSeparator(.hidden)
 
-				VStack(spacing: 8) {
+				VStack(spacing: 4) {
 					GeometryReader { geometry in
 						HStack(spacing: 8) {
 							Spacer()
 							ForEach(1...5, id: \.self) { index in
 								Image(systemName: index <= rating ? "star.fill" : "star")
 									.resizable()
-									.frame(width: 32, height: 32)
+									.frame(width: 28, height: 28)
 									.foregroundColor(.yellow)
 							}
 							Spacer()
@@ -96,7 +100,7 @@ struct AddExpenseView: View {
 							DragGesture(minimumDistance: 0)
 								.onChanged { value in
 									let spacing: CGFloat = 8
-									let starWidth: CGFloat = 32
+									let starWidth: CGFloat = 28
 									let totalWidth = (starWidth * 5) + (spacing * 4)
 									let startX = (geometry.size.width - totalWidth) / 2
 									let relativeX = value.location.x - startX
@@ -108,83 +112,83 @@ struct AddExpenseView: View {
 								}
 						)
 					}
-					.frame(height: 40)
+					.frame(height: 36)
 
 					Text("How much did you enjoy this spending?")
 						.font(.caption)
 						.foregroundColor(.secondary)
+						.frame(maxWidth: .infinity, alignment: .center)
 				}
+				.padding(.top, -4)
+			}
 
-				VStack(alignment: .leading, spacing: 16) {
-					Text("Required")
-						.font(.caption)
-						.foregroundColor(.secondary)
+			Section("Required") {
+				TextField("Name", text: $name)
 
-					TextField("Name", text: $name)
-						.padding(10)
-						.background(Color(.secondarySystemBackground))
-						.cornerRadius(8)
-						.overlay(
-							RoundedRectangle(cornerRadius: 8)
-								.stroke(showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty ? Color.red : Color.clear, lineWidth: 1)
-						)
+				DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
 
-					DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
-						.padding(.leading, 10)
-
+				NavigationLink(destination: List {
+					ForEach(store.categories) { item in
+						Button {
+							category = item.name
+							showingCategorySelection = false
+						} label: {
+							HStack(spacing: 12) {
+								ZStack {
+									Circle()
+										.fill(Color(item.color.color))
+										.frame(width: 28, height: 28)
+									Image(systemName: item.symbol)
+										.foregroundColor(.white)
+										.font(.system(size: 14, weight: .semibold))
+								}
+								Text(item.name)
+									.foregroundColor(.primary)
+								if item.name == category {
+									Spacer()
+									Image(systemName: "checkmark")
+								}
+							}
+						}
+					}
+				}
+				.navigationTitle("Select Category")
+				, isActive: $showingCategorySelection) {
 					HStack {
 						Text("Category")
-							.font(.body)
-							.foregroundColor(.primary)
-
 						Spacer()
-
-						Picker("", selection: $category) {
-							ForEach(categoryList, id: \.self) { Text($0) }
-						}
-						.pickerStyle(.menu)
+						Text(category)
+							.foregroundColor(.secondary)
 					}
-					.padding(.leading, 10)
-					.padding(.trailing, -4)
 				}
+			}
 
-				VStack(alignment: .leading, spacing: 16) {
-					Text("Optional")
-						.font(.caption)
-						.foregroundColor(.secondary)
+			Section("Optional") {
+				TextField("Details", text: $details)
+				TextField("Note", text: $memo)
 
-					TextField("Details", text: $details)
-						.padding(10)
-						.background(Color(.secondarySystemBackground))
-						.cornerRadius(8)
+				if expenseID == nil {
+					Toggle("Recurring Expense", isOn: $isRecurring)
 
-					TextField("Note", text: $memo)
-						.padding(10)
-						.background(Color(.secondarySystemBackground))
-						.cornerRadius(8)
-
-					if expenseID == nil {
-						Toggle("Recurring Expense", isOn: $isRecurring)
-
-						if isRecurring {
-							VStack(alignment: .leading, spacing: 8) {
-								Text("Repeat every...")
-									.font(.subheadline)
-									.foregroundColor(.secondary)
-								Picker("Frequency", selection: .constant("Monthly")) {
-									Text("Daily").tag("Daily")
-									Text("Weekly").tag("Weekly")
-									Text("Monthly").tag("Monthly")
-									Text("Yearly").tag("Yearly")
-								}
-								.pickerStyle(.segmented)
+					if isRecurring {
+						VStack(alignment: .leading, spacing: 8) {
+							Text("Repeat every...")
+								.font(.subheadline)
+								.foregroundColor(.secondary)
+							Picker("Frequency", selection: .constant("Monthly")) {
+								Text("Daily").tag("Daily")
+								Text("Weekly").tag("Weekly")
+								Text("Monthly").tag("Monthly")
+								Text("Yearly").tag("Yearly")
 							}
-							.padding(.top, 8)
+							.pickerStyle(.segmented)
 						}
 					}
 				}
+			}
 
-				if let id = expenseID {
+			if let id = expenseID {
+				Section {
 					Button(role: .destructive) {
 						onSave(Expense(
 							id: id,
@@ -200,15 +204,10 @@ struct AddExpenseView: View {
 						dismiss()
 					} label: {
 						Text("Delete Expense")
-							.foregroundColor(.red)
-							.frame(maxWidth: .infinity)
+							.frame(maxWidth: .infinity, alignment: .center)
 					}
-					.padding(.top, 16)
 				}
-
-				Spacer(minLength: 24)
 			}
-			.padding()
 		}
 		.navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
 		.navigationBarTitleDisplayMode(.inline)

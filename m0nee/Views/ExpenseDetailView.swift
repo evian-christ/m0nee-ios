@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ExpenseDetailView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("showRating") private var showRating: Bool = true
 
 	private var currencySymbol: String {
 			CurrencyManager.symbol(for: currencyCode)
@@ -42,7 +43,7 @@ struct ExpenseDetailView: View {
 							.foregroundColor(.secondary)
 					}
 					
-					if let rating = expense.rating {
+					if showRating, let rating = expense.rating {
 						HStack {
 							Text("Rating")
 							Spacer()

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CategoryBudgetProgressCardView: View {
+	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
+	@AppStorage("enableBudgetTracking") private var budgetTrackingEnabled: Bool = true
 	let expenses: [Expense]
 	let startDate: Date
 	let endDate: Date
@@ -20,26 +22,28 @@ struct CategoryBudgetProgressCardView: View {
 		
 		print("categoryBudgets:", categoryBudgets)
 		
-		return ScrollView {
-			VStack(alignment: .leading, spacing: 8) {
-				ForEach(Array(categoryBudgets.keys).sorted(), id: \.self) { category in
-					let budget = categoryBudgets[category] ?? 0
-					let spent = spendingPerCategory[category] ?? 0
-					let progress = budget > 0 ? spent / budget : (spent > 0 ? 1 : 0)
-					
-					VStack(alignment: .leading, spacing: 4) {
-						Text(category)
-							.font(.caption)
-							.foregroundColor(.secondary)
+		return ZStack {
+			ScrollView {
+				VStack(alignment: .leading, spacing: 8) {
+					ForEach(Array(categoryBudgets.keys).sorted(), id: \.self) { category in
+						let budget = categoryBudgets[category] ?? 0
+						let spent = spendingPerCategory[category] ?? 0
+						let progress = budget > 0 ? spent / budget : (spent > 0 ? 1 : 0)
 						
-						ProgressView(value: progress)
-							.accentColor(progress > timeProgress ? .red : .blue)
+						VStack(alignment: .leading, spacing: 4) {
+							Text(category)
+								.font(.caption)
+								.foregroundColor(.secondary)
+							
+							ProgressView(value: progress)
+								.accentColor(progress > timeProgress ? .red : .blue)
+						}
 					}
 				}
 			}
+			.padding(.horizontal, 8)
+			.frame(maxWidth: .infinity, alignment: .leading)
+			.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
 		}
-		.padding(.horizontal, 8)
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
 	}
 }

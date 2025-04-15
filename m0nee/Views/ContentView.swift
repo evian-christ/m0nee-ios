@@ -591,7 +591,7 @@ struct ContentView: View {
 					SettingsView(store: store)
 				}
 				.navigationDestination(isPresented: $showingInsights) {
-					InsightsView()
+					InsightsView().environmentObject(store)
 				}
 				.onChange(of: weeklyStartDay) { _ in
 					let calendar = Calendar.current
@@ -609,9 +609,10 @@ struct ContentView: View {
 					insightCardsView
 				}
 			}
-			.navigationBarTitleDisplayMode(.inline)
-		}
-		.onAppear {
+		.navigationBarTitleDisplayMode(.inline)
+	}
+	.environmentObject(store)
+	.onAppear {
 			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
 				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
 				favouriteCards = decoded

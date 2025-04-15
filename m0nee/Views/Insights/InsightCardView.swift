@@ -54,70 +54,94 @@ struct InsightCardView: View {
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@AppStorage("enableBudgetTracking") private var enableBudgetTracking: Bool = true
+	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
 	}
 	
 	var body: some View {
-		VStack(alignment: .leading, spacing: 12) {
-			if type != .budgetProgress {
-				HStack {
-					Label(type.title, systemImage: type.icon)
-						.font(.headline)
-					Spacer()
-				}
-			}
-			
-			switch type {
-			case .totalSpending:
-				TotalSpendingCardView(
-					expenses: expenses,
-					monthlyBudget: monthlyBudget,
-					currencySymbol: currencySymbol,
-					budgetTrackingEnabled: enableBudgetTracking
-				)
-			case .spendingTrend:
-				SpendingTrendCardView(
-					expenses: expenses,
-					startDate: startDate,
-					endDate: endDate,
-					monthlyBudget: monthlyBudget
-				)
-			case .categoryRating:
-				CategoryRatingCardView(expenses: expenses)
-			case .budgetProgress:
-				BudgetProgressCardView(
-					expenses: expenses,
-					startDate: startDate,
-					endDate: endDate,
-					monthlyBudget: monthlyBudget
-				)
-			case .categoryBudgetProgress:
-				let categoryBudgetDict: [String: Double] = {
-					guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
-							let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
-						return [:]
-					}
-					return decoded.reduce(into: [String: Double]()) { dict, pair in
-						if let value = Double(pair.value) {
-							dict[pair.key] = value
+		ZStack {
+			VStack {
+				VStack(alignment: .leading, spacing: 12) {
+					if type != .budgetProgress && type != .categoryBudgetProgress {
+						HStack {
+							Label(type.title, systemImage: type.icon)
+								.font(.headline)
+							Spacer()
 						}
 					}
-				}()
 
-				CategoryBudgetProgressCardView(
-					expenses: expenses,
-					startDate: startDate,
-					endDate: endDate,
-					categoryBudgets: categoryBudgetDict
-				)
+					Group {
+						switch type {
+						case .totalSpending:
+							TotalSpendingCardView(
+								expenses: expenses,
+								monthlyBudget: monthlyBudget,
+								currencySymbol: currencySymbol,
+								budgetTrackingEnabled: enableBudgetTracking
+							)
+						case .spendingTrend:
+							SpendingTrendCardView(
+								expenses: expenses,
+								startDate: startDate,
+								endDate: endDate,
+								monthlyBudget: monthlyBudget
+							)
+						case .categoryRating:
+							CategoryRatingCardView(expenses: expenses)
+						case .budgetProgress:
+							BudgetProgressCardView(
+								expenses: expenses,
+								startDate: startDate,
+								endDate: endDate,
+								monthlyBudget: monthlyBudget
+							)
+						case .categoryBudgetProgress:
+							let categoryBudgetDict: [String: Double] = {
+								guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+										let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
+									return [:]
+								}
+								return decoded.reduce(into: [String: Double]()) { dict, pair in
+									if let value = Double(pair.value) {
+										dict[pair.key] = value
+									}
+								}
+							}()
+
+							VStack(alignment: .leading, spacing: 12) {
+								HStack {
+									Label(type.title, systemImage: type.icon)
+										.font(.headline)
+									Spacer()
+								}
+
+								CategoryBudgetProgressCardView(
+									expenses: expenses,
+									startDate: startDate,
+									endDate: endDate,
+									categoryBudgets: categoryBudgetDict
+								)
+							}
+						}
+					}
+				}
+				.padding()
+				.frame(maxWidth: .infinity)
+				.frame(height: 240)
+				.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
+			}
+			.blur(radius: (type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ? 6 : 0)
+
+			if type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory) {
+				RoundedRectangle(cornerRadius: 16)
+					.fill(Color(.systemGray6).opacity(0))
+				Text("Enable Budget by Category in Settings to see this card.")
+					.font(.headline)
+					.multilineTextAlignment(.center)
+					.padding()
 			}
 		}
-		.padding()
-		.frame(maxWidth: .infinity)
-		.frame(height: 240)
-		.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
-		.padding(.vertical, 0)
 	}
 }
