@@ -21,6 +21,7 @@ struct CategorySettingsView: View {
 									.frame(width: 36, height: 36)
 								Image(systemName: category.symbol)
 									.font(.system(size: 18))
+									.foregroundColor(.white)
 							}
 							
 							Text(category.name)
@@ -225,9 +226,11 @@ struct IconPickerView: View {
 					} label: {
 						Image(systemName: symbol)
 							.font(.system(size: 28))
-							.foregroundColor(.primary)
+							.foregroundColor(.white)
 							.frame(width: 60, height: 60)
-							.background(Color(UIColor.systemGray5))
+							.background(Color(uiColor: UIColor { traitCollection in
+								traitCollection.userInterfaceStyle == .dark ? UIColor.systemGray5 : UIColor.gray
+							}))
 							.clipShape(RoundedRectangle(cornerRadius: 12))
 					}
 				}
