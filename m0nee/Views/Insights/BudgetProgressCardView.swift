@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BudgetProgressCardView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("enableBudgetTracking") private var budgetTrackingEnabled: Bool = true
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
@@ -20,31 +21,60 @@ struct BudgetProgressCardView: View {
 		let daysElapsed = Calendar.current.dateComponents([.day], from: startDate, to: cappedToday).day ?? 0
 		let totalDays = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 1
 		let timeProgress = Double(daysElapsed + 1) / Double(totalDays + 1)
-		let spendingProgress = monthlyBudget > 0 ? totalSpent / monthlyBudget : 0
+		let spendingProgress: Double = {
+			if monthlyBudget > 0 {
+				return totalSpent / monthlyBudget
+			} else if totalSpent > 0 {
+				return 1.0
+			} else {
+				return 0.0
+			}
+		}()
 		
-		VStack(alignment: .leading, spacing: 8) {
-			Label("Month's Progress", systemImage: "gauge.with.needle")
-				.font(.headline)
-				.padding(.bottom, 4)
-			
-			Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", totalSpent, monthlyBudget))
-				.font(.title3)
-				.bold()
-				.foregroundColor(spendingProgress > timeProgress ? .red : .primary)
-			
-			ProgressView(value: spendingProgress)
-				.accentColor(spendingProgress > timeProgress ? .red : .blue)
-			
-			Text(String(format: "Time: %.0f%%", timeProgress * 100))
-				.font(.subheadline)
-				.foregroundColor(.secondary)
-			
-			ProgressView(value: timeProgress)
-				.accentColor(.gray)
+		ZStack {
+			// Background with blur
+			RoundedRectangle(cornerRadius: 16)
+				.fill(Color(.systemGray6))
+
+			// Foreground content
+			VStack(alignment: .leading, spacing: 8) {
+				Label("Month's Progress", systemImage: "gauge.with.needle")
+					.font(.headline)
+					.padding(.bottom, 4)
+
+				Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", totalSpent, monthlyBudget))
+					.font(.title3)
+					.bold()
+					.foregroundColor(spendingProgress > timeProgress ? .red : .primary)
+
+				ProgressView(value: spendingProgress)
+					.accentColor(spendingProgress > timeProgress ? .red : .blue)
+
+				Text(String(format: "Time: %.0f%%", timeProgress * 100))
+					.font(.subheadline)
+					.foregroundColor(.secondary)
+
+				ProgressView(value: timeProgress)
+					.accentColor(.gray)
+			}
+			.padding(.horizontal, 0)
+			.frame(maxWidth: .infinity)
+			.frame(height: 240)
+			.blur(radius: !budgetTrackingEnabled ? 2.5 : 0)
+
+			// Overlay message
+			if !budgetTrackingEnabled {
+				Text("Enable Budget Tracking in Settings to unlock this insight.")
+					.font(.headline)
+					.multilineTextAlignment(.center)
+					.padding()
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+					.background(Color(.systemGray6).opacity(0.7))
+					.cornerRadius(16)
+			}
 		}
-		.padding(.horizontal, 0)
-		.frame(maxWidth: .infinity)
+		
+		.cornerRadius(16)
 		.frame(height: 240)
-		.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
 	}
 }

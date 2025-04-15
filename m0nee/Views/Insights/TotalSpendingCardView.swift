@@ -21,8 +21,13 @@ struct TotalSpendingCardView: View {
 				Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
 					.font(.title2)
 					.bold()
-				ProgressView(value: amountSpent, total: monthlyBudget)
-					.accentColor(amountSpent > monthlyBudget ? .red : .blue)
+				if monthlyBudget == 0 && amountSpent == 0 {
+					ProgressView(value: 0, total: 1)
+						.accentColor(.gray)
+				} else {
+					ProgressView(value: amountSpent, total: monthlyBudget)
+						.accentColor(amountSpent > monthlyBudget ? .red : .blue)
+				}
 			}
 		}
 	}
