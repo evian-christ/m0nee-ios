@@ -20,8 +20,7 @@ struct CategoryBudgetProgressCardView: View {
 		
 		return ScrollView {
 			VStack(alignment: .leading, spacing: 8) {
-				let allCategories = Set(categoryBudgets.keys)
-				ForEach(Array(allCategories).sorted(), id: \.self) { category in
+				ForEach(Array(categoryBudgets.keys).sorted(), id: \.self) { category in
 					let budget = categoryBudgets[category] ?? 0
 					let spent = spendingPerCategory[category] ?? 0
 					let progress = budget > 0 ? spent / budget : (spent > 0 ? 1 : 0)

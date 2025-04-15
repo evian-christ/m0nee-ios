@@ -6,21 +6,19 @@ struct MonthlyBudgetView: View {
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@ObservedObject var store: ExpenseStore
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
 	}
 	
-	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
-	
+	@AppStorage("categoryBudgets") private var categoryBudgetsData: Data = Data()
+
 	var totalCategoryBudget: Double {
-		categoryBudgets
-			.split(separator: ",")
-			.compactMap { pair in
-				let parts = pair.split(separator: ":")
-				return parts.count == 2 ? Double(parts[1]) : nil
-			}
-			.reduce(0, +)
+		if let decoded = try? JSONDecoder().decode([String: String].self, from: categoryBudgetsData) {
+			return decoded.values.compactMap { Double($0) }.reduce(0, +)
+		}
+		return 0
 	}
 	
 	var formattedBudget: String {
@@ -51,7 +49,7 @@ struct MonthlyBudgetView: View {
 			Section {
 				Toggle("Budget by Category", isOn: $budgetByCategory)
 				if budgetByCategory {
-					NavigationLink(destination: CategoryBudgetView()) {
+					NavigationLink(destination: CategoryBudgetView(store: store)) {
 						Text("Category Budgets")
 					}
 				}
@@ -64,7 +62,7 @@ struct MonthlyBudgetView: View {
 				monthlyBudget = totalCategoryBudget
 			}
 		}
-		.onChange(of: categoryBudgets) { _ in
+		.onChange(of: categoryBudgetsData) { _ in
 			if budgetByCategory {
 				monthlyBudget = totalCategoryBudget
 			}

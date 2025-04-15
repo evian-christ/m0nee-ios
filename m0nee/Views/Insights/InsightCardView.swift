@@ -54,6 +54,7 @@ struct InsightCardView: View {
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("enableBudgetTracking") private var enableBudgetTracking: Bool = true
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
@@ -71,17 +72,12 @@ struct InsightCardView: View {
 			
 			switch type {
 			case .totalSpending:
-				Group {
-					let amountSpent = expenses.reduce(0) { $0 + $1.amount }
-					
-					VStack(alignment: .leading) {
-						Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
-							.font(.title2)
-							.bold()
-						ProgressView(value: amountSpent, total: monthlyBudget)
-							.accentColor(amountSpent > monthlyBudget ? .red : .blue)
-					}
-				}
+				TotalSpendingCardView(
+					expenses: expenses,
+					monthlyBudget: monthlyBudget,
+					currencySymbol: currencySymbol,
+					budgetTrackingEnabled: enableBudgetTracking
+				)
 			case .spendingTrend:
 				SpendingTrendCardView(
 					expenses: expenses,

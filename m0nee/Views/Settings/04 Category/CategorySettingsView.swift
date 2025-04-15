@@ -58,7 +58,7 @@ struct CategorySettingsView: View {
 					}
 				}
 			}
-			.sheet(isPresented: $showingAddSheet) {
+			.fullScreenCover(isPresented: $showingAddSheet) {
 				NavigationStack {
 					Form {
 						Section {
@@ -198,22 +198,22 @@ struct IconPickerView: View {
 		"fork.knife", "takeoutbag.and.cup.and.straw", "cup.and.saucer", "cart", "bag", "gift",
 		"house", "house.fill", "building.2", "bed.double", "lamp.desk",
 		"car", "car.fill", "fuelpump", "bicycle", "bus", "airplane",
-
+		
 		// Finance / payments
 		"creditcard", "dollarsign.circle", "bitcoinsign.circle", "wallet.pass", "banknote",
-
+		
 		// Entertainment & leisure
 		"gamecontroller", "gamecontroller.fill", "puzzlepiece", "music.note", "paintpalette", "film", "video",
-
+		
 		// Communication
 		"phone", "message", "envelope", "bell", "megaphone",
-
+		
 		// People & tools
 		"person", "person.crop.circle", "person.badge.plus", "wrench", "hammer", "gear",
-
+		
 		// Essentials (health & personal items)
 		"pills", "bandage", "cross.case", "cross",
-
+		
 		// Other
 		"heart", "globe", "leaf", "camera", "photo", "book", "calendar", "doc",
 		"pawprint", "tortoise", "hare", "ant", "ladybug", "bird", "fish", "dog", "cat"

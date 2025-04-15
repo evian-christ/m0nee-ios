@@ -6,7 +6,7 @@ struct SettingsView: View {
 	var body: some View {
 		List {
 			Section {
-				NavigationLink(destination: GeneralSettingsView().environmentObject(store)) {
+				NavigationLink(destination: GeneralSettingsView()) {
 					Label("General", systemImage: "gearshape")
 						.frame(minHeight: 44)
 				}
@@ -16,7 +16,7 @@ struct SettingsView: View {
 						.frame(minHeight: 44)
 				}
 
-				NavigationLink(destination: BudgetSettingsView()) {
+				NavigationLink(destination: BudgetSettingsView(store: store)) {
 					Label("Budget", systemImage: "chart.pie.fill")
 						.frame(minHeight: 44)
 				}
