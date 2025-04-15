@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BudgetSettingsView: View {
-	@AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
+	@AppStorage("enableBudgetTracking") private var budgetEnabled: Bool = true
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"

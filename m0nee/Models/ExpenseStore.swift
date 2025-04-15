@@ -226,6 +226,12 @@ extension ExpenseStore {
 			]
 			save()
 
-			UserDefaults.standard.removeObject(forKey: "categoryBudgets")
+			var budgets: [String: String] = [:]
+			for category in categories {
+				budgets[category.name] = "0"
+			}
+			if let encoded = try? JSONEncoder().encode(budgets) {
+				UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+			}
 		}
 }

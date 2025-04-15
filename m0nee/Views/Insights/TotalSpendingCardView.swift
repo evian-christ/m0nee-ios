@@ -13,9 +13,10 @@ struct TotalSpendingCardView: View {
 
 		return VStack(alignment: .leading) {
 			if !budgetTrackingEnabled {
-				Text("This month’s spending: \(currencySymbol)\(String(format: "%.2f", amountSpent))")
-					.font(.title2)
+				Text("\(currencySymbol)\(String(format: "%.2f", amountSpent))")
+					.font(.largeTitle)
 					.bold()
+					.padding(.top, -8)
 			} else {
 				Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
 					.font(.title2)
