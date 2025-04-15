@@ -168,22 +168,23 @@ struct AddExpenseView: View {
 				}
 				.navigationTitle("Select Category")
 				, isActive: $showingCategorySelection) {
-					ZStack(alignment: .trailing) {
-						HStack {
-							Text("Category")
-							Spacer()
+					HStack {
+						Text("Category")
+						Spacer()
+						ZStack(alignment: .trailing) {
 							Text(category)
 								.foregroundColor(.secondary)
-								.padding(.trailing, 28)
-						}
+								.frame(maxWidth: .infinity, alignment: .trailing)
 
-						if showFieldValidation && category.isEmpty {
-							Image(systemName: "exclamationmark.circle.fill")
-								.foregroundColor(.red)
-								.padding(.trailing, 4)
-								.transition(.opacity)
-								.animation(.easeInOut(duration: 0.25), value: showFieldValidation)
+							if showFieldValidation && category.isEmpty {
+								Image(systemName: "exclamationmark.circle.fill")
+									.foregroundColor(.red)
+									.padding(.trailing, 4)
+									.transition(.opacity)
+									.animation(.easeInOut(duration: 0.25), value: showFieldValidation)
+							}
 						}
+						.frame(width: 100)
 					}
 				}
 			}
@@ -194,9 +195,8 @@ struct AddExpenseView: View {
 			}
 
 			Section {
-				NavigationLink("Repeat") {
-					Text("Repeat Settings View (Placeholder)")
-						.navigationTitle("Repeat")
+				NavigationLink(destination: RepeatExpenseView()) {
+					Text("Repeat")
 				}
 			}
 
