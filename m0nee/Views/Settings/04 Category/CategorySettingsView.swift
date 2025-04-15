@@ -103,9 +103,7 @@ struct CategorySettingsView: View {
 							Button("Add") {
 								let trimmed = newCategory.trimmingCharacters(in: .whitespaces)
 								guard !trimmed.isEmpty, !store.categories.contains(where: { $0.name == trimmed }) else { return }
-								store.categories.append(CategoryItem(name: trimmed, symbol: selectedSymbol, color: CodableColor(selectedColor)))
-								store.save()
-								NotificationCenter.default.post(name: Notification.Name("categoriesUpdated"), object: nil)
+								store.addCategory(CategoryItem(name: trimmed, symbol: selectedSymbol, color: CodableColor(selectedColor)))
 								newCategory = ""
 								showingAddSheet = false
 							}
@@ -120,9 +118,7 @@ struct CategorySettingsView: View {
 		)) {
 			Button("Delete", role: .destructive) {
 				if let category = categoryToDelete {
-					let updated = store.categories.filter { $0.id != category.id }
-					store.categories = updated
-					store.save()
+					store.removeCategory(category)
 					
 					// Remove matching expenses using store.delete() so it's properly saved
 					let toDelete = store.expenses.filter { $0.category == category.name }

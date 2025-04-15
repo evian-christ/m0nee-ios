@@ -47,6 +47,46 @@ class ExpenseStore: ObservableObject {
 				print("💾 Using saveURL: \(saveURL.path)")
 				load()
 		}
+		
+		func addCategory(_ category: CategoryItem) {
+				categories.append(category)
+				ensureCategoryBudgetEntry(for: category.name)
+				save()
+		}
+
+		func removeCategory(_ category: CategoryItem) {
+				categories.removeAll { $0.id == category.id }
+				removeCategoryBudgetEntry(for: category.name)
+				save()
+		}
+
+		private func ensureCategoryBudgetEntry(for name: String) {
+				var budgets = loadBudgets()
+				if budgets[name] == nil {
+						budgets[name] = "0"
+						saveBudgets(budgets)
+				}
+		}
+
+		private func removeCategoryBudgetEntry(for name: String) {
+				var budgets = loadBudgets()
+				budgets.removeValue(forKey: name)
+				saveBudgets(budgets)
+		}
+
+		private func loadBudgets() -> [String: String] {
+				if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+						let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
+						return decoded
+				}
+				return [:]
+		}
+
+		private func saveBudgets(_ budgets: [String: String]) {
+				if let encoded = try? JSONEncoder().encode(budgets) {
+						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+				}
+		}
 }
 
 extension ExpenseStore {
@@ -172,5 +212,20 @@ extension ExpenseStore {
 						print("❌ Neither local nor iCloud has a file. No data to sync.")
 				}
 				load()
+		}
+
+		func eraseAllData() {
+			expenses.removeAll()
+			categories = [
+				CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
+				CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
+				CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
+				CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
+				CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
+				CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
+			]
+			save()
+
+			UserDefaults.standard.removeObject(forKey: "categoryBudgets")
 		}
 }

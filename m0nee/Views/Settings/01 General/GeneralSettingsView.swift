@@ -17,7 +17,7 @@ struct GeneralSettingsView: View {
 	@State private var showResetAlert = false
 	@State private var showFullResetAlert = false
 	
-	@EnvironmentObject var store: ExpenseStore
+	@ObservedObject var store: ExpenseStore
 	
 	var body: some View {
 		Form {
@@ -76,15 +76,6 @@ struct GeneralSettingsView: View {
 	
 	private func eraseAllData() {
 		restoreDefaults()
-		store.expenses = []
-		store.categories = [
-			CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
-			CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
-			CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
-			CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
-			CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
-			CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
-		]
-		store.save()
+		store.eraseAllData()
 	}
 }

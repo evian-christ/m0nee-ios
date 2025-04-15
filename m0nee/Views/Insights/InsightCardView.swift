@@ -52,7 +52,6 @@ struct InsightCardView: View {
 	let startDate: Date
 	let endDate: Date
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@AppStorage("enableBudgetTracking") private var enableBudgetTracking: Bool = true
 
@@ -95,22 +94,18 @@ struct InsightCardView: View {
 					monthlyBudget: monthlyBudget
 				)
 			case .categoryBudgetProgress:
-				let budgetPairs = categoryBudgets
-					.split(separator: ",")
-					.compactMap { pair -> (String, Double)? in
-						let parts = pair.split(separator: ":")
-						guard parts.count == 2, let value = Double(parts[1]) else { return nil }
-						return (String(parts[0]), value)
+				let categoryBudgetDict: [String: Double] = {
+					guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+							let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
+						return [:]
 					}
-				let categoriesString = UserDefaults.standard.string(forKey: "categories") ?? ""
-				let categoryList = categoriesString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-				let categoryBudgetDict = Dictionary(uniqueKeysWithValues:
-																							categoryList.map { category in
-					let budget = budgetPairs.first(where: { $0.0 == category })?.1 ?? 0
-					return (category, budget)
-				}
-				)
-				
+					return decoded.reduce(into: [String: Double]()) { dict, pair in
+						if let value = Double(pair.value) {
+							dict[pair.key] = value
+						}
+					}
+				}()
+
 				CategoryBudgetProgressCardView(
 					expenses: expenses,
 					startDate: startDate,

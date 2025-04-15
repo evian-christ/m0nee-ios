@@ -18,6 +18,8 @@ struct CategoryBudgetProgressCardView: View {
 		let grouped = Dictionary(grouping: expenses) { $0.category }
 		let spendingPerCategory = grouped.mapValues { $0.reduce(0) { $0 + $1.amount } }
 		
+		print("categoryBudgets:", categoryBudgets)
+		
 		return ScrollView {
 			VStack(alignment: .leading, spacing: 8) {
 				ForEach(Array(categoryBudgets.keys).sorted(), id: \.self) { category in

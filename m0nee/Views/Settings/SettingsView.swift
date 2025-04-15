@@ -6,7 +6,7 @@ struct SettingsView: View {
 	var body: some View {
 		List {
 			Section {
-				NavigationLink(destination: GeneralSettingsView()) {
+				NavigationLink(destination: GeneralSettingsView(store: store)) {
 					Label("General", systemImage: "gearshape")
 						.frame(minHeight: 44)
 				}
