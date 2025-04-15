@@ -55,6 +55,7 @@ struct InsightCardView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@AppStorage("enableBudgetTracking") private var enableBudgetTracking: Bool = true
 	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
+	@AppStorage("showRating") private var showRating: Bool = true
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
@@ -132,12 +133,24 @@ struct InsightCardView: View {
 				.frame(height: 240)
 				.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
 			}
-			.blur(radius: (type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ? 6 : 0)
+			.blur(
+				radius:
+					(type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ||
+					(type == .categoryRating && !showRating)
+					? 6 : 0
+			)
 
-			if type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory) {
+			if (type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) {
 				RoundedRectangle(cornerRadius: 16)
-					.fill(Color(.systemGray6).opacity(0))
+					.fill(Color(.systemGray6).opacity(0.7))
 				Text("Enable Budget by Category in Settings to see this card.")
+					.font(.headline)
+					.multilineTextAlignment(.center)
+					.padding()
+			} else if (type == .categoryRating && !showRating) {
+				RoundedRectangle(cornerRadius: 16)
+					.fill(Color(.systemGray6).opacity(0.7))
+				Text("Enable Ratings in Settings to see this card.")
 					.font(.headline)
 					.multilineTextAlignment(.center)
 					.padding()

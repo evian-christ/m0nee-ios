@@ -20,6 +20,7 @@ struct AddExpenseView: View {
 	@EnvironmentObject var store: ExpenseStore
 	
 	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
+	@AppStorage("showRating") private var showRating: Bool = true
 	
 	var categoryList: [String] {
 		categoriesString.split(separator: ",").map { String($0) }
@@ -83,43 +84,45 @@ struct AddExpenseView: View {
 				}
 				.listRowSeparator(.hidden)
 
-				VStack(spacing: 4) {
-					GeometryReader { geometry in
-						HStack(spacing: 8) {
-							Spacer()
-							ForEach(1...5, id: \.self) { index in
-								Image(systemName: index <= rating ? "star.fill" : "star")
-									.resizable()
-									.frame(width: 28, height: 28)
-									.foregroundColor(.yellow)
-							}
-							Spacer()
-						}
-						.contentShape(Rectangle())
-						.gesture(
-							DragGesture(minimumDistance: 0)
-								.onChanged { value in
-									let spacing: CGFloat = 8
-									let starWidth: CGFloat = 28
-									let totalWidth = (starWidth * 5) + (spacing * 4)
-									let startX = (geometry.size.width - totalWidth) / 2
-									let relativeX = value.location.x - startX
-									let fullStarWidth = starWidth + spacing
-									let newRating = min(5, max(1, Int(relativeX / fullStarWidth) + 1))
-									if newRating != rating {
-										rating = newRating
-									}
+				if showRating {
+					VStack(spacing: 4) {
+						GeometryReader { geometry in
+							HStack(spacing: 8) {
+								Spacer()
+								ForEach(1...5, id: \.self) { index in
+									Image(systemName: index <= rating ? "star.fill" : "star")
+										.resizable()
+										.frame(width: 28, height: 28)
+										.foregroundColor(.yellow)
 								}
-						)
-					}
-					.frame(height: 36)
+								Spacer()
+							}
+							.contentShape(Rectangle())
+							.gesture(
+								DragGesture(minimumDistance: 0)
+									.onChanged { value in
+										let spacing: CGFloat = 8
+										let starWidth: CGFloat = 28
+										let totalWidth = (starWidth * 5) + (spacing * 4)
+										let startX = (geometry.size.width - totalWidth) / 2
+										let relativeX = value.location.x - startX
+										let fullStarWidth = starWidth + spacing
+										let newRating = min(5, max(1, Int(relativeX / fullStarWidth) + 1))
+										if newRating != rating {
+											rating = newRating
+										}
+									}
+							)
+						}
+						.frame(height: 36)
 
-					Text("How much did you enjoy this spending?")
-						.font(.caption)
-						.foregroundColor(.secondary)
-						.frame(maxWidth: .infinity, alignment: .center)
+						Text("How much did you enjoy this spending?")
+							.font(.caption)
+							.foregroundColor(.secondary)
+							.frame(maxWidth: .infinity, alignment: .center)
+					}
+					.padding(.top, -4)
 				}
-				.padding(.top, -4)
 			}
 
 			Section("Required") {
@@ -232,7 +235,7 @@ struct AddExpenseView: View {
 						amount: parsedAmount,
 						category: category,
 						details: details.isEmpty ? nil : details,
-						rating: rating,
+						rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
 						memo: memo.isEmpty ? nil : memo,
 						isRecurring: isRecurring
 					)
