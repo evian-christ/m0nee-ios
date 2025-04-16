@@ -9,7 +9,7 @@ struct RecurringExpense: Identifiable, Codable {
 	let rating: Int?
 	let memo: String?
 	let startDate: Date
-	let recurrenceRule: RecurrenceRule
+	var recurrenceRule: RecurrenceRule
 	var lastGeneratedDate: Date?
 }
 
@@ -26,5 +26,6 @@ struct RecurrenceRule: Codable {
 	var frequency: Frequency
 	var interval: Int?           // e.g. every 2 weeks
 	var weekdays: [Int]?         // [1 = Sunday, ..., 7 = Saturday]
+	var monthDays: [Int]?        // [1...31]
 	var endDate: Date?
 }

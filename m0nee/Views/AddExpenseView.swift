@@ -1,7 +1,25 @@
 import SwiftUI
 
+enum Period: String, CaseIterable, Identifiable, Codable {
+	case never = "Never"
+	case daily = "Daily"
+	case weekly = "Weekly"
+	case monthly = "Monthly"
+	
+	var id: String { self.rawValue }
+}
+
+struct RecurrenceDraft {
+	var selectedPeriod: Period = .never
+	var selectedFrequencyOption: String = ""
+	var selectedWeekdays: [Int] = []
+	var selectedMonthDays: [Int] = []
+	var dayInterval: Int = 1
+}
+
 struct AddExpenseView: View {
 	@Environment(\.dismiss) private var dismiss
+	@State private var recurrenceDraft = RecurrenceDraft()
 	
 	@State private var expenseID: UUID?
 	@State private var date: Date
@@ -13,6 +31,7 @@ struct AddExpenseView: View {
 	@State private var memo: String
 	@State private var showFieldValidation = false
 	@State private var isRecurring: Bool = false
+	@State private var repeatSummary: String = "Never"
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@FocusState private var isAmountFocused: Bool
 	@State private var rawAmount: String = ""
@@ -47,7 +66,8 @@ struct AddExpenseView: View {
 		let amountDouble = Double(amount) ?? 0
 		let integerValue = Int(amountDouble * 100)
 		_rawAmount = State(initialValue: "\(integerValue)")
-		_category = State(initialValue: category)
+		let defaultCategory = category.isEmpty ? (ExpenseStore().categories.first?.name ?? "") : category
+		_category = State(initialValue: defaultCategory)
 		_details = State(initialValue: details)
 		_rating = State(initialValue: rating)
 		_memo = State(initialValue: memo)
@@ -65,6 +85,72 @@ struct AddExpenseView: View {
 		return String(format: "\(currencySymbol)%.2f", doubleValue)
 	}
 	
+	private var repeatDescription: String {
+		let rule = recurrenceDraft
+		switch rule.selectedPeriod {
+		case .never:
+			return "Never"
+		case .daily:
+			switch rule.selectedFrequencyOption {
+			case "Weekly on selected days":
+				let sortedWeekdays = rule.selectedWeekdays.sorted()
+				var grouped: [[Int]] = []
+				var currentGroup: [Int] = []
+				let symbols = Calendar.current.shortWeekdaySymbols
+
+				for day in sortedWeekdays {
+					if currentGroup.isEmpty || day == currentGroup.last! + 1 {
+						currentGroup.append(day)
+					} else {
+						grouped.append(currentGroup)
+						currentGroup = [day]
+					}
+				}
+				if !currentGroup.isEmpty {
+					grouped.append(currentGroup)
+				}
+
+				let weekdayRanges = grouped.map { group in
+					let first = symbols[group.first! - 1]
+					let last = symbols[group.last! - 1]
+					return group.count == 1 ? first : "\(first) - \(last)"
+				}
+				return weekdayRanges.joined(separator: ", ")
+			case "Monthly on selected days":
+				let sortedDays = rule.selectedMonthDays.sorted()
+				var grouped: [[Int]] = []
+				var currentGroup: [Int] = []
+
+				for day in sortedDays {
+					if currentGroup.isEmpty || day == currentGroup.last! + 1 {
+						currentGroup.append(day)
+					} else {
+						grouped.append(currentGroup)
+						currentGroup = [day]
+					}
+				}
+				if !currentGroup.isEmpty {
+					grouped.append(currentGroup)
+				}
+
+				let dayRanges = grouped.map { group in
+					let first = group.first!
+					let last = group.last!
+					return group.count == 1 ? "\(first)" : "\(first) - \(last)"
+				}
+				return dayRanges.joined(separator: ", ")
+			case "Every N days":
+				return "Every \(rule.dayInterval) days"
+			default:
+				return "Daily"
+			}
+		case .weekly:
+			return "Every \(rule.dayInterval) weeks"
+		case .monthly:
+			return "Every \(rule.dayInterval) months"
+		}
+	}
+	
 	var body: some View {
 		Form {
 			Section {
@@ -75,7 +161,7 @@ struct AddExpenseView: View {
 						.frame(maxWidth: .infinity, alignment: .center)
 						.padding(.top, 8)
 						.onTapGesture { isAmountFocused = true }
-
+					
 					TextField("", text: $rawAmount)
 						.keyboardType(.numberPad)
 						.focused($isAmountFocused)
@@ -83,7 +169,7 @@ struct AddExpenseView: View {
 						.frame(height: 1)
 				}
 				.listRowSeparator(.hidden)
-
+				
 				if showRating {
 					VStack(spacing: 4) {
 						GeometryReader { geometry in
@@ -115,7 +201,7 @@ struct AddExpenseView: View {
 							)
 						}
 						.frame(height: 36)
-
+						
 						Text("How much did you enjoy this spending?")
 							.font(.caption)
 							.foregroundColor(.secondary)
@@ -124,12 +210,12 @@ struct AddExpenseView: View {
 					.padding(.top, -4)
 				}
 			}
-
+			
 			Section {
 				ZStack(alignment: .trailing) {
 					TextField("Name", text: $name)
 						.padding(.trailing, 28)
-
+					
 					if showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty {
 						Image(systemName: "exclamationmark.circle.fill")
 							.foregroundColor(.red)
@@ -138,9 +224,9 @@ struct AddExpenseView: View {
 							.animation(.easeInOut(duration: 0.25), value: showFieldValidation)
 					}
 				}
-
+				
 				DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
-
+				
 				NavigationLink(destination: List {
 					ForEach(store.categories) { item in
 						Button {
@@ -166,8 +252,8 @@ struct AddExpenseView: View {
 						}
 					}
 				}
-				.navigationTitle("Select Category")
-				, isActive: $showingCategorySelection) {
+					.navigationTitle("Select Category")
+											 , isActive: $showingCategorySelection) {
 					HStack {
 						Text("Category")
 						Spacer()
@@ -175,7 +261,7 @@ struct AddExpenseView: View {
 							Text(category)
 								.foregroundColor(.secondary)
 								.frame(maxWidth: .infinity, alignment: .trailing)
-
+							
 							if showFieldValidation && category.isEmpty {
 								Image(systemName: "exclamationmark.circle.fill")
 									.foregroundColor(.red)
@@ -188,18 +274,23 @@ struct AddExpenseView: View {
 					}
 				}
 			}
-
+			
 			Section {
 				TextField("Details", text: $details)
 				TextField("Note", text: $memo)
 			}
-
+			
 			Section {
-				NavigationLink(destination: RepeatExpenseView()) {
-					Text("Repeat")
+				NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
+					HStack {
+						Text("Repeat")
+						Spacer()
+						Text(repeatDescription)
+							.foregroundColor(.secondary)
+					}
 				}
 			}
-
+			
 			if let id = expenseID {
 				Section {
 					Button(role: .destructive) {
@@ -234,8 +325,8 @@ struct AddExpenseView: View {
 				Button("Save") {
 					showFieldValidation = true
 					guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
-							!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty,
-							!category.isEmpty else {
+								!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty,
+								!category.isEmpty else {
 						return
 					}
 					let parsedAmount = (Double(rawAmount.filter { $0.isWholeNumber }) ?? 0) / 100
