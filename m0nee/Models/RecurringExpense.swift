@@ -1,6 +1,6 @@
 import Foundation
 
-struct RecurringExpense: Identifiable, Codable {
+struct RecurringExpense: Identifiable, Codable, Hashable {
 	let id: UUID
 	let name: String
 	let amount: Double
@@ -13,7 +13,7 @@ struct RecurringExpense: Identifiable, Codable {
 	var lastGeneratedDate: Date?
 }
 
-struct RecurrenceRule: Codable {
+struct RecurrenceRule: Codable, Hashable {
 	enum Period: String, Codable {
 		case daily, weekly, monthly
 	}

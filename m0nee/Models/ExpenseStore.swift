@@ -133,8 +133,7 @@ class ExpenseStore: ObservableObject {
 							lastDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: lastDate) ?? lastDate
 						case .monthly:
 							lastDate = calendar.date(byAdding: .month, value: rule.interval, to: lastDate) ?? lastDate
-						default:
-							lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+						
 						}
 					case .weeklySelectedDays, .monthlySelectedDays:
 						lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
@@ -348,8 +347,6 @@ extension ExpenseStore {
 					let monthsBetween = calendar.dateComponents([.month], from: rule.startDate, to: date).month ?? 0
 					return monthsBetween >= 0 && monthsBetween % rule.interval == 0
 
-				default:
-					return false
 				}
 			case .weeklySelectedDays:
 				let weekday = calendar.component(.weekday, from: date)
@@ -397,8 +394,7 @@ extension ExpenseStore {
 						lastDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: lastDate) ?? lastDate
 					case .monthly:
 						lastDate = calendar.date(byAdding: .month, value: rule.interval, to: lastDate) ?? lastDate
-					default:
-						lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+						
 					}
 				case .weeklySelectedDays, .monthlySelectedDays:
 					lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
