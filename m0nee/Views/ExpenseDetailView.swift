@@ -19,34 +19,106 @@ struct ExpenseDetailView: View {
 	
 	var body: some View {
 		if let expense = expense {
-			List {
-				Section(header: EmptyView()) {
-					HStack {
-						Text("Date")
-						Spacer()
-						Text(expense.date.formatted(date: .abbreviated, time: .shortened))
-							.foregroundColor(.secondary)
-					}
-					
-					HStack {
-						Text("Amount")
-						Spacer()
-						Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
-							.foregroundColor(.secondary)
-							.fontWeight(.semibold)
-					}
-					
-					HStack {
-						Text("Category")
-						Spacer()
-						Text(expense.category)
-							.foregroundColor(.secondary)
-					}
-					
-					if showRating, let rating = expense.rating {
-						HStack {
-							Text("Rating")
+			ScrollView {
+				Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+					.font(.footnote)
+					.foregroundColor(.secondary)
+					.padding(.bottom, -12)
+
+				VStack(spacing: 20) {
+
+					// Expense Summary
+
+						HStack(alignment: .center, spacing: 12) {
+							if let categoryItem = store.categories.first(where: { $0.name == expense.category }) {
+								ZStack {
+									Circle()
+										.fill(categoryItem.color.color)
+										.frame(width: 44, height: 44)
+									Image(systemName: categoryItem.symbol)
+										.foregroundColor(.white)
+										.font(.system(size: 18, weight: .medium))
+								}
+							} else {
+								ZStack {
+									Circle()
+										.fill(Color.gray)
+										.frame(width: 44, height: 44)
+									Image(systemName: "tag")
+										.foregroundColor(.white)
+										.font(.system(size: 18, weight: .medium))
+								}
+							}
+
+							VStack(alignment: .leading, spacing: 4) {
+								Text(expense.name)
+									.font(.title2.bold())
+								Text(expense.category)
+									.font(.subheadline)
+									.foregroundColor(.secondary)
+							}
+
 							Spacer()
+
+							Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+								.font(.title3.bold())
+						}
+
+
+					.padding()
+					.background(Color(.systemGray6))
+					.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+					.padding(.horizontal)
+
+					// Details Section
+					if let details = expense.details, !details.isEmpty {
+						VStack(alignment: .leading, spacing: 8) {
+							Text("Details")
+								.font(.headline)
+							Text(details)
+								.font(.body)
+								.foregroundColor(.primary)
+						}
+						.padding()
+						.frame(maxWidth: .infinity, alignment: .leading)
+						.background(
+							RoundedRectangle(cornerRadius: 12, style: .continuous)
+								.fill(Color(.systemBackground))
+								.overlay(
+									RoundedRectangle(cornerRadius: 12, style: .continuous)
+										.stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+								)
+						)
+						.padding(.horizontal)
+					}
+
+					// Note Section
+					if let memo = expense.memo, !memo.isEmpty {
+						VStack(alignment: .leading, spacing: 8) {
+							Text("Note")
+								.font(.headline)
+							Text(memo)
+								.font(.body)
+								.foregroundColor(.primary)
+						}
+						.padding()
+						.frame(maxWidth: .infinity, alignment: .leading)
+						.background(
+							RoundedRectangle(cornerRadius: 12, style: .continuous)
+								.fill(Color(.systemBackground))
+								.overlay(
+									RoundedRectangle(cornerRadius: 12, style: .continuous)
+										.stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+								)
+						)
+						.padding(.horizontal)
+					}
+
+					// Rating
+					if showRating, let rating = expense.rating {
+						VStack(alignment: .leading, spacing: 8) {
+							Text("Rating")
+								.font(.headline)
 							HStack(spacing: 4) {
 								ForEach(1...5, id: \.self) { index in
 									Image(systemName: index <= rating ? "star.fill" : "star")
@@ -54,38 +126,21 @@ struct ExpenseDetailView: View {
 								}
 							}
 						}
+						.padding()
+						.frame(maxWidth: .infinity, alignment: .leading)
+						.background(
+							RoundedRectangle(cornerRadius: 12, style: .continuous)
+								.fill(Color(.systemBackground))
+								.overlay(
+									RoundedRectangle(cornerRadius: 12, style: .continuous)
+										.stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+								)
+						)
+						.padding(.horizontal)
 					}
 				}
-				
-				if let details = expense.details, !details.isEmpty {
-					Section {
-						VStack(alignment: .leading, spacing: 20) {
-							Text("Details")
-							Text(details)
-								.font(.body)
-								.foregroundColor(.secondary)
-						}
-						.padding(.vertical, 4)
-					}
-				}
-				
-				if let memo = expense.memo, !memo.isEmpty {
-					Section {
-						VStack(alignment: .leading, spacing: 20) {
-							Text("Note")
-							Text(memo)
-								.font(.body)
-								.foregroundColor(.secondary)
-						}
-						.padding(.vertical, 4)
-					}
-				}
+				.padding(.top)
 			}
-			.listStyle(.insetGrouped)
-			.listSectionSpacing(24)
-			.padding(.top, -20)
-			.navigationTitle(expense.name)
-			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button("Edit") {
@@ -108,7 +163,6 @@ struct ExpenseDetailView: View {
 							if updated.amount == -1 {
 								store.delete(updated)
 								isEditing = false
-								// Pop back
 								DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
 									dismiss()
 								}
