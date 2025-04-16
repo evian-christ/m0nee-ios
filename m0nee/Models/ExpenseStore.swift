@@ -48,6 +48,9 @@ class ExpenseStore: ObservableObject {
 				
 				print("💾 Using saveURL: \(saveURL.path)")
 				load()
+
+				let testDate = Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 28, hour: 16, minute: 55))!
+				generateExpensesFromRecurringIfNeeded(currentDate: testDate)
 		}
 		
 		func addCategory(_ category: CategoryItem) {
@@ -88,6 +91,45 @@ class ExpenseStore: ObservableObject {
 				if let encoded = try? JSONEncoder().encode(budgets) {
 						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
 				}
+		}
+
+		func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
+			for index in recurringExpenses.indices {
+				var recurring = recurringExpenses[index]
+				let rule = recurring.recurrenceRule
+				let calendar = Calendar.current
+
+				var lastDate = calendar.date(byAdding: .day, value: 0, to: recurring.lastGeneratedDate ?? rule.startDate) ?? rule.startDate
+				let endDate = currentDate
+
+				while lastDate <= endDate {
+					if shouldGenerateToday(for: rule, on: lastDate) {
+						let alreadyGenerated = calendar.isDate(lastDate, inSameDayAs: recurring.lastGeneratedDate ?? .distantPast)
+
+						if !alreadyGenerated {
+							let newExpense = Expense(
+								id: UUID(),
+								date: lastDate,
+								name: recurring.name,
+								amount: recurring.amount,
+								category: recurring.category,
+								details: recurring.details,
+								rating: recurring.rating,
+								memo: recurring.memo,
+								isRecurring: true
+							)
+							add(newExpense)
+							recurring.lastGeneratedDate = lastDate
+						}
+					}
+
+					lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+				}
+
+				recurringExpenses[index] = recurring
+			}
+
+			save()
 		}
 }
 
@@ -148,8 +190,27 @@ extension ExpenseStore {
 		}
 
 		func addRecurringExpense(_ recurring: RecurringExpense) {
-				recurringExpenses.append(recurring)
-				save()
+			var mutableRecurring = recurring
+
+			// ✅ 규칙에 따라 오늘 생성 여부 판단
+			if shouldGenerateToday(for: recurring.recurrenceRule, on: recurring.startDate) {
+				let expense = Expense(
+					id: UUID(),
+					date: recurring.startDate,
+					name: recurring.name,
+					amount: recurring.amount,
+					category: recurring.category,
+					details: recurring.details,
+					rating: recurring.rating,
+					memo: recurring.memo,
+					isRecurring: true
+				)
+				add(expense)
+				mutableRecurring.lastGeneratedDate = recurring.startDate
+			}
+
+			recurringExpenses.append(mutableRecurring)
+			save()
 		}
 		
 		func totalSpentByMonth() -> [String: Double] {
@@ -238,6 +299,20 @@ extension ExpenseStore {
 			}
 			if let encoded = try? JSONEncoder().encode(budgets) {
 				UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+			}
+		}
+		
+		private func shouldGenerateToday(for rule: RecurrenceRule, on date: Date) -> Bool {
+			let calendar = Calendar.current
+			switch rule.frequencyType {
+			case .everyN:
+				return true // 첫 시작은 무조건 생성
+			case .weeklySelectedDays:
+				let weekday = calendar.component(.weekday, from: date)
+				return rule.selectedWeekdays?.contains(weekday) ?? false
+			case .monthlySelectedDays:
+				let day = calendar.component(.day, from: date)
+				return rule.selectedMonthDays?.contains(day) ?? false
 			}
 		}
 }

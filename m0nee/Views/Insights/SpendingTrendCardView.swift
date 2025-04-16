@@ -18,7 +18,7 @@ struct SpendingTrendCardView: View {
 			calendar.startOfDay(for: $0.date)
 		}
 		
-		let dateRange = calendar.dateComponents([.day], from: startDate, to: cappedEndDate).day ?? 0
+		let dateRange = max(0, calendar.dateComponents([.day], from: startDate, to: cappedEndDate).day ?? 0)
 		let sortedDates = (0...dateRange).compactMap {
 			calendar.date(byAdding: .day, value: $0, to: startDate)
 		}

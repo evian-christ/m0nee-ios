@@ -360,7 +360,9 @@ struct AddExpenseView: View {
 						store.addRecurringExpense(recurring)
 					}
 					
-					onSave(newExpense)
+					if !isRecurring {
+						onSave(newExpense)
+					}
 					dismiss()
 				}
 			}
