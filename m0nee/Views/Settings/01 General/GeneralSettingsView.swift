@@ -13,6 +13,7 @@ struct GeneralSettingsView: View {
 	@AppStorage("groupByDay") private var groupByDay: Bool = false
 	@AppStorage("showRating") private var showRating: Bool = true
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
+	@AppStorage("displayMode") private var displayMode: String = "Standard"
 	
 	@State private var showResetAlert = false
 	@State private var showFullResetAlert = false
@@ -20,48 +21,61 @@ struct GeneralSettingsView: View {
 	@ObservedObject var store: ExpenseStore
 	
 	var body: some View {
-		Form {
-			Section(header: Text("Main screen")) {
-				Toggle("Group expenses by day", isOn: $groupByDay)
-				Toggle("Pin Insight Cards", isOn: $useFixedInsightCards)
-			}
-			
-			Section(header: Text("Expense")) {
-				Toggle("Enable Ratings", isOn: $showRating)
-				NavigationLink("Recurring Expenses") {
-					RecurringSettingsView()
+		NavigationStack {
+			Form {
+				Section(header: Text("Main screen")) {
+					NavigationLink {
+						DisplayModeSelectionView(displayMode: $displayMode)
+					} label: {
+						HStack {
+							Text("Display Mode")
+							Spacer()
+							Text(displayMode.capitalized)
+								.foregroundColor(.secondary)
+						}
+					}
+					
+					Toggle("Group expenses by day", isOn: $groupByDay)
+					Toggle("Pin Insight Cards", isOn: $useFixedInsightCards)
 				}
-			}
-			
-			Section(header: Text("Reset")) {
-				Button("Restore All Settings") {
-					showResetAlert = true
-				}
-				.foregroundColor(.red)
 				
-				Button("Erase All Settings & Data") {
-					showFullResetAlert = true
+				Section(header: Text("Expense")) {
+					Toggle("Enable Ratings", isOn: $showRating)
+					NavigationLink("Recurring Expenses") {
+						RecurringSettingsView()
+					}
 				}
-				.foregroundColor(.red)
+				
+				Section(header: Text("Reset")) {
+					Button("Restore All Settings") {
+						showResetAlert = true
+					}
+					.foregroundColor(.red)
+					
+					Button("Erase All Settings & Data") {
+						showFullResetAlert = true
+					}
+					.foregroundColor(.red)
+				}
 			}
-		}
-		.navigationTitle("General")
-		.navigationBarTitleDisplayMode(.inline)
-		.alert("Restore Settings", isPresented: $showResetAlert) {
-			Button("Restore", role: .destructive) {
-				restoreDefaults()
+			.navigationTitle("General")
+			.navigationBarTitleDisplayMode(.inline)
+			.alert("Restore Settings", isPresented: $showResetAlert) {
+				Button("Restore", role: .destructive) {
+					restoreDefaults()
+				}
+				Button("Cancel", role: .cancel) {}
+			} message: {
+				Text("Are you sure you want to restore all settings to default?")
 			}
-			Button("Cancel", role: .cancel) {}
-		} message: {
-			Text("Are you sure you want to restore all settings to default?")
-		}
-		.alert("Erase Everything", isPresented: $showFullResetAlert) {
-			Button("Erase", role: .destructive) {
-				eraseAllData()
+			.alert("Erase Everything", isPresented: $showFullResetAlert) {
+				Button("Erase", role: .destructive) {
+					eraseAllData()
+				}
+				Button("Cancel", role: .cancel) {}
+			} message: {
+				Text("This will delete all expenses and reset all settings and categories to default. This action cannot be undone.")
 			}
-			Button("Cancel", role: .cancel) {}
-		} message: {
-			Text("This will delete all expenses and reset all settings and categories to default. This action cannot be undone.")
 		}
 	}
 	
@@ -80,5 +94,24 @@ struct GeneralSettingsView: View {
 	private func eraseAllData() {
 		restoreDefaults()
 		store.eraseAllData()
+	}
+}
+
+private struct DisplayModeSelectionView: View {
+	@Binding var displayMode: String
+
+	var body: some View {
+		Form {
+			Section {
+				Picker(selection: $displayMode, label: EmptyView()) {
+					Text("Compact").tag("Compact")
+					Text("Standard").tag("Standard")
+					Text("Detailed").tag("Detailed")
+				}
+				.pickerStyle(.inline)
+			}
+		}
+		.navigationTitle("Display Mode")
+		.navigationBarTitleDisplayMode(.inline)
 	}
 }

@@ -123,7 +123,21 @@ class ExpenseStore: ObservableObject {
 						}
 					}
 
-					lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+					switch rule.frequencyType {
+					case .everyN:
+						switch rule.period {
+						case .daily:
+							lastDate = calendar.date(byAdding: .day, value: rule.interval, to: lastDate) ?? lastDate
+						case .weekly:
+							lastDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: lastDate) ?? lastDate
+						case .monthly:
+							lastDate = calendar.date(byAdding: .month, value: rule.interval, to: lastDate) ?? lastDate
+						default:
+							lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+						}
+					case .weeklySelectedDays, .monthlySelectedDays:
+						lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+					}
 				}
 
 				recurringExpenses[index] = recurring
@@ -306,7 +320,22 @@ extension ExpenseStore {
 			let calendar = Calendar.current
 			switch rule.frequencyType {
 			case .everyN:
-				return true // 첫 시작은 무조건 생성
+				switch rule.period {
+				case .daily:
+					let daysBetween = calendar.dateComponents([.day], from: rule.startDate, to: date).day ?? 0
+					return daysBetween >= 0 && daysBetween % rule.interval == 0
+
+				case .weekly:
+					let weeksBetween = calendar.dateComponents([.weekOfYear], from: rule.startDate, to: date).weekOfYear ?? 0
+					return weeksBetween >= 0 && weeksBetween % rule.interval == 0
+
+				case .monthly:
+					let monthsBetween = calendar.dateComponents([.month], from: rule.startDate, to: date).month ?? 0
+					return monthsBetween >= 0 && monthsBetween % rule.interval == 0
+
+				default:
+					return false
+				}
 			case .weeklySelectedDays:
 				let weekday = calendar.component(.weekday, from: date)
 				return rule.selectedWeekdays?.contains(weekday) ?? false

@@ -61,7 +61,7 @@ struct AddExpenseView: View {
 		amount: String = "",
 		category: String = "",
 		details: String = "",
-		rating: Int = 3,
+		rating: Int = 5,
 		memo: String = "",
 		isRecurring: Bool = false,
 		onSave: @escaping (Expense) -> Void
@@ -70,9 +70,7 @@ struct AddExpenseView: View {
 		_date = State(initialValue: date)
 		_name = State(initialValue: name)
 		_amount = State(initialValue: amount)
-		let amountDouble = Double(amount) ?? 0
-		let integerValue = Int(amountDouble * 100)
-		_rawAmount = State(initialValue: "\(integerValue)")
+		_rawAmount = State(initialValue: amount)
 		let defaultCategory = category.isEmpty ? (ExpenseStore().categories.first?.name ?? "") : category
 		_category = State(initialValue: defaultCategory)
 		_details = State(initialValue: details)
@@ -136,65 +134,21 @@ struct AddExpenseView: View {
 	
 	var body: some View {
 		Form {
-			Section {
+			Section(header: Text("Amount").font(.caption)) {
 				VStack(spacing: 8) {
-					Text(formattedAmount)
-						.font(.system(size: 48, weight: .bold))
-						.foregroundColor(.primary)
-						.frame(maxWidth: .infinity, alignment: .center)
-						.padding(.top, 8)
-						.onTapGesture { isAmountFocused = true }
-					
-					TextField("", text: $rawAmount)
-						.keyboardType(.numberPad)
-						.focused($isAmountFocused)
-						.opacity(0.01)
-						.frame(height: 1)
-				}
-				.listRowSeparator(.hidden)
-				
-				if showRating {
-					VStack(spacing: 4) {
-						GeometryReader { geometry in
-							HStack(spacing: 8) {
-								Spacer()
-								ForEach(1...5, id: \.self) { index in
-									Image(systemName: index <= rating ? "star.fill" : "star")
-										.resizable()
-										.frame(width: 28, height: 28)
-										.foregroundColor(.yellow)
-								}
-								Spacer()
-							}
-							.contentShape(Rectangle())
-							.gesture(
-								DragGesture(minimumDistance: 0)
-									.onChanged { value in
-										let spacing: CGFloat = 8
-										let starWidth: CGFloat = 28
-										let totalWidth = (starWidth * 5) + (spacing * 4)
-										let startX = (geometry.size.width - totalWidth) / 2
-										let relativeX = value.location.x - startX
-										let fullStarWidth = starWidth + spacing
-										let newRating = min(5, max(1, Int(relativeX / fullStarWidth) + 1))
-										if newRating != rating {
-											rating = newRating
-										}
-									}
-							)
-						}
-						.frame(height: 36)
-						
-						Text("How much did you enjoy this spending?")
-							.font(.caption)
-							.foregroundColor(.secondary)
-							.frame(maxWidth: .infinity, alignment: .center)
+					HStack {
+						Text(currencySymbol)
+							.font(.system(size: 20, weight: .bold))
+						TextField("0.00", text: $rawAmount)
+							.keyboardType(.decimalPad)
+							.font(.system(size: 20, weight: .bold))
+							.focused($isAmountFocused)
 					}
-					.padding(.top, -4)
+					.listRowSeparator(.hidden)
 				}
 			}
 			
-			Section {
+			Section(header: Text("Required").font(.caption)) {
 				ZStack(alignment: .trailing) {
 					TextField("Name", text: $name)
 						.padding(.trailing, 28)
@@ -258,7 +212,49 @@ struct AddExpenseView: View {
 				}
 			}
 			
-			Section {
+			if showRating {
+				Section(header: Text("Rating").font(.caption)) {
+					HStack {
+						Text("Rating")
+							.font(.body)
+							.foregroundColor(.primary)
+
+						Spacer()
+
+						GeometryReader { geometry in
+							HStack(spacing: 6) {
+								ForEach(1...5, id: \.self) { index in
+									Image(systemName: index <= rating ? "star.fill" : "star")
+										.resizable()
+										.frame(width: 22, height: 22)
+										.foregroundColor(.yellow)
+								}
+							}
+							.frame(maxWidth: .infinity, alignment: .trailing)
+							.contentShape(Rectangle())
+							.gesture(
+								DragGesture(minimumDistance: 0)
+									.onChanged { value in
+										let spacing: CGFloat = 6
+										let starWidth: CGFloat = 22
+										let width = geometry.size.width
+										let totalWidth = (starWidth * 5) + (spacing * 4)
+										let startX = width - totalWidth
+										let relativeX = value.location.x - startX
+										let newRating = min(5, max(1, Int(relativeX / (starWidth + spacing)) + 1))
+										if newRating != rating {
+											rating = newRating
+										}
+									}
+							)
+						}
+						.frame(height: 24)
+					}
+					.padding(.vertical, 4)
+				}
+			}
+			
+			Section(header: Text("Optional").font(.caption)) {
 				TextField("Details", text: $details)
 				TextField("Note", text: $memo)
 			}
@@ -282,7 +278,7 @@ struct AddExpenseView: View {
 			}
 			
 			if let id = expenseID {
-				Section {
+				Section(header: Text("Danger Zone").font(.caption)) {
 					Button(role: .destructive) {
 						onSave(Expense(
 							id: id,
@@ -320,7 +316,8 @@ struct AddExpenseView: View {
 						return
 					}
 					isRecurring = recurrenceDraft.selectedPeriod != .never
-					let parsedAmount = (Double(rawAmount.filter { $0.isWholeNumber }) ?? 0) / 100
+					let rawDouble = Double(rawAmount) ?? 0
+					let parsedAmount = (rawDouble * 100).rounded() / 100
 					let frequencyType = recurrenceDraft.frequencyType
 					
 					let rule = RecurrenceRule(

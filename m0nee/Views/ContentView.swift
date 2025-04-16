@@ -335,11 +335,37 @@ struct ContentView: View {
 		if displayMode == "Compact" {
 			VStack(spacing: 0) {
 				NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
-					HStack(spacing: 8) {
-						Text(expense.wrappedValue.name)
-							.font(.body)
-							.foregroundColor(.primary)
-							.lineLimit(1)
+					HStack(spacing: 12) {
+						if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
+							ZStack {
+								Circle()
+									.fill(categoryItem.color.color)
+									.frame(width: 24, height: 24)
+								Image(systemName: categoryItem.symbol)
+									.font(.system(size: 12))
+									.foregroundColor(.white)
+							}
+						} else {
+							ZStack {
+								Circle()
+									.fill(Color.gray.opacity(0.3))
+									.frame(width: 24, height: 24)
+								Image(systemName: "questionmark")
+									.font(.system(size: 12))
+									.foregroundColor(.gray)
+							}
+						}
+						HStack(spacing: 4) {
+							Text(expense.wrappedValue.name)
+							if expense.wrappedValue.isRecurring {
+								Image(systemName: "arrow.triangle.2.circlepath")
+									.font(.caption)
+									.foregroundColor(.blue)
+							}
+						}
+						.font(.body)
+						.foregroundColor(.primary)
+						.lineLimit(1)
 						Spacer()
 						Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 							.font(.system(size: 17, weight: .medium))
@@ -356,29 +382,55 @@ struct ContentView: View {
 		} else if displayMode == "Standard" {
 			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
 				VStack(spacing: 8) {
-					HStack(alignment: .center, spacing: 12) {
-						VStack(alignment: .leading, spacing: 2) {
-							Text(expense.wrappedValue.name)
-								.font(.system(.body, design: .default))
-								.fontWeight(.semibold)
-								.foregroundColor(.primary)
-							Text(expense.wrappedValue.category)
-								.font(.footnote)
-								.foregroundColor(.secondary)
+				HStack(alignment: .center, spacing: 12) {
+					if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
+						ZStack {
+							Circle()
+								.fill(categoryItem.color.color)
+								.frame(width: 32, height: 32)
+							Image(systemName: categoryItem.symbol)
+								.font(.system(size: 14))
+								.foregroundColor(.white)
 						}
-						Spacer()
-						VStack(alignment: .trailing, spacing: 2) {
-							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
-								.font(.system(size: 17, weight: .medium))
-								.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
-							Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
-								.font(.caption2)
+					} else {
+						ZStack {
+							Circle()
+								.fill(Color.gray.opacity(0.3))
+								.frame(width: 32, height: 32)
+							Image(systemName: "questionmark")
+								.font(.system(size: 14))
 								.foregroundColor(.gray)
 						}
-						Image(systemName: "chevron.right")
-							.font(.caption)
+					}
+					VStack(alignment: .leading, spacing: 2) {
+						HStack(spacing: 4) {
+							Text(expense.wrappedValue.name)
+							if expense.wrappedValue.isRecurring {
+								Image(systemName: "arrow.triangle.2.circlepath")
+									.font(.caption)
+									.foregroundColor(.blue)
+							}
+						}
+						.font(.system(.body, design: .default))
+						.fontWeight(.semibold)
+						.foregroundColor(.primary)
+						Text(expense.wrappedValue.category)
+							.font(.footnote)
+							.foregroundColor(.secondary)
+					}
+					Spacer()
+					VStack(alignment: .trailing, spacing: 2) {
+						Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+							.font(.system(size: 17, weight: .medium))
+							.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+						Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
+							.font(.caption2)
 							.foregroundColor(.gray)
 					}
+					Image(systemName: "chevron.right")
+						.font(.caption)
+						.foregroundColor(.gray)
+				}
 					Divider()
 				}
 				.padding(.horizontal)
@@ -397,10 +449,17 @@ struct ContentView: View {
 				HStack(alignment: .top) {
 					VStack(alignment: .leading, spacing: 8) {
 						HStack {
-							Text(expense.wrappedValue.name)
-								.font(.headline)
-								.fontWeight(.semibold)
-								.foregroundColor(.primary)
+							HStack(spacing: 4) {
+								Text(expense.wrappedValue.name)
+								if expense.wrappedValue.isRecurring {
+									Image(systemName: "arrow.triangle.2.circlepath")
+										.font(.caption)
+										.foregroundColor(.blue)
+								}
+							}
+							.font(.headline)
+							.fontWeight(.semibold)
+							.foregroundColor(.primary)
 							Spacer()
 							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 								.font(.system(size: 17, weight: .medium))
@@ -501,7 +560,7 @@ struct ContentView: View {
 											Spacer()
 										}
 											.padding(.horizontal, 16)
-											.padding(.top, 30)
+											.padding(.top, 15)
 											.padding(.bottom, 8)
 										) {
 											ForEach(groupedByDate[date]!, id: \.id) { $expense in
