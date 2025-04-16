@@ -47,6 +47,7 @@ struct AddExpenseView: View {
 	
 	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
 	@AppStorage("showRating") private var showRating: Bool = true
+	@State private var showingDeleteAlert = false
 	
 	var categoryList: [String] {
 		categoriesString.split(separator: ",").map { String($0) }
@@ -280,21 +281,27 @@ struct AddExpenseView: View {
 			if let id = expenseID {
 				Section(header: Text("Danger Zone").font(.caption)) {
 					Button(role: .destructive) {
-						onSave(Expense(
-							id: id,
-							date: date,
-							name: name,
-							amount: -1,
-							category: category,
-							details: details,
-							rating: rating,
-							memo: memo,
-							isRecurring: isRecurring
-						))
-						dismiss()
+						showingDeleteAlert = true
 					} label: {
 						Text("Delete Expense")
 							.frame(maxWidth: .infinity, alignment: .center)
+					}
+					.alert("Delete this expense?", isPresented: $showingDeleteAlert) {
+						Button("Delete", role: .destructive) {
+							onSave(Expense(
+								id: id,
+								date: date,
+								name: name,
+								amount: -1,
+								category: category,
+								details: details,
+								rating: rating,
+								memo: memo,
+								isRecurring: isRecurring
+							))
+							dismiss()
+						}
+						Button("Cancel", role: .cancel) {}
 					}
 				}
 			}
@@ -319,32 +326,21 @@ struct AddExpenseView: View {
 					let rawDouble = Double(rawAmount) ?? 0
 					let parsedAmount = (rawDouble * 100).rounded() / 100
 					let frequencyType = recurrenceDraft.frequencyType
-					
-					let rule = RecurrenceRule(
-						period: RecurrenceRule.Period(rawValue: recurrenceDraft.selectedPeriod.rawValue.lowercased()) ?? .daily,
-						frequencyType: frequencyType,
-						interval: recurrenceDraft.dayInterval,
-						selectedWeekdays: recurrenceDraft.selectedWeekdays.isEmpty ? nil : recurrenceDraft.selectedWeekdays,
-						selectedMonthDays: recurrenceDraft.selectedMonthDays.isEmpty ? nil : recurrenceDraft.selectedMonthDays,
-						startDate: date,
-						endDate: nil
-					)
-					
-					let newExpense = Expense(
-						id: expenseID ?? UUID(),
-						date: date,
-						name: name,
-						amount: parsedAmount,
-						category: category,
-						details: details.isEmpty ? nil : details,
-						rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
-						memo: memo.isEmpty ? nil : memo,
-						isRecurring: isRecurring
-					)
-					
-					// Save recurring if applicable
+
+					var recurringID: UUID? = nil
+
 					if isRecurring {
-						let recurring = RecurringExpense(
+						let rule = RecurrenceRule(
+							period: RecurrenceRule.Period(rawValue: recurrenceDraft.selectedPeriod.rawValue.lowercased()) ?? .daily,
+							frequencyType: frequencyType,
+							interval: recurrenceDraft.dayInterval,
+							selectedWeekdays: recurrenceDraft.selectedWeekdays.isEmpty ? nil : recurrenceDraft.selectedWeekdays,
+							selectedMonthDays: recurrenceDraft.selectedMonthDays.isEmpty ? nil : recurrenceDraft.selectedMonthDays,
+							startDate: date,
+							endDate: nil
+						)
+
+						let newRecurring = RecurringExpense(
 							id: UUID(),
 							name: name,
 							amount: parsedAmount,
@@ -356,9 +352,24 @@ struct AddExpenseView: View {
 							recurrenceRule: rule,
 							lastGeneratedDate: nil
 						)
-						store.addRecurringExpense(recurring)
+
+						recurringID = newRecurring.id
+						store.addRecurringExpense(newRecurring)
 					}
-					
+
+					let newExpense = Expense(
+						id: expenseID ?? UUID(),
+						date: date,
+						name: name,
+						amount: parsedAmount,
+						category: category,
+						details: details.isEmpty ? nil : details,
+						rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
+						memo: memo.isEmpty ? nil : memo,
+						isRecurring: isRecurring,
+						parentRecurringID: recurringID
+					)
+
 					if !isRecurring {
 						onSave(newExpense)
 					}

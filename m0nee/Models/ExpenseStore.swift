@@ -116,7 +116,8 @@ class ExpenseStore: ObservableObject {
 								details: recurring.details,
 								rating: recurring.rating,
 								memo: recurring.memo,
-								isRecurring: true
+								isRecurring: true,
+								parentRecurringID: recurring.id
 							)
 							add(newExpense)
 							recurring.lastGeneratedDate = lastDate
@@ -217,13 +218,15 @@ extension ExpenseStore {
 					details: recurring.details,
 					rating: recurring.rating,
 					memo: recurring.memo,
-					isRecurring: true
+					isRecurring: true,
+					parentRecurringID: recurring.id
 				)
 				add(expense)
 				mutableRecurring.lastGeneratedDate = recurring.startDate
 			}
 
 			recurringExpenses.append(mutableRecurring)
+			generateExpensesFromSingleRecurringIfNeeded(&recurringExpenses[recurringExpenses.count - 1], upTo: Date())
 			save()
 		}
 		
@@ -342,6 +345,52 @@ extension ExpenseStore {
 			case .monthlySelectedDays:
 				let day = calendar.component(.day, from: date)
 				return rule.selectedMonthDays?.contains(day) ?? false
+			}
+		}
+
+		private func generateExpensesFromSingleRecurringIfNeeded(_ recurring: inout RecurringExpense, upTo currentDate: Date) {
+			let rule = recurring.recurrenceRule
+			let calendar = Calendar.current
+
+			var lastDate = calendar.date(byAdding: .day, value: 0, to: recurring.lastGeneratedDate ?? rule.startDate) ?? rule.startDate
+			let endDate = currentDate
+
+			while lastDate <= endDate {
+				if shouldGenerateToday(for: rule, on: lastDate) {
+					let alreadyGenerated = calendar.isDate(lastDate, inSameDayAs: recurring.lastGeneratedDate ?? .distantPast)
+					if !alreadyGenerated {
+						let newExpense = Expense(
+							id: UUID(),
+							date: lastDate,
+							name: recurring.name,
+							amount: recurring.amount,
+							category: recurring.category,
+							details: recurring.details,
+							rating: recurring.rating,
+							memo: recurring.memo,
+							isRecurring: true,
+							parentRecurringID: recurring.id
+						)
+						add(newExpense)
+						recurring.lastGeneratedDate = lastDate
+					}
+				}
+
+				switch rule.frequencyType {
+				case .everyN:
+					switch rule.period {
+					case .daily:
+						lastDate = calendar.date(byAdding: .day, value: rule.interval, to: lastDate) ?? lastDate
+					case .weekly:
+						lastDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: lastDate) ?? lastDate
+					case .monthly:
+						lastDate = calendar.date(byAdding: .month, value: rule.interval, to: lastDate) ?? lastDate
+					default:
+						lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+					}
+				case .weeklySelectedDays, .monthlySelectedDays:
+					lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+				}
 			}
 		}
 }

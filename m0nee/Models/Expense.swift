@@ -10,12 +10,13 @@ struct Expense: Identifiable, Codable {
 		var rating: Int?
 		var memo: String?
 		var isRecurring: Bool = false
+		var parentRecurringID: UUID?
 
 		enum CodingKeys: String, CodingKey {
-				case id, date, name, amount, category, details, rating, memo, isRecurring
+				case id, date, name, amount, category, details, rating, memo, isRecurring, parentRecurringID
 		}
 
-		init(id: UUID, date: Date, name: String, amount: Double, category: String, details: String?, rating: Int?, memo: String?, isRecurring: Bool = false) {
+		init(id: UUID, date: Date, name: String, amount: Double, category: String, details: String?, rating: Int?, memo: String?, isRecurring: Bool = false, parentRecurringID: UUID? = nil) {
 				self.id = id
 				self.date = date
 				self.name = name
@@ -25,6 +26,7 @@ struct Expense: Identifiable, Codable {
 				self.rating = rating
 				self.memo = memo
 				self.isRecurring = isRecurring
+				self.parentRecurringID = parentRecurringID
 		}
 
 		init(from decoder: Decoder) throws {
@@ -39,6 +41,7 @@ struct Expense: Identifiable, Codable {
 				rating = try container.decodeIfPresent(Int.self, forKey: .rating)
 				memo = try container.decodeIfPresent(String.self, forKey: .memo)
 				isRecurring = try container.decodeIfPresent(Bool.self, forKey: .isRecurring) ?? false
+				parentRecurringID = try container.decodeIfPresent(UUID.self, forKey: .parentRecurringID)
 		}
 
 		func encode(to encoder: Encoder) throws {
@@ -53,5 +56,6 @@ struct Expense: Identifiable, Codable {
 				try container.encodeIfPresent(rating, forKey: .rating)
 				try container.encodeIfPresent(memo, forKey: .memo)
 				try container.encode(isRecurring, forKey: .isRecurring)
+				try container.encodeIfPresent(parentRecurringID, forKey: .parentRecurringID)
 		}
 }
