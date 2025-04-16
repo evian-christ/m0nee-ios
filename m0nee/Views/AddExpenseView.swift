@@ -11,11 +11,18 @@ enum Period: String, CaseIterable, Identifiable, Codable {
 
 struct RecurrenceDraft {
 	var selectedPeriod: Period = .never
-	var selectedFrequencyOption: String = ""
+	var frequencyType: RecurrenceRule.FrequencyType = .everyN
 	var selectedWeekdays: [Int] = []
 	var selectedMonthDays: [Int] = []
-	var dayInterval: Int = 1
+	var dayInterval: Int = 1 {
+		didSet {
+			if dayInterval < 1 {
+				dayInterval = 1
+			}
+		}
+	}
 }
+
 
 struct AddExpenseView: View {
 	@Environment(\.dismiss) private var dismiss
@@ -91,13 +98,12 @@ struct AddExpenseView: View {
 		case .never:
 			return "Never"
 		case .daily:
-			switch rule.selectedFrequencyOption {
-			case "Weekly on selected days":
+			switch rule.frequencyType {
+			case .weeklySelectedDays:
 				let sortedWeekdays = rule.selectedWeekdays.sorted()
+				let symbols = Calendar.current.shortWeekdaySymbols
 				var grouped: [[Int]] = []
 				var currentGroup: [Int] = []
-				let symbols = Calendar.current.shortWeekdaySymbols
-
 				for day in sortedWeekdays {
 					if currentGroup.isEmpty || day == currentGroup.last! + 1 {
 						currentGroup.append(day)
@@ -109,40 +115,17 @@ struct AddExpenseView: View {
 				if !currentGroup.isEmpty {
 					grouped.append(currentGroup)
 				}
-
 				let weekdayRanges = grouped.map { group in
 					let first = symbols[group.first! - 1]
 					let last = symbols[group.last! - 1]
 					return group.count == 1 ? first : "\(first) - \(last)"
 				}
 				return weekdayRanges.joined(separator: ", ")
-			case "Monthly on selected days":
+			case .monthlySelectedDays:
 				let sortedDays = rule.selectedMonthDays.sorted()
-				var grouped: [[Int]] = []
-				var currentGroup: [Int] = []
-
-				for day in sortedDays {
-					if currentGroup.isEmpty || day == currentGroup.last! + 1 {
-						currentGroup.append(day)
-					} else {
-						grouped.append(currentGroup)
-						currentGroup = [day]
-					}
-				}
-				if !currentGroup.isEmpty {
-					grouped.append(currentGroup)
-				}
-
-				let dayRanges = grouped.map { group in
-					let first = group.first!
-					let last = group.last!
-					return group.count == 1 ? "\(first)" : "\(first) - \(last)"
-				}
-				return dayRanges.joined(separator: ", ")
-			case "Every N days":
+				return "days \(sortedDays.map(String.init).joined(separator: ", "))"
+			case .everyN:
 				return "Every \(rule.dayInterval) days"
-			default:
-				return "Daily"
 			}
 		case .weekly:
 			return "Every \(rule.dayInterval) weeks"
@@ -289,6 +272,11 @@ struct AddExpenseView: View {
 							.foregroundColor(.secondary)
 					}
 				}
+				.onChange(of: recurrenceDraft.dayInterval) { newValue in
+					if newValue == 0 {
+						recurrenceDraft.dayInterval = 1
+					}
+				}
 			}
 			
 			if let id = expenseID {
@@ -329,7 +317,20 @@ struct AddExpenseView: View {
 								!category.isEmpty else {
 						return
 					}
+					isRecurring = recurrenceDraft.selectedPeriod != .never
 					let parsedAmount = (Double(rawAmount.filter { $0.isWholeNumber }) ?? 0) / 100
+					let frequencyType = recurrenceDraft.frequencyType
+					
+					let rule = RecurrenceRule(
+						period: RecurrenceRule.Period(rawValue: recurrenceDraft.selectedPeriod.rawValue.lowercased()) ?? .daily,
+						frequencyType: frequencyType,
+						interval: recurrenceDraft.dayInterval,
+						selectedWeekdays: recurrenceDraft.selectedWeekdays.isEmpty ? nil : recurrenceDraft.selectedWeekdays,
+						selectedMonthDays: recurrenceDraft.selectedMonthDays.isEmpty ? nil : recurrenceDraft.selectedMonthDays,
+						startDate: date,
+						endDate: nil
+					)
+					
 					let newExpense = Expense(
 						id: expenseID ?? UUID(),
 						date: date,
@@ -341,6 +342,24 @@ struct AddExpenseView: View {
 						memo: memo.isEmpty ? nil : memo,
 						isRecurring: isRecurring
 					)
+					
+					// Save recurring if applicable
+					if isRecurring {
+						let recurring = RecurringExpense(
+							id: UUID(),
+							name: name,
+							amount: parsedAmount,
+							category: category,
+							details: details.isEmpty ? nil : details,
+							rating: showRating ? rating : nil,
+							memo: memo.isEmpty ? nil : memo,
+							startDate: date,
+							recurrenceRule: rule,
+							lastGeneratedDate: nil
+						)
+						store.addRecurringExpense(recurring)
+					}
+					
 					onSave(newExpense)
 					dismiss()
 				}

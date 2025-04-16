@@ -28,6 +28,9 @@ struct GeneralSettingsView: View {
 			
 			Section(header: Text("Expense")) {
 				Toggle("Enable Ratings", isOn: $showRating)
+				NavigationLink("Recurring Expenses") {
+					RecurringSettingsView()
+				}
 			}
 			
 			Section(header: Text("Reset")) {

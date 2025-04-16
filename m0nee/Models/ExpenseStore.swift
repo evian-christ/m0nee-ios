@@ -4,11 +4,13 @@ import SwiftUI
 private struct StoreData: Codable {
 		var expenses: [Expense]
 		var categories: [CategoryItem]
+		var recurringExpenses: [RecurringExpense]
 }
 
 class ExpenseStore: ObservableObject {
 		@Published var expenses: [Expense] = []
 		@Published var categories: [CategoryItem] = []
+		@Published var recurringExpenses: [RecurringExpense] = []
 		
 		private var saveURL: URL
 		
@@ -92,7 +94,7 @@ class ExpenseStore: ObservableObject {
 extension ExpenseStore {
 		func save() {
 				do {
-						let storeData = StoreData(expenses: expenses, categories: categories)
+						let storeData = StoreData(expenses: expenses, categories: categories, recurringExpenses: recurringExpenses)
 						let data = try JSONEncoder().encode(storeData)
 						try data.write(to: saveURL)
 						let isICloud = saveURL.path.contains("Mobile Documents")
@@ -109,6 +111,7 @@ extension ExpenseStore {
 						let storeData = try JSONDecoder().decode(StoreData.self, from: data)
 						self.expenses = storeData.expenses
 						self.categories = storeData.categories
+						self.recurringExpenses = storeData.recurringExpenses
 				} catch {
 						print("Failed to load: \(error)")
 				}
@@ -143,6 +146,11 @@ extension ExpenseStore {
 						NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
 				}
 		}
+
+		func addRecurringExpense(_ recurring: RecurringExpense) {
+				recurringExpenses.append(recurring)
+				save()
+		}
 		
 		func totalSpentByMonth() -> [String: Double] {
 				let formatter = DateFormatter()
@@ -162,12 +170,9 @@ extension ExpenseStore {
 				let localExists = fileManager.fileExists(atPath: localURL.path)
 				let iCloudExists = fileManager.fileExists(atPath: iCloudDocsURL.path)
 				
-				print("localExists:", localExists, ", iCloudExists:", iCloudExists)
 				if localExists {
 						let localDate = (try? fileManager.attributesOfItem(atPath: localURL.path)[.modificationDate] as? Date) ?? Date.distantPast
 						let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudDocsURL.path)[.modificationDate] as? Date) ?? Date.distantPast
-						
-						print("localDate:", localDate, ", iCloudDate:", iCloudDate)
 						
 						if localDate > iCloudDate {
 								do {
@@ -216,6 +221,7 @@ extension ExpenseStore {
 
 		func eraseAllData() {
 			expenses.removeAll()
+			recurringExpenses.removeAll()
 			categories = [
 				CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
 				CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),

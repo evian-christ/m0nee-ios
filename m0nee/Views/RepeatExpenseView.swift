@@ -12,17 +12,17 @@ struct RepeatExpenseView: View {
 					}
 				}
 				.pickerStyle(.inline)
-				.onChange(of: draft.selectedPeriod) { newValue in
-					if newValue == .never {
+				.onChange(of: draft.selectedPeriod) { _ in
+					if draft.selectedPeriod == .never {
 						draft = RecurrenceDraft() // Reset draft
 					} else {
-						switch newValue {
+						switch draft.selectedPeriod {
 						case .daily:
-							draft.selectedFrequencyOption = "Weekly on selected days"
+							draft.frequencyType = .weeklySelectedDays
 						case .monthly:
-							draft.selectedFrequencyOption = "Every N months"
+							draft.frequencyType = .monthlySelectedDays
 						case .weekly:
-							draft.selectedFrequencyOption = "Every N weeks"
+							draft.frequencyType = .everyN
 						default:
 							break
 						}
@@ -35,10 +35,10 @@ struct RepeatExpenseView: View {
 			
 			if draft.selectedPeriod == .daily {
 				Section(header: Text("Frequency")) {
-					Picker(selection: $draft.selectedFrequencyOption, label: EmptyView()) {
-						Text("Weekly on selected days").tag("Weekly on selected days")
-						Text("Monthly on selected days").tag("Monthly on selected days")
-						Text("Every N days").tag("Every N days")
+					Picker(selection: $draft.frequencyType, label: EmptyView()) {
+						Text("Weekly on selected days").tag(RecurrenceRule.FrequencyType.weeklySelectedDays)
+						Text("Monthly on selected days").tag(RecurrenceRule.FrequencyType.monthlySelectedDays)
+						Text("Every N days").tag(RecurrenceRule.FrequencyType.everyN)
 					}
 					.pickerStyle(.inline)
 				}
@@ -46,8 +46,8 @@ struct RepeatExpenseView: View {
 
 			if draft.selectedPeriod == .monthly {
 				Section(header: Text("Frequency")) {
-					Picker(selection: $draft.selectedFrequencyOption, label: EmptyView()) {
-						Text("Every N months").tag("Every N months")
+					Picker(selection: $draft.frequencyType, label: EmptyView()) {
+						Text("Every N months").tag(RecurrenceRule.FrequencyType.everyN)
 					}
 					.pickerStyle(.inline)
 				}
@@ -55,20 +55,24 @@ struct RepeatExpenseView: View {
 
 			if draft.selectedPeriod == .weekly {
 				Section(header: Text("Frequency")) {
-					Picker(selection: $draft.selectedFrequencyOption, label: EmptyView()) {
-						Text("Every N weeks").tag("Every N weeks")
+					Picker(selection: $draft.frequencyType, label: EmptyView()) {
+						Text("Every N weeks").tag(RecurrenceRule.FrequencyType.everyN)
 					}
 					.pickerStyle(.inline)
 				}
 			}
 			
 			if draft.selectedPeriod != .never {
-				if draft.selectedFrequencyOption == "Weekly on selected days" {
+				if draft.frequencyType == .weeklySelectedDays && draft.selectedPeriod == .daily {
 					Section {
 						HStack(spacing: 10) {
 							let days = Array(1...7)
-			let reordered = Array(Calendar.current.shortWeekdaySymbols[0...6]) // Adjusted to start from Sunday
-			ForEach(Array(zip(days, reordered)), id: \.0) { weekdayNumber, label in
+							let symbols = Array(Calendar.current.shortWeekdaySymbols)
+							let weekdayPairs: [(Int, String)] = Array(zip(days, symbols))
+
+							ForEach(weekdayPairs, id: \.0) { pair in
+								let weekdayNumber = pair.0
+								let label = pair.1
 								let isSelected = draft.selectedWeekdays.contains(weekdayNumber)
 
 								Button(action: {
@@ -95,7 +99,7 @@ struct RepeatExpenseView: View {
 					}
 				}
 
-				if draft.selectedFrequencyOption == "Monthly on selected days" {
+				if draft.frequencyType == .monthlySelectedDays && draft.selectedPeriod == .daily {
 					Section {
 						let days = Array(1...31)
 						let isAllSelected = draft.selectedMonthDays.count == 31
@@ -146,7 +150,7 @@ struct RepeatExpenseView: View {
 					}
 				}
 				
-				if draft.selectedFrequencyOption == "Every N days" {
+				if draft.frequencyType == .everyN && draft.selectedPeriod == .daily {
 					Section {
 						HStack {
 							Text("Every")
@@ -160,7 +164,7 @@ struct RepeatExpenseView: View {
 					}
 				}
 
-				if draft.selectedFrequencyOption == "Every N weeks" {
+				if draft.frequencyType == .everyN && draft.selectedPeriod == .weekly {
 					Section {
 						HStack {
 							Text("Every")
@@ -174,7 +178,7 @@ struct RepeatExpenseView: View {
 					}
 				}
 				
-				if draft.selectedFrequencyOption == "Every N months" {
+				if draft.frequencyType == .everyN && draft.selectedPeriod == .monthly {
 					Section {
 						HStack {
 							Text("Every")
@@ -192,19 +196,12 @@ struct RepeatExpenseView: View {
 		.navigationTitle("Repeat")
 		.navigationBarTitleDisplayMode(.inline)
 		.onAppear {
-			print("RepeatExpenseView appeared with draft:")
-			print("selectedPeriod: \(draft.selectedPeriod.rawValue)")
-			print("selectedFrequencyOption: \(draft.selectedFrequencyOption)")
-			print("selectedWeekdays: \(draft.selectedWeekdays)")
-			print("selectedMonthDays: \(draft.selectedMonthDays)")
-			print("dayInterval: \(draft.dayInterval)")
-
-			if draft.selectedFrequencyOption == "Weekly on selected days",
+			if draft.frequencyType == .weeklySelectedDays && draft.selectedPeriod == .daily,
 				 draft.selectedWeekdays.isEmpty {
 				draft.selectedWeekdays = Array(1...7)
 			}
 
-			if draft.selectedFrequencyOption == "Monthly on selected days",
+			if draft.frequencyType == .monthlySelectedDays && draft.selectedPeriod == .daily,
 				 draft.selectedMonthDays.isEmpty {
 				draft.selectedMonthDays = Array(1...31);
 			}

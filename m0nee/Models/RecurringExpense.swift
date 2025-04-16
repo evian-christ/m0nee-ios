@@ -14,18 +14,21 @@ struct RecurringExpense: Identifiable, Codable {
 }
 
 struct RecurrenceRule: Codable {
-	enum Frequency: String, Codable {
-		case daily
-		case weekly
-		case monthly
-		case quarterly
-		case yearly
-		case custom
+	enum Period: String, Codable {
+		case daily, weekly, monthly
 	}
-
-	var frequency: Frequency
-	var interval: Int?           // e.g. every 2 weeks
-	var weekdays: [Int]?         // [1 = Sunday, ..., 7 = Saturday]
-	var monthDays: [Int]?        // [1...31]
+	
+	enum FrequencyType: String, Codable {
+		case everyN
+		case weeklySelectedDays
+		case monthlySelectedDays
+	}
+	
+	var period: Period
+	var frequencyType: FrequencyType
+	var interval: Int       // e.g., N in "every N days"
+	var selectedWeekdays: [Int]?   // 1 = Sunday, ..., 7 = Saturday
+	var selectedMonthDays: [Int]?  // 1...31
+	var startDate: Date
 	var endDate: Date?
 }
