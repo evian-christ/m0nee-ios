@@ -263,18 +263,20 @@ struct AddExpenseView: View {
 				TextField("Note", text: $memo)
 			}
 			
-			Section {
-				NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
-					HStack {
-						Text("Repeat")
-						Spacer()
-						Text(repeatDescription)
-							.foregroundColor(.secondary)
+			if expenseID == nil {
+				Section {
+					NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
+						HStack {
+							Text("Repeat")
+							Spacer()
+							Text(repeatDescription)
+								.foregroundColor(.secondary)
+						}
 					}
-				}
-				.onChange(of: recurrenceDraft.dayInterval) { newValue in
-					if newValue == 0 {
-						recurrenceDraft.dayInterval = 1
+					.onChange(of: recurrenceDraft.dayInterval) { newValue in
+						if newValue == 0 {
+							recurrenceDraft.dayInterval = 1
+						}
 					}
 				}
 			}
