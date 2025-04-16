@@ -146,6 +146,18 @@ class ExpenseStore: ObservableObject {
 
 			save()
 		}
+
+		func removeRecurringExpense(id: UUID) {
+			if let index = recurringExpenses.firstIndex(where: { $0.id == id }) {
+				recurringExpenses.remove(at: index)
+				save()
+			}
+		}
+
+		func removeAllExpenses(withParentID parentID: UUID) {
+			expenses.removeAll { $0.parentRecurringID == parentID }
+			save()
+		}
 }
 
 extension ExpenseStore {

@@ -49,6 +49,67 @@ struct AddExpenseView: View {
 	@AppStorage("showRating") private var showRating: Bool = true
 	@State private var showingDeleteAlert = false
 	
+	@ViewBuilder
+	private var deleteDialogButtons: some View {
+			if let id = expenseID, let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID {
+					Button("Delete only this expense", role: .destructive) {
+							let expense = Expense(
+									id: id,
+									date: date,
+									name: name,
+									amount: -1,
+									category: category,
+									details: details,
+									rating: rating,
+									memo: memo,
+									isRecurring: isRecurring,
+									parentRecurringID: parentID
+							)
+							onSave(expense)
+							dismiss()
+					}
+					Button("Delete this and recurring rule", role: .destructive) {
+							store.removeRecurringExpense(id: parentID)
+							let expense = Expense(
+									id: id,
+									date: date,
+									name: name,
+									amount: -1,
+									category: category,
+									details: details,
+									rating: rating,
+									memo: memo,
+									isRecurring: isRecurring,
+									parentRecurringID: parentID
+							)
+							onSave(expense)
+							dismiss()
+					}
+					Button("Delete this and all related expenses", role: .destructive) {
+							store.removeAllExpenses(withParentID: parentID)
+							store.removeRecurringExpense(id: parentID)
+							dismiss()
+					}
+			} else if let id = expenseID {
+					Button("Delete", role: .destructive) {
+							let expense = Expense(
+									id: id,
+									date: date,
+									name: name,
+									amount: -1,
+									category: category,
+									details: details,
+									rating: rating,
+									memo: memo,
+									isRecurring: isRecurring
+							)
+							onSave(expense)
+							dismiss()
+					}
+			}
+			Button("Cancel", role: .cancel) {}
+	}
+	
 	var categoryList: [String] {
 		categoriesString.split(separator: ",").map { String($0) }
 	}
@@ -198,6 +259,9 @@ struct AddExpenseView: View {
 						ZStack(alignment: .trailing) {
 							Text(category)
 								.foregroundColor(.secondary)
+								.lineLimit(1)
+								.truncationMode(.tail)
+								.layoutPriority(1)
 								.frame(maxWidth: .infinity, alignment: .trailing)
 							
 							if showFieldValidation && category.isEmpty {
@@ -208,7 +272,7 @@ struct AddExpenseView: View {
 									.animation(.easeInOut(duration: 0.25), value: showFieldValidation)
 							}
 						}
-						.frame(width: 100)
+						
 					}
 				}
 			}
@@ -279,6 +343,7 @@ struct AddExpenseView: View {
 			}
 			
 			if let id = expenseID {
+				let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID
 				Section(header: Text("Danger Zone").font(.caption)) {
 					Button(role: .destructive) {
 						showingDeleteAlert = true
@@ -286,22 +351,8 @@ struct AddExpenseView: View {
 						Text("Delete Expense")
 							.frame(maxWidth: .infinity, alignment: .center)
 					}
-					.alert("Delete this expense?", isPresented: $showingDeleteAlert) {
-						Button("Delete", role: .destructive) {
-							onSave(Expense(
-								id: id,
-								date: date,
-								name: name,
-								amount: -1,
-								category: category,
-								details: details,
-								rating: rating,
-								memo: memo,
-								isRecurring: isRecurring
-							))
-							dismiss()
-						}
-						Button("Cancel", role: .cancel) {}
+					.confirmationDialog("Delete this expense?", isPresented: $showingDeleteAlert, titleVisibility: .visible) {
+						deleteDialogButtons
 					}
 				}
 			}
