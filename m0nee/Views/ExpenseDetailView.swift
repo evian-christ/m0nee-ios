@@ -50,15 +50,21 @@ struct ExpenseDetailView: View {
 								}
 							}
 
-							HStack(spacing: 4) {
-								Text(expense.name)
-								if expense.isRecurring {
-									Image(systemName: "arrow.triangle.2.circlepath")
-										.font(.subheadline)
-										.foregroundColor(.blue)
+							VStack(alignment: .leading, spacing: 6) {
+								HStack(spacing: 4) {
+									Text(expense.name)
+									if expense.isRecurring {
+										Image(systemName: "arrow.triangle.2.circlepath")
+											.font(.subheadline)
+											.foregroundColor(.blue)
+									}
 								}
+								.font(.title2.bold())
+
+								Text(expense.category)
+									.font(.footnote)
+									.foregroundColor(.secondary)
 							}
-							.font(.title2.bold())
 
 							Spacer()
 
