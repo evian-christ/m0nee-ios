@@ -49,6 +49,7 @@ struct AddExpenseView: View {
 	@AppStorage("showRating") private var showRating: Bool = true
 	@State private var showingDeleteAlert = false
 	@State private var showingDuplicateAlert = false
+	@State private var showAmountTooLargeAlert = false
 	
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
@@ -409,6 +410,11 @@ var body: some View {
 		} message: {
 			Text("A similar expense already exists. Are you sure you want to add this?")
 		}
+		.alert("Amount Too Large", isPresented: $showAmountTooLargeAlert) {
+				Button("OK", role: .cancel) { }
+		} message: {
+				Text("The entered amount exceeds the maximum allowed. Please double-check the amount.")
+		}
 		.onAppear {
 			if category.isEmpty, let firstCategory = store.categories.first?.name {
 				category = firstCategory
@@ -437,13 +443,18 @@ var body: some View {
 					}
 					// Removed old rawDouble declaration
 					let rawDouble = Double(rawAmount) ?? 0
-					let positiveDouble = abs(rawDouble)
-					let parsedAmount = (positiveDouble * 100).rounded() / 100
+					let parsedAmount = (abs(rawDouble) * 100).rounded() / 100
+					let maxAllowedAmount: Double = 100_000_000
+					if parsedAmount > maxAllowedAmount {
+							showAmountTooLargeAlert = true
+							return
+					}
 					let frequencyType = recurrenceDraft.frequencyType
 
 					var recurringID: UUID? = nil
 
 					let isDuplicate = store.expenses.contains {
+						$0.id != expenseID &&
 						$0.name == name &&
 						Calendar.current.isDate($0.date, inSameDayAs: date) &&
 						$0.amount == parsedAmount &&
