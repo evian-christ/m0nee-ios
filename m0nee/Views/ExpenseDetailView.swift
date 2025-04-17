@@ -3,6 +3,7 @@ import SwiftUI
 struct ExpenseDetailView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@AppStorage("showRating") private var showRating: Bool = true
+	@Environment(\.colorScheme) private var colorScheme
 
 	private var currencySymbol: String {
 			CurrencyManager.symbol(for: currencyCode)
@@ -93,9 +94,11 @@ struct ExpenseDetailView: View {
 						.background(
 							RoundedRectangle(cornerRadius: 12, style: .continuous)
 								.fill(Color(.systemBackground))
-								.overlay(
-									RoundedRectangle(cornerRadius: 12, style: .continuous)
-										.stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+								.shadow(
+									color: colorScheme == .dark
+										? Color.white.opacity(0.3)
+										: Color.primary.opacity(0.05),
+									radius: 4, x: 0, y: 2
 								)
 						)
 						.padding(.horizontal)
@@ -115,9 +118,11 @@ struct ExpenseDetailView: View {
 						.background(
 							RoundedRectangle(cornerRadius: 12, style: .continuous)
 								.fill(Color(.systemBackground))
-								.overlay(
-									RoundedRectangle(cornerRadius: 12, style: .continuous)
-										.stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+								.shadow(
+									color: colorScheme == .dark
+										? Color.white.opacity(0.3)
+										: Color.primary.opacity(0.05),
+									radius: 4, x: 0, y: 2
 								)
 						)
 						.padding(.horizontal)
@@ -140,9 +145,11 @@ struct ExpenseDetailView: View {
 						.background(
 							RoundedRectangle(cornerRadius: 12, style: .continuous)
 								.fill(Color(.systemBackground))
-								.overlay(
-									RoundedRectangle(cornerRadius: 12, style: .continuous)
-										.stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+								.shadow(
+									color: colorScheme == .dark
+										? Color.white.opacity(0.3)
+										: Color.primary.opacity(0.05),
+									radius: 4, x: 0, y: 2
 								)
 						)
 						.padding(.horizontal)

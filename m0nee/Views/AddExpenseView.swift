@@ -373,14 +373,18 @@ struct AddExpenseView: View {
 								!category.isEmpty else {
 						return
 					}
-					isRecurring = recurrenceDraft.selectedPeriod != .never
+					if expenseID == nil {
+							isRecurring = recurrenceDraft.selectedPeriod != .never
+					} else {
+							isRecurring = store.expenses.first(where: { $0.id == expenseID })?.isRecurring ?? false
+					}
 					let rawDouble = Double(rawAmount) ?? 0
 					let parsedAmount = (rawDouble * 100).rounded() / 100
 					let frequencyType = recurrenceDraft.frequencyType
 
 					var recurringID: UUID? = nil
 
-					if isRecurring {
+					if isRecurring && (expenseID == nil || store.expenses.first(where: { $0.id == expenseID })?.parentRecurringID == nil) {
 						let rule = RecurrenceRule(
 							period: RecurrenceRule.Period(rawValue: recurrenceDraft.selectedPeriod.rawValue.lowercased()) ?? .daily,
 							frequencyType: frequencyType,
