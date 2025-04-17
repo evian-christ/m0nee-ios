@@ -2,6 +2,10 @@ import SwiftUI
 
 struct RecurringSettingsView: View {
 		@EnvironmentObject var store: ExpenseStore
+		@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+		private var currencySymbol: String {
+				CurrencyManager.symbol(for: currencyCode)
+		}
 
 		var body: some View {
 				List {
@@ -16,18 +20,35 @@ struct RecurringSettingsView: View {
 												RecurringDetailView(recurring: expense)
 														.environmentObject(store)
 										} label: {
-												VStack(alignment: .leading, spacing: 4) {
-														Text(expense.name)
-																.font(.headline)
-														Text("\(expense.amount, specifier: "%.2f") • \(expense.category)")
-																.font(.subheadline)
-																.foregroundColor(.secondary)
-														Text("Starts on \(expense.startDate.formatted(date: .abbreviated, time: .omitted))")
-																.font(.caption)
-																.foregroundColor(.gray)
-														Text(RecurringSettingsView.ruleDescription(expense.recurrenceRule))
-																.font(.caption2)
-																.foregroundColor(.blue)
+												HStack(spacing: 12) {
+														// Category icon on the left
+														if let item = store.categories.first(where: { $0.name == expense.category }) {
+																ZStack {
+																		Circle()
+																				.fill(item.color.color)
+																				.frame(width: 32, height: 32)
+																		Image(systemName: item.symbol)
+																				.font(.system(size: 16))
+																				.foregroundColor(.white)
+																}
+														}
+
+														// Title and rule
+														VStack(alignment: .leading, spacing: 2) {
+																Text(expense.name)
+																		.font(.headline)
+																		.foregroundColor(.primary)
+																Text(RecurringSettingsView.ruleDescription(expense.recurrenceRule))
+																		.font(.caption2)
+																		.foregroundColor(.secondary)
+														}
+
+														Spacer()
+
+														// Amount and chevron
+														Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+																.font(.system(size: 17, weight: .bold))
+																.foregroundColor(.primary)
 												}
 												.padding(.vertical, 8)
 										}

@@ -89,6 +89,10 @@ struct GeneralSettingsView: View {
 		budgetEnabled = true
 		budgetByCategory = false
 		categoryBudgets = ""
+		groupByDay = false
+		showRating = true
+		useFixedInsightCards = true
+		displayMode = "Standard"
 	}
 	
 	private func eraseAllData() {
