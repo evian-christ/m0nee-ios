@@ -339,7 +339,17 @@ var body: some View {
 			
 			Section(header: Text("Optional").font(.caption)) {
 				TextField("Details", text: $details)
+					.onChange(of: details) { newValue in
+						if newValue.count > 100 {
+							details = String(newValue.prefix(100))
+						}
+					}
 				TextField("Note", text: $memo)
+					.onChange(of: memo) { newValue in
+						if newValue.count > 500 {
+							memo = String(newValue.prefix(500))
+						}
+					}
 			}
 			
 			if expenseID == nil {
