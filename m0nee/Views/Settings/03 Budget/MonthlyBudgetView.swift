@@ -40,6 +40,13 @@ struct MonthlyBudgetView: View {
 						Text(currencySymbol)
 						TextField("Budget", value: $monthlyBudget, format: .number)
 							.keyboardType(.decimalPad)
+							.onChange(of: monthlyBudget) { newValue in
+								let positiveValue = abs(newValue)
+								let rounded = round(positiveValue)
+								if monthlyBudget != rounded {
+									monthlyBudget = rounded
+								}
+							}
 					}
 					.font(.title2)
 					.bold()

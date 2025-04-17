@@ -11,6 +11,8 @@ class ExpenseStore: ObservableObject {
 		@Published var expenses: [Expense] = []
 		@Published var categories: [CategoryItem] = []
 		@Published var recurringExpenses: [RecurringExpense] = []
+		@Published var restoredFromBackup: Bool = false
+		@Published var failedToRestore: Bool = false
 		
 		private var saveURL: URL
 		
@@ -45,7 +47,8 @@ class ExpenseStore: ObservableObject {
 				} else {
 						self.saveURL = localURL
 				}
-				
+
+				repairICloudIfNeeded()
 				print("💾 Using saveURL: \(saveURL.path)")
 				load()
 
@@ -93,7 +96,37 @@ class ExpenseStore: ObservableObject {
 				}
 		}
 
-		func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
+		private func repairICloudIfNeeded() {
+				guard saveURL.path.contains("Mobile Documents") else { return }
+
+				let fileManager = FileManager.default
+				let iCloudPath = saveURL.path
+				let backupURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+						.appendingPathComponent("expenses_backup_for_recovery.json")
+
+				guard fileManager.fileExists(atPath: backupURL.path) else { return }
+
+				let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudPath)[.modificationDate] as? Date) ?? Date.distantPast
+				let backupDate = (try? fileManager.attributesOfItem(atPath: backupURL.path)[.modificationDate] as? Date) ?? Date.distantPast
+
+				if backupDate > iCloudDate {
+						do {
+								let backupData = try Data(contentsOf: backupURL)
+								try backupData.write(to: saveURL)
+								print("🛟 iCloud was outdated, overwritten with backup")
+								DispatchQueue.main.async {
+										self.restoredFromBackup = true
+								}
+						} catch {
+								print("❌ Failed to repair iCloud with backup: \(error)")
+								DispatchQueue.main.async {
+										self.failedToRestore = true
+								}
+						}
+				}
+		}
+	
+	func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
 			for index in recurringExpenses.indices {
 				var recurring = recurringExpenses[index]
 				let rule = recurring.recurrenceRule
@@ -204,6 +237,17 @@ extension ExpenseStore {
 						let storeData = StoreData(expenses: expenses, categories: categories, recurringExpenses: recurringExpenses)
 						let data = try JSONEncoder().encode(storeData)
 						try data.write(to: saveURL)
+						// Also write local backup if using iCloud
+						if saveURL.path.contains("Mobile Documents") {
+								let backupURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+										.appendingPathComponent("expenses_backup_for_recovery.json")
+								do {
+										try data.write(to: backupURL)
+										print("🛟 Local backup saved at \(backupURL.path)")
+								} catch {
+										print("❌ Failed to save local backup: \(error)")
+								}
+						}
 						let isICloud = saveURL.path.contains("Mobile Documents")
 						print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
 				} catch {
