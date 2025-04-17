@@ -367,11 +367,12 @@ struct ContentView: View {
 									.foregroundColor(.blue)
 							}
 						}
-						.layoutPriority(1)
+						.layoutPriority(0.5)
 						Spacer()
 						Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 							.font(.system(size: 17, weight: .medium))
 							.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+							.layoutPriority(1)
 						Image(systemName: "chevron.right")
 							.font(.caption)
 							.foregroundColor(.gray)

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-	@AppStorage("currencySymbol") private var currencySymbol: String = "£"
+	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
 	@AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
@@ -10,7 +10,7 @@ struct GeneralSettingsView: View {
 	@AppStorage("budgetEnabled") private var budgetEnabled: Bool = true
 	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
 	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
-	@AppStorage("groupByDay") private var groupByDay: Bool = false
+	@AppStorage("groupByDay") private var groupByDay: Bool = true
 	@AppStorage("showRating") private var showRating: Bool = true
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
@@ -81,7 +81,7 @@ struct GeneralSettingsView: View {
 	
 	private func restoreDefaults() {
 		appearanceMode = "Automatic"
-		currencySymbol = "$"
+		currencyCode = Locale.current.currency?.identifier ?? "USD"
 		budgetPeriod = "Monthly"
 		monthlyStartDay = 1
 		weeklyStartDay = 1
@@ -89,7 +89,7 @@ struct GeneralSettingsView: View {
 		budgetEnabled = true
 		budgetByCategory = false
 		categoryBudgets = ""
-		groupByDay = false
+		groupByDay = true
 		showRating = true
 		useFixedInsightCards = true
 		displayMode = "Standard"

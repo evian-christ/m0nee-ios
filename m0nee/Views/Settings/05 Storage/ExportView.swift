@@ -24,7 +24,7 @@ struct ExportView: View {
 		let fileName = "Monir_Export.csv"
 		let path = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
 		
-		var csvText = "Date,Name,Amount,Category,Details,Rating\n"
+		var csvText = "Date,Name,Amount,Category,Details,Rating,Note,IsRecurring\n"
 		
 		for expense in store.expenses {
 			let date = DateFormatter.m0neeCSV.string(from: expense.date)
@@ -33,7 +33,9 @@ struct ExportView: View {
 			let category = escape(expense.category)
 			let details = escape(expense.details ?? "")
 			let rating = expense.rating.map { "\($0)" } ?? ""
-			csvText += "\(date),\(name),\(amount),\(category),\(details),\(rating)\n"
+			let note = escape(expense.memo ?? "")
+			let isRecurring = expense.isRecurring ? "Yes" : "No"
+			csvText += "\(date),\(name),\(amount),\(category),\(details),\(rating),\(note),\(isRecurring)\n"
 		}
 		
 		do {
