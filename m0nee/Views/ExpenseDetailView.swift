@@ -71,11 +71,6 @@ struct ExpenseDetailView: View {
 							Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
 								.font(.title3.bold())
 							
-							if let recurringID = expense.parentRecurringID {
-								Text("Recurring ID: \(recurringID.uuidString)")
-									.font(.caption2)
-									.foregroundColor(.gray)
-							}
 						}
 
 

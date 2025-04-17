@@ -114,43 +114,95 @@ extension RecurringSettingsView {
 		struct RecurringDetailView: View {
 				let recurring: RecurringExpense
 				@EnvironmentObject var store: ExpenseStore
+				@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+				@Environment(\.colorScheme) private var colorScheme
+
+				private var categoryItem: CategoryItem? {
+						store.categories.first { $0.name == recurring.category }
+				}
+				private var categoryColor: Color {
+						categoryItem?.color.color ?? .gray
+				}
+				private var currencySymbol: String {
+						CurrencyManager.symbol(for: currencyCode)
+				}
 
 				var body: some View {
 						ScrollView {
-								VStack(alignment: .leading, spacing: 16) {
-										Text(recurring.name)
-												.font(.title2.bold())
-
-										HStack(spacing: 8) {
-												if let item = store.categories.first(where: { $0.name == recurring.category }) {
-														ZStack {
-																Circle()
-																		.fill(item.color.color)
-																		.frame(width: 36, height: 36)
-																Image(systemName: item.symbol)
-																		.font(.system(size: 16))
-																		.foregroundColor(.white)
-														}
+								VStack(spacing: 20) {
+										// Header card
+										HStack(spacing: 16) {
+												// Category icon on the left
+												ZStack {
+														Circle()
+																.fill(categoryColor)
+																.frame(width: 60, height: 60)
+														Image(systemName: categoryItem?.symbol ?? "questionmark")
+																.font(.system(size: 24, weight: .medium))
+																.foregroundColor(.white)
 												}
-												Text("\(recurring.amount, specifier: "%.2f")")
+												// Name and category
+												VStack(alignment: .leading, spacing: 4) {
+														Text(recurring.name)
+																.font(.title2.bold())
+														Text(recurring.category)
+																.font(.subheadline)
+																.foregroundColor(.secondary)
+												}
+												Spacer()
+												// Amount on the right
+												Text("\(currencySymbol)\(recurring.amount, specifier: "%.2f")")
 														.font(.title3.bold())
 										}
+										.padding()
+										.background(Color(.systemGray6))
+										.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+										.padding(.horizontal)
 
-										Text("Start Date")
-												.font(.headline)
-										Text(recurring.startDate.formatted(date: .long, time: .omitted))
-												.foregroundColor(.secondary)
+										// Details section
+										VStack(alignment: .leading, spacing: 12) {
+												Text("Recurrence Details")
+														.font(.headline)
 
-										Text("Recurrence Rule")
-												.font(.headline)
-										Text(RecurringSettingsView.ruleDescription(recurring.recurrenceRule))
-												.foregroundColor(.secondary)
+												HStack {
+														Label("Starts on", systemImage: "calendar")
+														Spacer()
+														Text(recurring.startDate.formatted(date: .long, time: .omitted))
+												}
+
+												HStack {
+														Label("Frequency", systemImage: "repeat")
+														Spacer()
+														Text(RecurringSettingsView.ruleDescription(recurring.recurrenceRule))
+												}
+
+												if let nextDate = store.nextOccurrence(for: recurring) {
+														HStack {
+																Label("Next", systemImage: "arrow.forward")
+																Spacer()
+																Text(nextDate.formatted(date: .long, time: .omitted))
+																		.foregroundColor(.accentColor)
+														}
+												}
+										}
+										.padding()
+										.background(
+												RoundedRectangle(cornerRadius: 12, style: .continuous)
+														.fill(Color(.systemBackground))
+														.shadow(
+															color: colorScheme == .dark
+																? Color.white.opacity(0.3)
+																: Color.primary.opacity(0.05),
+															radius: 4, x: 0, y: 2
+														)
+										)
+										.padding(.horizontal)
 
 										Spacer()
 								}
-								.padding()
+								.padding(.top)
 						}
-						.navigationTitle("Details")
+						.navigationTitle("Recurring")
 						.navigationBarTitleDisplayMode(.inline)
 				}
 		}

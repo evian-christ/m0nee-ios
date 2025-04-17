@@ -357,15 +357,17 @@ struct ContentView: View {
 						}
 						HStack(spacing: 4) {
 							Text(expense.wrappedValue.name)
+								.font(.body)
+								.foregroundColor(.primary)
+								.lineLimit(1)
+								.truncationMode(.tail)
 							if expense.wrappedValue.isRecurring {
 								Image(systemName: "arrow.triangle.2.circlepath")
 									.font(.caption)
 									.foregroundColor(.blue)
 							}
 						}
-						.font(.body)
-						.foregroundColor(.primary)
-						.lineLimit(1)
+						.layoutPriority(1)
 						Spacer()
 						Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 							.font(.system(size: 17, weight: .medium))
@@ -405,6 +407,8 @@ struct ContentView: View {
 					VStack(alignment: .leading, spacing: 2) {
 						HStack(spacing: 4) {
 							Text(expense.wrappedValue.name)
+								.lineLimit(1)
+								.truncationMode(.tail)
 							if expense.wrappedValue.isRecurring {
 								Image(systemName: "arrow.triangle.2.circlepath")
 									.font(.caption)
@@ -451,6 +455,8 @@ struct ContentView: View {
 						HStack {
 							HStack(spacing: 4) {
 								Text(expense.wrappedValue.name)
+									.lineLimit(1)
+									.truncationMode(.tail)
 								if expense.wrappedValue.isRecurring {
 									Image(systemName: "arrow.triangle.2.circlepath")
 										.font(.caption)

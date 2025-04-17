@@ -157,6 +157,45 @@ class ExpenseStore: ObservableObject {
 			expenses.removeAll { $0.parentRecurringID == parentID }
 			save()
 		}
+
+		/// Returns the next occurrence date after today (or the next after lastGeneratedDate) for the given recurring expense.
+		func nextOccurrence(for recurring: RecurringExpense) -> Date? {
+			let rule = recurring.recurrenceRule
+			let calendar = Calendar.current
+			let start = recurring.lastGeneratedDate ?? rule.startDate
+			let today = Date()
+			
+			// Start from either today or the start date, whichever is later
+			var candidate = max(start, today)
+			
+			// If start > today, first occurrence is start
+			if calendar.isDate(candidate, inSameDayAs: rule.startDate) && candidate > today {
+				return rule.startDate
+			}
+			
+			// Increment until we find the next valid date > today
+			repeat {
+				switch rule.frequencyType {
+				case .everyN:
+					switch rule.period {
+					case .daily:
+						candidate = calendar.date(byAdding: .day, value: rule.interval, to: candidate) ?? candidate
+					case .weekly:
+						candidate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: candidate) ?? candidate
+					case .monthly:
+						candidate = calendar.date(byAdding: .month, value: rule.interval, to: candidate) ?? candidate
+					}
+				case .weeklySelectedDays:
+					// Move forward one day until a selected weekday
+					candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
+				case .monthlySelectedDays:
+					// Move forward one day until a selected month-day
+					candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
+				}
+			} while candidate <= today
+
+			return candidate
+		}
 }
 
 extension ExpenseStore {
