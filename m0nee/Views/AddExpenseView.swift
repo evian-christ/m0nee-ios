@@ -227,6 +227,11 @@ struct AddExpenseView: View {
 				ZStack(alignment: .trailing) {
 					TextField("Name", text: $name)
 						.padding(.trailing, 28)
+						.onChange(of: name) { newValue in
+							if newValue.count > 30 {
+								name = String(newValue.prefix(30))
+							}
+						}
 					
 					if showFieldValidation && name.trimmingCharacters(in: .whitespaces).isEmpty {
 						Image(systemName: "exclamationmark.circle.fill")
