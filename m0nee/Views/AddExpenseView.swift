@@ -391,8 +391,10 @@ struct AddExpenseView: View {
 					} else {
 							isRecurring = store.expenses.first(where: { $0.id == expenseID })?.isRecurring ?? false
 					}
+					// Removed old rawDouble declaration
 					let rawDouble = Double(rawAmount) ?? 0
-					let parsedAmount = (rawDouble * 100).rounded() / 100
+					let positiveDouble = abs(rawDouble)
+					let parsedAmount = (positiveDouble * 100).rounded() / 100
 					let frequencyType = recurrenceDraft.frequencyType
 
 					var recurringID: UUID? = nil
