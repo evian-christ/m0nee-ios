@@ -8,6 +8,8 @@ struct CategorySettingsView: View {
 	@State private var isEditing = false
 	@State private var selectedSymbol = "folder"
 	@State private var selectedColor: Color = .gray
+	@State private var showCategoryAddError = false
+	@State private var categoryAddErrorMessage = ""
 	
 	var body: some View {
 		NavigationStack {
@@ -103,12 +105,31 @@ struct CategorySettingsView: View {
 						ToolbarItem(placement: .navigationBarTrailing) {
 							Button("Add") {
 								let trimmed = newCategory.trimmingCharacters(in: .whitespaces)
-								guard !trimmed.isEmpty, !store.categories.contains(where: { $0.name == trimmed }) else { return }
-								store.addCategory(CategoryItem(name: trimmed, symbol: selectedSymbol, color: CodableColor(selectedColor)))
+								let maxLength = 30
+								let cleaned = String(trimmed.prefix(maxLength))
+
+								if cleaned.isEmpty {
+									categoryAddErrorMessage = "Category name cannot be empty."
+									showCategoryAddError = true
+									return
+								}
+
+								if store.categories.contains(where: { $0.name.lowercased() == cleaned.lowercased() }) {
+									categoryAddErrorMessage = "Category name already exists."
+									showCategoryAddError = true
+									return
+								}
+
+								store.addCategory(CategoryItem(name: cleaned, symbol: selectedSymbol, color: CodableColor(selectedColor)))
 								newCategory = ""
 								showingAddSheet = false
 							}
 						}
+					}
+					.alert("Error", isPresented: $showCategoryAddError) {
+						Button("OK", role: .cancel) { }
+					} message: {
+						Text(categoryAddErrorMessage)
 					}
 				}
 			}
