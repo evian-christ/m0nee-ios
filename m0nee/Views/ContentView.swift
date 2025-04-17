@@ -141,6 +141,7 @@ struct InsightsView: View {
 
 struct ContentView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
 	
 	private var currencySymbol: String {
 			CurrencyManager.symbol(for: currencyCode)
@@ -528,6 +529,14 @@ struct ContentView: View {
 	}
 	
 	var body: some View {
+		if hasSeenTutorial {
+			mainBody
+		} else {
+			TutorialView()
+		}
+	}
+	
+	private var mainBody: some View {
 		NavigationStack {
 			ZStack(alignment: .top) {
 				ScrollView {
@@ -654,7 +663,14 @@ struct ContentView: View {
 					}
 				}
 				.navigationDestination(isPresented: $showingSettings) {
-					SettingsView(store: store)
+					VStack {
+						SettingsView(store: store)
+						Button("Reset Tutorial") {
+							UserDefaults.standard.set(false, forKey: "hasSeenTutorial")
+						}
+						.foregroundColor(.blue)
+						.padding()
+					}
 				}
 				.navigationDestination(isPresented: $showingInsights) {
 					InsightsView().environmentObject(store)
@@ -720,7 +736,6 @@ struct ContentView: View {
 			appearanceMode == "Dark" ? .dark :
 				appearanceMode == "Light" ? .light : nil
 		)
-		
 	}
 	
 	private func displayMonth(_ month: String) -> String {
