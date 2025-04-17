@@ -55,7 +55,10 @@ struct CategoryBudgetView: View {
 				.keyboardType(.numberPad)
 			Button("OK") {
 				if let selected = selectedCategory {
-					let cleanValue = String(Int(alertInput) ?? 0)
+					let rawDouble = Double(alertInput) ?? 0
+					let positiveValue = abs(rawDouble)
+					let roundedValue = Int(round(positiveValue))
+					let cleanValue = String(roundedValue)
 					budgetInputs[selected.name] = cleanValue
 					if let encoded = try? JSONEncoder().encode(budgetInputs) {
 						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
