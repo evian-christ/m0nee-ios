@@ -48,6 +48,7 @@ struct AddExpenseView: View {
 	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
 	@AppStorage("showRating") private var showRating: Bool = true
 	@State private var showingDeleteAlert = false
+	@State private var showingDuplicateAlert = false
 	
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
@@ -385,6 +386,29 @@ var body: some View {
 				}
 			}
 		}
+		.alert("Duplicate Expense", isPresented: $showingDuplicateAlert) {
+			Button("Add Anyway", role: .destructive) {
+				let parsedAmount = (abs(Double(rawAmount) ?? 0) * 100).rounded() / 100
+				let recurringID: UUID? = nil // duplicate check only occurs for non-recurring
+				let newExpense = Expense(
+					id: expenseID ?? UUID(),
+					date: date,
+					name: name,
+					amount: parsedAmount,
+					category: category,
+					details: details.isEmpty ? nil : details,
+					rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
+					memo: memo.isEmpty ? nil : memo,
+					isRecurring: isRecurring,
+					parentRecurringID: recurringID
+				)
+				onSave(newExpense)
+				dismiss()
+			}
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("A similar expense already exists. Are you sure you want to add this?")
+		}
 		.onAppear {
 			if category.isEmpty, let firstCategory = store.categories.first?.name {
 				category = firstCategory
@@ -418,6 +442,17 @@ var body: some View {
 					let frequencyType = recurrenceDraft.frequencyType
 
 					var recurringID: UUID? = nil
+
+					let isDuplicate = store.expenses.contains {
+						$0.name == name &&
+						Calendar.current.isDate($0.date, inSameDayAs: date) &&
+						$0.amount == parsedAmount &&
+						$0.category == category
+					}
+					if isDuplicate {
+						showingDuplicateAlert = true
+						return
+					}
 
 					if isRecurring && (expenseID == nil || store.expenses.first(where: { $0.id == expenseID })?.parentRecurringID == nil) {
 						let rule = RecurrenceRule(
