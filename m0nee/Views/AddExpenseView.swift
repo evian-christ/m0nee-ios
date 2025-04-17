@@ -85,9 +85,22 @@ struct AddExpenseView: View {
 							onSave(expense)
 							dismiss()
 					}
-					Button("Delete this and all related expenses", role: .destructive) {
+					Button("Delete rule and all related expenses", role: .destructive) {
 							store.removeAllExpenses(withParentID: parentID)
 							store.removeRecurringExpense(id: parentID)
+							let expense = Expense(
+									id: id,
+									date: date,
+									name: name,
+									amount: -1,
+									category: category,
+									details: details,
+									rating: rating,
+									memo: memo,
+									isRecurring: isRecurring,
+									parentRecurringID: parentID
+							)
+							onSave(expense)
 							dismiss()
 					}
 			} else if let id = expenseID {
