@@ -146,7 +146,7 @@ struct AddExpenseView: View {
 		_name = State(initialValue: name)
 		_amount = State(initialValue: amount)
 		_rawAmount = State(initialValue: amount)
-		let defaultCategory = category.isEmpty ? (ExpenseStore().categories.first?.name ?? "") : category
+		let defaultCategory = category.isEmpty ? "" : category
 		_category = State(initialValue: defaultCategory)
 		_details = State(initialValue: details)
 		_rating = State(initialValue: rating)
@@ -207,7 +207,7 @@ struct AddExpenseView: View {
 		}
 	}
 	
-	var body: some View {
+var body: some View {
 		Form {
 			Section(header: Text("Amount").font(.caption)) {
 				VStack(spacing: 8) {
@@ -373,6 +373,11 @@ struct AddExpenseView: View {
 						deleteDialogButtons
 					}
 				}
+			}
+		}
+		.onAppear {
+			if category.isEmpty, let firstCategory = store.categories.first?.name {
+				category = firstCategory
 			}
 		}
 		.navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")

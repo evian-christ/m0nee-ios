@@ -62,7 +62,10 @@ struct CategoryBudgetView: View {
 						let totalBudget = budgetInputs.values
 							.compactMap { Int($0) }
 							.reduce(0, +)
-						UserDefaults.standard.set(totalBudget, forKey: "monthlyBudget")
+						let useCategoryBudget = UserDefaults.standard.bool(forKey: "useCategoryBudget")
+						if useCategoryBudget {
+							UserDefaults.standard.set(totalBudget, forKey: "monthlyBudget")
+						}
 					}
 				}
 			}
