@@ -52,8 +52,7 @@ class ExpenseStore: ObservableObject {
 				print("💾 Using saveURL: \(saveURL.path)")
 				load()
 
-				let testDate = Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 28, hour: 16, minute: 55))!
-				generateExpensesFromRecurringIfNeeded(currentDate: testDate)
+				generateExpensesFromRecurringIfNeeded()
 		}
 		
 		func addCategory(_ category: CategoryItem) {

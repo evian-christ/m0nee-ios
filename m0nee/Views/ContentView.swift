@@ -11,140 +11,12 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 	return nil
 }
 
-struct InsightsView: View {
-	@AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
-	@State private var favourites: [InsightCardType] = []
-	@State private var deleteTrigger = UUID()
-	@StateObject private var store = ExpenseStore()
-	
-	private var currentBudgetDates: (startDate: Date, endDate: Date) {
-		let calendar = Calendar.current
-		let today = Date()
-		let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
-		let startDay = UserDefaults.standard.integer(forKey: period == "Weekly" ? "weeklyStartDay" : "monthlyStartDay")
-		
-		if period == "Weekly" {
-			let weekdayToday = calendar.component(.weekday, from: today)
-			let delta = (weekdayToday - startDay + 7) % 7
-			let weekStart = calendar.date(byAdding: .day, value: -delta, to: today)!
-			let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart)!
-			return (calendar.startOfDay(for: weekStart), calendar.startOfDay(for: weekEnd))
-		} else {
-			let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
-			let monthStart = calendar.date(byAdding: .day, value: startDay - 1, to: currentMonth)!
-			let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
-			let endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth)!
-			return (calendar.startOfDay(for: monthStart), calendar.startOfDay(for: endDate))
-		}
-	}
-	
-	private var currentExpenses: [Expense] {
-		store.expenses.filter {
-			let date = Calendar.current.startOfDay(for: $0.date)
-			return date >= currentBudgetDates.startDate && date <= currentBudgetDates.endDate
-		}
-	}
-	var body: some View {
-		ZStack {
-			ScrollView {
-				
-				LazyVStack(spacing: 16) {
-					Section {
-						ForEach(InsightCardType.allCases, id: \.rawValue) { type in
-							ZStack(alignment: .topLeading) {
-								InsightCardView(
-									type: type,
-									expenses: currentExpenses,
-									startDate: currentBudgetDates.startDate,
-									endDate: currentBudgetDates.endDate
-								)
-								.id(type) // ensure stable identity
-								.transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
-								.animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
-								.contextMenu {
-									if isFavourited(type) {
-										Button {
-											toggleFavourite(type)
-										} label: {
-											Label("Remove from Favourite", systemImage: "star.slash")
-										}
-									} else {
-										Button {
-											toggleFavourite(type)
-										} label: {
-											Label("Add to Favourite", systemImage: "star")
-										}
-									}
-									Button(role: .cancel) {
-										// Cancel logic or nothing
-									} label: {
-										Label("Cancel", systemImage: "xmark")
-									}
-								}
-								.padding(.horizontal, 20)
-								.padding(.vertical, 2)
-							}
-						}
-					}
-				}
-				.environment(\.editMode, .constant(.active))
-				.padding(.vertical)
-				.onAppear {
-					favourites = loadFavourites()
-				}
-				.onChange(of: favourites) { _ in
-					saveFavourites()
-				}
-			}
-			.navigationTitle("Insights")
-			.navigationBarTitleDisplayMode(.inline)
-			
-		}
-	}
-	
-	func currentMonth() -> String {
-		let formatter = DateFormatter()
-		formatter.dateFormat = "yyyy-MM"
-		return formatter.string(from: Date())
-	}
-	
-	
-	
-	private func loadFavourites() -> [InsightCardType] {
-		guard let decoded = try? JSONDecoder().decode([InsightCardType].self, from: favouriteInsightCardsRaw) else {
-			return []
-		}
-		return decoded
-	}
-	
-	private func saveFavourites() {
-		if let encoded = try? JSONEncoder().encode(favourites) {
-			favouriteInsightCardsRaw = encoded
-		}
-	}
-	
-	private func toggleFavourite(_ type: InsightCardType) {
-		if let index = favourites.firstIndex(of: type) {
-			favourites.remove(at: index)
-		} else {
-			favourites.append(type)
-		}
-		saveFavourites()
-		favourites = loadFavourites()
-		NotificationCenter.default.post(name: Notification.Name("favouritesUpdated"), object: nil)
-	}
-	
-	private func isFavourited(_ type: InsightCardType) -> Bool {
-		favourites.contains(type)
-	}
-}
-
 struct ContentView: View {
 	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
 	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
 	
 	private var currencySymbol: String {
-			CurrencyManager.symbol(for: currencyCode)
+		CurrencyManager.symbol(for: currencyCode)
 	}
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
@@ -288,46 +160,43 @@ struct ContentView: View {
 	}
 	
 	private var insightCardsView: some View {
-		TabView {
-			if favouriteCards.isEmpty {
-				ZStack {
-					RoundedRectangle(cornerRadius: 16)
-						.fill(Color(.systemGray6))
-						.frame(height: 240)
-						.padding(.horizontal, 16)
-					
-					VStack(spacing: 6) {
-						Text("Add your favorite cards ⭐️")
+		VStack {
+			TabView {
+				if favouriteCards.isEmpty {
+					VStack {
+						Text("No Insight Cards Added")
+							.font(.headline)
+							.padding(.top, 60)
+						Text("Go to the Insights tab and long-press on cards to add them here.")
 							.font(.subheadline)
+							.multilineTextAlignment(.center)
 							.foregroundColor(.secondary)
-							.multilineTextAlignment(.center)
-							.padding(.horizontal, 24)
-						
-						Text("↖︎ From the Insights tab")
-							.font(.caption)
-							.foregroundColor(.gray)
-							.multilineTextAlignment(.center)
-							.padding(.horizontal, 24)
+							.padding(.horizontal, 40)
+							.padding(.top, 8)
+						Spacer()
+					}
+				} else {
+					ForEach(favouriteCards, id: \.self) { type in
+						VStack {
+							InsightCardView(
+								type: type,
+								expenses: filteredExpenses.map(\.wrappedValue),
+								startDate: budgetDates.startDate,
+								endDate: budgetDates.endDate
+							)
+							.padding(.horizontal, 16)
+							Spacer()
+						}
 					}
 				}
-			} else {
-				ForEach(favouriteCards, id: \.self) { type in
-					InsightCardView(
-						type: type,
-						expenses: filteredExpenses.map(\.wrappedValue),
-						startDate: budgetDates.startDate,
-						endDate: budgetDates.endDate
-					)
-					.padding(.horizontal, 16)
-				}
 			}
+			.id(cardRefreshTokens)
+			.tabViewStyle(.page)
+			.indexViewStyle(.page(backgroundDisplayMode: .never))
+			.frame(height: 270)
+			.background(Color(.systemBackground))
 		}
-		.id(cardRefreshTokens)
-		.tabViewStyle(.page)
-		.indexViewStyle(.page(backgroundDisplayMode: .never))
-		.padding(.top, 16)
-		.padding(.bottom, 16)
-		.frame(height: 272)
+		.frame(height: 300)
 		.background(Color(.systemBackground))
 	}
 	
@@ -386,57 +255,57 @@ struct ContentView: View {
 		} else if displayMode == "Standard" {
 			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
 				VStack(spacing: 8) {
-				HStack(alignment: .center, spacing: 12) {
-					if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
-						ZStack {
-							Circle()
-								.fill(categoryItem.color.color)
-								.frame(width: 32, height: 32)
-							Image(systemName: categoryItem.symbol)
-								.font(.system(size: 14))
-								.foregroundColor(.white)
-						}
-					} else {
-						ZStack {
-							Circle()
-								.fill(Color.gray.opacity(0.3))
-								.frame(width: 32, height: 32)
-							Image(systemName: "questionmark")
-								.font(.system(size: 14))
-								.foregroundColor(.gray)
-						}
-					}
-					VStack(alignment: .leading, spacing: 2) {
-						HStack(spacing: 4) {
-							Text(expense.wrappedValue.name)
-								.lineLimit(1)
-								.truncationMode(.tail)
-							if expense.wrappedValue.isRecurring {
-								Image(systemName: "arrow.triangle.2.circlepath")
-									.font(.caption)
-									.foregroundColor(.blue)
+					HStack(alignment: .center, spacing: 12) {
+						if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
+							ZStack {
+								Circle()
+									.fill(categoryItem.color.color)
+									.frame(width: 32, height: 32)
+								Image(systemName: categoryItem.symbol)
+									.font(.system(size: 14))
+									.foregroundColor(.white)
+							}
+						} else {
+							ZStack {
+								Circle()
+									.fill(Color.gray.opacity(0.3))
+									.frame(width: 32, height: 32)
+								Image(systemName: "questionmark")
+									.font(.system(size: 14))
+									.foregroundColor(.gray)
 							}
 						}
-						.font(.system(.body, design: .default))
-						.fontWeight(.semibold)
-						.foregroundColor(.primary)
-						Text(expense.wrappedValue.category)
-							.font(.footnote)
-							.foregroundColor(.secondary)
-					}
-					Spacer()
-					VStack(alignment: .trailing, spacing: 2) {
-						Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
-							.font(.system(size: 17, weight: .medium))
-							.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
-						Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
-							.font(.caption2)
+						VStack(alignment: .leading, spacing: 2) {
+							HStack(spacing: 4) {
+								Text(expense.wrappedValue.name)
+									.lineLimit(1)
+									.truncationMode(.tail)
+								if expense.wrappedValue.isRecurring {
+									Image(systemName: "arrow.triangle.2.circlepath")
+										.font(.caption)
+										.foregroundColor(.blue)
+								}
+							}
+							.font(.system(.body, design: .default))
+							.fontWeight(.semibold)
+							.foregroundColor(.primary)
+							Text(expense.wrappedValue.category)
+								.font(.footnote)
+								.foregroundColor(.secondary)
+						}
+						Spacer()
+						VStack(alignment: .trailing, spacing: 2) {
+							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+								.font(.system(size: 17, weight: .medium))
+								.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+							Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
+								.font(.caption2)
+								.foregroundColor(.gray)
+						}
+						Image(systemName: "chevron.right")
+							.font(.caption)
 							.foregroundColor(.gray)
 					}
-					Image(systemName: "chevron.right")
-						.font(.caption)
-						.foregroundColor(.gray)
-				}
 					Divider()
 				}
 				.padding(.horizontal)
@@ -592,7 +461,7 @@ struct ContentView: View {
 							}
 						}
 					}
-					.padding(.top, useFixedInsightCards ? 272 : 0)
+					.padding(.top, useFixedInsightCards ? 290 : 0)
 				}
 				.toolbar {
 					ToolbarItemGroup(placement: .navigationBarLeading) {
@@ -686,10 +555,10 @@ struct ContentView: View {
 					insightCardsView
 				}
 			}
-		.navigationBarTitleDisplayMode(.inline)
-	}
-	.environmentObject(store)
-	.onAppear {
+			.navigationBarTitleDisplayMode(.inline)
+		}
+		.environmentObject(store)
+		.onAppear {
 			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
 				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
 				favouriteCards = decoded

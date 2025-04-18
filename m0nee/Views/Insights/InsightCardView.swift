@@ -62,77 +62,77 @@ struct InsightCardView: View {
 	}
 	
 	var body: some View {
-		ZStack {
-			VStack {
-				VStack(alignment: .leading, spacing: 12) {
-					if type != .budgetProgress && type != .categoryBudgetProgress {
-						HStack {
-							Label(type.title, systemImage: type.icon)
-								.font(.headline)
-							Spacer()
-						}
+		ZStack(alignment: .top) {
+			RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6))
+			
+			VStack(alignment: .leading, spacing: 12) {
+				if type != .budgetProgress && type != .categoryBudgetProgress {
+					HStack {
+						Label(type.title, systemImage: type.icon)
+							.font(.headline)
+						Spacer()
 					}
+				}
 
-					Group {
-						switch type {
-						case .totalSpending:
-							TotalSpendingCardView(
-								expenses: expenses,
-								monthlyBudget: monthlyBudget,
-								currencySymbol: currencySymbol,
-								budgetTrackingEnabled: enableBudgetTracking
-							)
-						case .spendingTrend:
-							SpendingTrendCardView(
-								expenses: expenses,
-								startDate: startDate,
-								endDate: endDate,
-								monthlyBudget: monthlyBudget
-							)
-						case .categoryRating:
-							CategoryRatingCardView(expenses: expenses)
-						case .budgetProgress:
-							BudgetProgressCardView(
-								expenses: expenses,
-								startDate: startDate,
-								endDate: endDate,
-								monthlyBudget: monthlyBudget
-							)
-						case .categoryBudgetProgress:
-							let categoryBudgetDict: [String: Double] = {
-								guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
-										let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
-									return [:]
-								}
-								return decoded.reduce(into: [String: Double]()) { dict, pair in
-									if let value = Double(pair.value) {
-										dict[pair.key] = value
-									}
-								}
-							}()
-
-							VStack(alignment: .leading, spacing: 12) {
-								HStack {
-									Label(type.title, systemImage: type.icon)
-										.font(.headline)
-									Spacer()
-								}
-
-								CategoryBudgetProgressCardView(
-									expenses: expenses,
-									startDate: startDate,
-									endDate: endDate,
-									categoryBudgets: categoryBudgetDict
-								)
+				Group {
+					switch type {
+					case .totalSpending:
+						TotalSpendingCardView(
+							expenses: expenses,
+							monthlyBudget: monthlyBudget,
+							currencySymbol: currencySymbol,
+							budgetTrackingEnabled: enableBudgetTracking
+						)
+					case .spendingTrend:
+						SpendingTrendCardView(
+							expenses: expenses,
+							startDate: startDate,
+							endDate: endDate,
+							monthlyBudget: monthlyBudget
+						)
+					case .categoryRating:
+						CategoryRatingCardView(expenses: expenses)
+					case .budgetProgress:
+						BudgetProgressCardView(
+							expenses: expenses,
+							startDate: startDate,
+							endDate: endDate,
+							monthlyBudget: monthlyBudget
+						)
+					case .categoryBudgetProgress:
+						let categoryBudgetDict: [String: Double] = {
+							guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+									let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
+								return [:]
 							}
+							return decoded.reduce(into: [String: Double]()) { dict, pair in
+								if let value = Double(pair.value) {
+									dict[pair.key] = value
+								}
+							}
+						}()
+
+						VStack(alignment: .leading, spacing: 12) {
+							HStack {
+								Label(type.title, systemImage: type.icon)
+									.font(.headline)
+								Spacer()
+							}
+
+							CategoryBudgetProgressCardView(
+								expenses: expenses,
+								startDate: startDate,
+								endDate: endDate,
+								categoryBudgets: categoryBudgetDict
+							)
 						}
 					}
 				}
-				.padding()
-				.frame(maxWidth: .infinity)
-				.frame(height: 240)
-				.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
 			}
+			.frame(maxWidth: .infinity, alignment: .topLeading)
+			.frame(height: 225, alignment: .topLeading)
+			.clipped()
+			.padding()
 			.blur(
 				radius:
 					(type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ||
@@ -156,5 +156,8 @@ struct InsightCardView: View {
 					.padding()
 			}
 		}
+		.padding(.top, 5)
+		.frame(maxWidth: .infinity)
+		.frame(height: 270)
 	}
 }
