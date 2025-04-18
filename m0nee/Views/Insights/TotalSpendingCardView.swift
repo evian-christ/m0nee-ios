@@ -11,24 +11,32 @@ struct TotalSpendingCardView: View {
 		print("🔍 budgetTrackingEnabled:", budgetTrackingEnabled)
 		print("🔍 monthlyBudget:", monthlyBudget)
 
-		return VStack(alignment: .leading) {
-			if !budgetTrackingEnabled {
-				Text("\(currencySymbol)\(String(format: "%.2f", amountSpent))")
-					.font(.largeTitle)
-					.bold()
-					.padding(.top, -8)
-			} else {
-				Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
-					.font(.title2)
-					.bold()
-				if monthlyBudget == 0 && amountSpent == 0 {
-					ProgressView(value: 0, total: 1)
-						.accentColor(.gray)
+		return VStack {
+			Spacer()
+			VStack(alignment: .leading) {
+				Label("Total Spending", systemImage: "creditcard")
+					.font(.headline)
+					.padding(.bottom, 4)
+				
+				if !budgetTrackingEnabled {
+					Text("\(currencySymbol)\(String(format: "%.2f", amountSpent))")
+						.font(.largeTitle)
+						.bold()
+						.padding(.top, -8)
 				} else {
-					ProgressView(value: amountSpent, total: monthlyBudget)
-						.accentColor(amountSpent > monthlyBudget ? .red : .blue)
+					Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
+						.font(.title2)
+						.bold()
+					if monthlyBudget == 0 && amountSpent == 0 {
+						ProgressView(value: 0, total: 1)
+							.accentColor(.gray)
+					} else {
+						ProgressView(value: amountSpent, total: monthlyBudget)
+							.accentColor(amountSpent > monthlyBudget ? .red : .blue)
+					}
 				}
 			}
+			Spacer()
 		}
 	}
 }

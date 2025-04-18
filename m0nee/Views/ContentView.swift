@@ -205,7 +205,9 @@ struct ContentView: View {
 		if displayMode == "Compact" {
 			VStack(spacing: 0) {
 				NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
-					HStack(spacing: 12) {
+					ZStack {
+						Color(.systemGray5).opacity(0.01)
+						HStack(spacing: 12) {
 						if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
 							ZStack {
 								Circle()
@@ -249,12 +251,15 @@ struct ContentView: View {
 					}
 					.padding(.horizontal, 20)
 					.padding(.vertical, 10)
-				}
+						}
+					}
 				Divider()
 			}
 		} else if displayMode == "Standard" {
 			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
-				VStack(spacing: 8) {
+				ZStack {
+					Color(.systemGray5).opacity(0.1)
+					VStack(spacing: 8) {
 					HStack(alignment: .center, spacing: 12) {
 						if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
 							ZStack {
@@ -307,10 +312,11 @@ struct ContentView: View {
 							.foregroundColor(.gray)
 					}
 					Divider()
-				}
+					}
 				.padding(.horizontal)
 				.padding(.vertical, 8)
 				.background(Color(.systemBackground))
+					}
 			}
 			.swipeActions {
 				Button(role: .destructive) {
@@ -321,7 +327,9 @@ struct ContentView: View {
 			}
 		} else if displayMode == "Detailed" {
 			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
-				HStack(alignment: .top) {
+				ZStack {
+					Color(.systemGray5).opacity(0.01)
+					HStack(alignment: .top) {
 					VStack(alignment: .leading, spacing: 8) {
 						HStack {
 							HStack(spacing: 4) {
@@ -378,6 +386,7 @@ struct ContentView: View {
 				}
 				.padding()
 				.background(Color(.systemBackground))
+					}
 			}
 			.overlay(
 				HStack {

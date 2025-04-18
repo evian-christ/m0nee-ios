@@ -38,7 +38,7 @@ struct BudgetProgressCardView: View {
 
 			// Foreground content
 			VStack(alignment: .leading, spacing: 8) {
-				Label("Month's Progress", systemImage: "gauge.with.needle")
+				Label("Spending vs. Time", systemImage: "gauge.with.needle")
 					.font(.headline)
 					.padding(.bottom, 4)
 

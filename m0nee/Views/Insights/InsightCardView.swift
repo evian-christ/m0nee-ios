@@ -66,7 +66,7 @@ struct InsightCardView: View {
 			RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6))
 			
 			VStack(alignment: .leading, spacing: 12) {
-				if type != .budgetProgress && type != .categoryBudgetProgress {
+				if type != .budgetProgress && type != .categoryBudgetProgress && type != .totalSpending {
 					HStack {
 						Label(type.title, systemImage: type.icon)
 							.font(.headline)
