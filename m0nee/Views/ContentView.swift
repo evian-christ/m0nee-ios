@@ -665,11 +665,6 @@ struct ContentView: View {
 				.navigationDestination(isPresented: $showingSettings) {
 					VStack {
 						SettingsView(store: store)
-						Button("Reset Tutorial") {
-							UserDefaults.standard.set(false, forKey: "hasSeenTutorial")
-						}
-						.foregroundColor(.blue)
-						.padding()
 					}
 				}
 				.navigationDestination(isPresented: $showingInsights) {
