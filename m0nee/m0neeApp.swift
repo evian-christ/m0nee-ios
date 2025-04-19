@@ -36,15 +36,12 @@ struct RootView: View {
 										.ignoresSafeArea()
 										.transition(.opacity)
 										.onAppear {
-												withAnimation(.easeInOut(duration: 0.5)) {
-														showMain = true
-												}
+												showMain = true
 										}
 						} else {
 								TutorialView()
 										.transition(.opacity)
 						}
 				}
-				.animation(.easeInOut(duration: 0.5), value: showMain)
 		}
 }

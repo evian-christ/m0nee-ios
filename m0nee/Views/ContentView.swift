@@ -164,15 +164,21 @@ struct ContentView: View {
 			TabView {
 				if favouriteCards.isEmpty {
 					VStack {
-						Text("No Insight Cards Added")
-							.font(.headline)
-							.padding(.top, 60)
-						Text("Go to the Insights tab and long-press on cards to add them here.")
-							.font(.subheadline)
-							.multilineTextAlignment(.center)
-							.foregroundColor(.secondary)
-							.padding(.horizontal, 40)
-							.padding(.top, 8)
+						VStack(spacing: 12) {
+							Text("No Insight Cards Added")
+								.font(.headline)
+							Text("Go to the Insights tab and long-press on cards to add them here.")
+								.font(.subheadline)
+								.multilineTextAlignment(.center)
+								.foregroundColor(.secondary)
+								.padding(.horizontal, 20)
+						}
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
+						.padding()
+						.background(Color(.systemGray6))
+						.cornerRadius(16)
+						.padding(.horizontal, 16)
+						.frame(height: 240)
 						Spacer()
 					}
 				} else {
