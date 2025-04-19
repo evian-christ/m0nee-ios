@@ -51,7 +51,28 @@ class ExpenseStore: ObservableObject {
 				repairICloudIfNeeded()
 				print("💾 Using saveURL: \(saveURL.path)")
 				load()
-
+				if categories.isEmpty {
+					categories = [
+						CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
+						CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
+						CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
+						CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
+						CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
+						CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
+					]
+					
+					// 예산도 같이 초기화
+					var budgets: [String: String] = [:]
+					for category in categories {
+						budgets[category.name] = "0"
+					}
+					if let encoded = try? JSONEncoder().encode(budgets) {
+						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+					}
+					
+					save()
+				}
+				
 				generateExpensesFromRecurringIfNeeded()
 		}
 		
