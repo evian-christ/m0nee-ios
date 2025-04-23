@@ -211,58 +211,79 @@ struct ContentView: View {
 	@ViewBuilder
 	private func expenseRow(for expense: Binding<Expense>) -> some View {
 		if displayMode == "Compact" {
-			VStack(spacing: 0) {
-				NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
+			Button {
+				pressedExpenseID = expense.wrappedValue.id
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
+					selectedExpenseID = expense.wrappedValue.id
+				}
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+					pressedExpenseID = nil
+				}
+			} label: {
+				VStack(spacing: 0) {
 					ZStack {
-						Color(.systemGray5).opacity(0.01)
 						HStack(spacing: 12) {
-						if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
-							ZStack {
-								Circle()
-									.fill(categoryItem.color.color)
-									.frame(width: 24, height: 24)
-								Image(systemName: categoryItem.symbol)
-									.font(.system(size: 12))
-									.foregroundColor(.white)
+							if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
+								ZStack {
+									Circle()
+										.fill(categoryItem.color.color)
+										.frame(width: 24, height: 24)
+									Image(systemName: categoryItem.symbol)
+										.font(.system(size: 12))
+										.foregroundColor(.white)
+								}
+							} else {
+								ZStack {
+									Circle()
+										.fill(Color.gray.opacity(0.3))
+										.frame(width: 24, height: 24)
+									Image(systemName: "questionmark")
+										.font(.system(size: 12))
+										.foregroundColor(.gray)
+								}
 							}
-						} else {
-							ZStack {
-								Circle()
-									.fill(Color.gray.opacity(0.3))
-									.frame(width: 24, height: 24)
-								Image(systemName: "questionmark")
-									.font(.system(size: 12))
-									.foregroundColor(.gray)
+							HStack(spacing: 4) {
+								Text(expense.wrappedValue.name)
+									.font(.body)
+									.foregroundColor(.primary)
+									.lineLimit(1)
+									.truncationMode(.tail)
+								if expense.wrappedValue.isRecurring {
+									Image(systemName: "arrow.triangle.2.circlepath")
+										.font(.caption)
+										.foregroundColor(.blue)
+								}
 							}
+							.layoutPriority(0.5)
+							Spacer()
+							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+								.font(.system(size: 17, weight: .medium))
+								.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+								.layoutPriority(1)
+							Image(systemName: "chevron.right")
+								.font(.caption)
+								.foregroundColor(.gray)
 						}
-						HStack(spacing: 4) {
-							Text(expense.wrappedValue.name)
-								.font(.body)
-								.foregroundColor(.primary)
-								.lineLimit(1)
-								.truncationMode(.tail)
-							if expense.wrappedValue.isRecurring {
-								Image(systemName: "arrow.triangle.2.circlepath")
-									.font(.caption)
-									.foregroundColor(.blue)
-							}
-						}
-						.layoutPriority(0.5)
-						Spacer()
-						Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
-							.font(.system(size: 17, weight: .medium))
-							.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
-							.layoutPriority(1)
-						Image(systemName: "chevron.right")
-							.font(.caption)
-							.foregroundColor(.gray)
+						.padding(.horizontal, 20)
+						.padding(.vertical, 10)
+						.background(
+							pressedExpenseID == expense.wrappedValue.id
+								? Color.gray.opacity(0.3)
+								: Color(.systemBackground)
+						)
 					}
-					.padding(.horizontal, 20)
-					.padding(.vertical, 10)
-						}
-					}
-				Divider()
+					Divider()
+				}
 			}
+			.buttonStyle(.plain)
+			NavigationLink(
+				destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store),
+				tag: expense.wrappedValue.id,
+				selection: $selectedExpenseID
+			) {
+				EmptyView()
+			}
+			.hidden()
 				} else if displayMode == "Standard" {
 					Button {
 						pressedExpenseID = expense.wrappedValue.id
@@ -340,7 +361,6 @@ struct ContentView: View {
 									? Color.gray.opacity(0.3) // ✅ 눌렀을 때 색상
 									: Color(.systemBackground) // 기본 배경
 							)
-							.animation(.easeInOut(duration: 0), value: pressedExpenseID)
 						}
 					}
 					.buttonStyle(.plain)
@@ -355,68 +375,82 @@ struct ContentView: View {
 					.hidden()
 					Divider()
 } else if displayMode == "Detailed" {
-			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
-				ZStack {
-					Color(.systemGray5).opacity(0.01)
-					HStack(alignment: .top) {
-					VStack(alignment: .leading, spacing: 8) {
-						HStack {
-							HStack(spacing: 4) {
-								Text(expense.wrappedValue.name)
-									.lineLimit(1)
-									.truncationMode(.tail)
-								if expense.wrappedValue.isRecurring {
-									Image(systemName: "arrow.triangle.2.circlepath")
-										.font(.caption)
-										.foregroundColor(.blue)
+			Button {
+				pressedExpenseID = expense.wrappedValue.id
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
+					selectedExpenseID = expense.wrappedValue.id
+				}
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+					pressedExpenseID = nil
+				}
+			} label: {
+				VStack(spacing: 0) {
+					ZStack {
+						Color(.systemGray5).opacity(0.01)
+						HStack(alignment: .top) {
+							VStack(alignment: .leading, spacing: 8) {
+								HStack {
+									HStack(spacing: 4) {
+										Text(expense.wrappedValue.name)
+											.lineLimit(1)
+											.truncationMode(.tail)
+										if expense.wrappedValue.isRecurring {
+											Image(systemName: "arrow.triangle.2.circlepath")
+												.font(.caption)
+												.foregroundColor(.blue)
+										}
+									}
+									.font(.headline)
+									.fontWeight(.semibold)
+									.foregroundColor(.primary)
+									Spacer()
+									Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+										.font(.system(size: 17, weight: .medium))
+										.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
 								}
-							}
-							.font(.headline)
-							.fontWeight(.semibold)
-							.foregroundColor(.primary)
-							Spacer()
-							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
-								.font(.system(size: 17, weight: .medium))
-								.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
-						}
-						HStack {
-							if let details = expense.wrappedValue.details, !details.isEmpty {
-								Text(details)
-									.font(.subheadline)
-									.foregroundColor(.secondary)
-							} else {
-								Text(" ")
-									.font(.subheadline)
-							}
-							Spacer()
-							if let rating = expense.wrappedValue.rating {
-								HStack(spacing: 2) {
-									ForEach(1...5, id: \.self) { star in
-										Image(systemName: star <= rating ? "star.fill" : "star")
-											.font(.caption2)
-											.foregroundColor(.yellow)
+								HStack {
+									if let details = expense.wrappedValue.details, !details.isEmpty {
+										Text(details)
+											.font(.subheadline)
+											.foregroundColor(.secondary)
+									} else {
+										Text(" ")
+											.font(.subheadline)
+									}
+									Spacer()
+									if let rating = expense.wrappedValue.rating {
+										HStack(spacing: 2) {
+											ForEach(1...5, id: \.self) { star in
+												Image(systemName: star <= rating ? "star.fill" : "star")
+													.font(.caption2)
+													.foregroundColor(.yellow)
+											}
+										}
 									}
 								}
+								HStack {
+									Text(expense.wrappedValue.category)
+										.font(.subheadline)
+										.foregroundColor(.secondary)
+									Spacer()
+									Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
+										.font(.subheadline)
+										.foregroundColor(.secondary)
+								}
 							}
+							.padding(.trailing, 12)
+							Spacer(minLength: 0)
 						}
-						HStack {
-							Text(expense.wrappedValue.category)
-								.font(.subheadline)
-								.foregroundColor(.secondary)
-							Spacer()
-							Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
-								.font(.subheadline)
-								.foregroundColor(.secondary)
-						}
-						Divider()
+						.padding()
+						.background(
+							pressedExpenseID == expense.wrappedValue.id
+								? Color.gray.opacity(0.3)
+								: Color(.systemBackground)
+						)
 					}
-					.padding(.trailing, 12)
-					Spacer(minLength: 0)
 				}
-				.padding()
-				.background(Color(.systemBackground))
-					}
 			}
+			.buttonStyle(.plain)
 			.overlay(
 				HStack {
 					Spacer()
@@ -425,13 +459,15 @@ struct ContentView: View {
 						.padding(.trailing, 8)
 				}
 			)
-			.swipeActions {
-				Button(role: .destructive) {
-					store.delete(expense.wrappedValue)
-				} label: {
-					Label("Delete", systemImage: "trash")
-				}
+			NavigationLink(
+				destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store),
+				tag: expense.wrappedValue.id,
+				selection: $selectedExpenseID
+			) {
+				EmptyView()
 			}
+			.hidden()
+	Divider()
 		}
 	}
 	
