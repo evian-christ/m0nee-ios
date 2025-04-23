@@ -1,10 +1,3 @@
-//
-//  m0neeApp.swift
-//  m0nee
-//
-//  Created by Chan on 02/04/2025.
-//
-
 import SwiftUI
 
 @main

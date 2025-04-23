@@ -12,6 +12,7 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 }
 
 struct ContentView: View {
+		@State private var pressedExpenseID: UUID?
 	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
 	
@@ -36,6 +37,7 @@ struct ContentView: View {
 	@AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
 	@State private var favouriteCards: [InsightCardType] = []
 	@State private var cardRefreshTokens: [InsightCardType: UUID] = [:]
+	@State private var selectedExpenseID: UUID?
 	
 	private var displayedDateRange: String {
 		if budgetPeriod == "Weekly" {
@@ -261,77 +263,98 @@ struct ContentView: View {
 					}
 				Divider()
 			}
-		} else if displayMode == "Standard" {
-			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
-				ZStack {
-					Color(.systemGray5).opacity(0.1)
-					VStack(spacing: 8) {
-					HStack(alignment: .center, spacing: 12) {
-						if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
-							ZStack {
-								Circle()
-									.fill(categoryItem.color.color)
-									.frame(width: 32, height: 32)
-								Image(systemName: categoryItem.symbol)
-									.font(.system(size: 14))
-									.foregroundColor(.white)
-							}
-						} else {
-							ZStack {
-								Circle()
-									.fill(Color.gray.opacity(0.3))
-									.frame(width: 32, height: 32)
-								Image(systemName: "questionmark")
-									.font(.system(size: 14))
-									.foregroundColor(.gray)
-							}
+				} else if displayMode == "Standard" {
+					Button {
+						pressedExpenseID = expense.wrappedValue.id
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
+							selectedExpenseID = expense.wrappedValue.id
 						}
-						VStack(alignment: .leading, spacing: 2) {
-							HStack(spacing: 4) {
-								Text(expense.wrappedValue.name)
-									.lineLimit(1)
-									.truncationMode(.tail)
-								if expense.wrappedValue.isRecurring {
-									Image(systemName: "arrow.triangle.2.circlepath")
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+							pressedExpenseID = nil
+						}
+					} label: {
+						ZStack {
+							VStack(spacing: 8) {
+								HStack(alignment: .center, spacing: 12) {
+									if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
+										ZStack {
+											Circle()
+												.fill(categoryItem.color.color)
+												.frame(width: 32, height: 32)
+											Image(systemName: categoryItem.symbol)
+												.font(.system(size: 14))
+												.foregroundColor(.white)
+										}
+									} else {
+										ZStack {
+											Circle()
+												.fill(Color.gray.opacity(0.3))
+												.frame(width: 32, height: 32)
+											Image(systemName: "questionmark")
+												.font(.system(size: 14))
+												.foregroundColor(.gray)
+										}
+									}
+
+									VStack(alignment: .leading, spacing: 2) {
+										HStack(spacing: 4) {
+											Text(expense.wrappedValue.name)
+												.lineLimit(1)
+												.truncationMode(.tail)
+											if expense.wrappedValue.isRecurring {
+												Image(systemName: "arrow.triangle.2.circlepath")
+													.font(.caption)
+													.foregroundColor(.blue)
+											}
+										}
+										.font(.system(.body, design: .default))
+										.fontWeight(.semibold)
+										.foregroundColor(.primary)
+
+										Text(expense.wrappedValue.category)
+											.font(.footnote)
+											.foregroundColor(.secondary)
+									}
+
+									Spacer()
+
+									VStack(alignment: .trailing, spacing: 2) {
+										Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+											.font(.system(size: 17, weight: .medium))
+											.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+
+										Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
+											.font(.caption2)
+											.foregroundColor(.gray)
+									}
+
+									Image(systemName: "chevron.right")
 										.font(.caption)
-										.foregroundColor(.blue)
+										.foregroundColor(.gray)
 								}
 							}
-							.font(.system(.body, design: .default))
-							.fontWeight(.semibold)
-							.foregroundColor(.primary)
-							Text(expense.wrappedValue.category)
-								.font(.footnote)
-								.foregroundColor(.secondary)
+							.padding(.horizontal)
+							.padding(.vertical, 8)
+							.background(
+									pressedExpenseID == expense.wrappedValue.id
+									? Color.gray.opacity(0.3) // ✅ 눌렀을 때 색상
+									: Color(.systemBackground) // 기본 배경
+							)
+							.animation(.easeInOut(duration: 0), value: pressedExpenseID)
 						}
-						Spacer()
-						VStack(alignment: .trailing, spacing: 2) {
-							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
-								.font(.system(size: 17, weight: .medium))
-								.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
-							Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
-								.font(.caption2)
-								.foregroundColor(.gray)
-						}
-						Image(systemName: "chevron.right")
-							.font(.caption)
-							.foregroundColor(.gray)
 					}
+					.buttonStyle(.plain)
+
+					NavigationLink(
+						destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store),
+						tag: expense.wrappedValue.id,
+						selection: $selectedExpenseID
+					) {
+						EmptyView()
+					}
+					.hidden()
 					Divider()
-					}
-				.padding(.horizontal)
-				.padding(.vertical, 8)
-				.background(Color(.systemBackground))
-					}
-			}
-			.swipeActions {
-				Button(role: .destructive) {
-					store.delete(expense.wrappedValue)
-				} label: {
-					Label("Delete", systemImage: "trash")
-				}
-			}
-		} else if displayMode == "Detailed" {
+} else if displayMode == "Detailed" {
 			NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store)) {
 				ZStack {
 					Color(.systemGray5).opacity(0.01)
