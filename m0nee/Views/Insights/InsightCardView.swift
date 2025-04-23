@@ -73,7 +73,7 @@ struct InsightCardView: View {
 						Spacer()
 					}
 				}
-
+				
 				Group {
 					switch type {
 					case .totalSpending:
@@ -102,7 +102,7 @@ struct InsightCardView: View {
 					case .categoryBudgetProgress:
 						let categoryBudgetDict: [String: Double] = {
 							guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
-									let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
+										let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
 								return [:]
 							}
 							return decoded.reduce(into: [String: Double]()) { dict, pair in
@@ -111,14 +111,14 @@ struct InsightCardView: View {
 								}
 							}
 						}()
-
+						
 						VStack(alignment: .leading, spacing: 12) {
 							HStack {
 								Label(type.title, systemImage: type.icon)
 									.font(.headline)
 								Spacer()
 							}
-
+							
 							CategoryBudgetProgressCardView(
 								expenses: expenses,
 								startDate: startDate,
@@ -136,25 +136,28 @@ struct InsightCardView: View {
 			.blur(
 				radius:
 					(type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ||
-					(type == .categoryRating && !showRating)
-					? 6 : 0
+				(type == .categoryRating && !showRating)
+				? 6 : 0
 			)
+			
+			
+			let restrictionMessages: [InsightCardType: (Bool, String)] = [
+				.categoryBudgetProgress: (enableBudgetTracking && budgetByCategory, "Enable Budget by Category in Settings to see this card."),
+				.categoryRating: (showRating, "Enable Ratings in Settings to see this card.")
+			]
 
-			if (type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) {
-				RoundedRectangle(cornerRadius: 16)
-					.fill(Color(.systemGray6).opacity(0.7))
-				Text("Enable Budget by Category in Settings to see this card.")
-					.font(.headline)
-					.multilineTextAlignment(.center)
-					.padding()
-			} else if (type == .categoryRating && !showRating) {
-				RoundedRectangle(cornerRadius: 16)
-					.fill(Color(.systemGray6).opacity(0.7))
-				Text("Enable Ratings in Settings to see this card.")
-					.font(.headline)
-					.multilineTextAlignment(.center)
-					.padding()
+			if let restriction = restrictionMessages[type], restriction.0 == false {
+				ZStack {
+					RoundedRectangle(cornerRadius: 16)
+						.fill(Color(.systemGray6).opacity(0.3))
+					Text(restriction.1)
+						.font(.headline)
+						.multilineTextAlignment(.center)
+						.padding()
+				}
+				.frame(maxHeight: .infinity, alignment: .center)
 			}
+			
 		}
 		.padding(.top, 5)
 		.frame(maxWidth: .infinity)
