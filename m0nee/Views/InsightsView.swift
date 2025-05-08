@@ -36,7 +36,6 @@ struct InsightsView: View {
 	var body: some View {
 		ZStack {
 			ScrollView {
-				
 				LazyVStack(spacing: 16) {
 					Section {
 						ForEach(InsightCardType.allCases, id: \.rawValue) { type in
@@ -49,7 +48,6 @@ struct InsightsView: View {
 										endDate: currentBudgetDates.endDate
 									)
 								}
-
 								.frame(height: 260)
 								.id(type) // ensure stable identity
 								.transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
@@ -92,6 +90,11 @@ struct InsightsView: View {
 			.navigationTitle("Insights")
 			.navigationBarTitleDisplayMode(.inline)
 			
+		}
+		.toolbar {
+			ToolbarItem(placement: .navigationBarTrailing) {
+				EditButton()
+			}
 		}
 	}
 	

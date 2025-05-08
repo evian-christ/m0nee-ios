@@ -21,28 +21,33 @@ class ExpenseStore: ObservableObject {
 				let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
 				let iCloudURL: URL
 				let useiCloud = UserDefaults.standard.bool(forKey: "useiCloud")
-				
+
 				if useiCloud, let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
 						try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
 						iCloudURL = containerURL.appendingPathComponent("expenses.json")
-						
+
 						let localExists = fileManager.fileExists(atPath: localURL.path)
 						let iCloudExists = fileManager.fileExists(atPath: iCloudURL.path)
-						
-						if localExists {
-								let localDate = (try? fileManager.attributesOfItem(atPath: localURL.path)[.modificationDate] as? Date) ?? Date.distantPast
-								let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudURL.path)[.modificationDate] as? Date) ?? Date.distantPast
-								
-								if !iCloudExists || localDate > iCloudDate {
-										do {
-												try fileManager.copyItem(at: localURL, to: iCloudURL)
-												print("☁️ Copied local data to iCloud")
-										} catch {
-												print("❌ Failed to copy local data to iCloud: \(error)")
-										}
+
+						if iCloudExists {
+								// ✅ iCloud 파일이 있으면 그걸 무조건 사용
+								self.saveURL = iCloudURL
+								print("☁️ Using existing iCloud data")
+						} else if localExists {
+								// ✅ iCloud엔 없지만 로컬엔 있으면 복사
+								do {
+										try fileManager.copyItem(at: localURL, to: iCloudURL)
+										print("☁️ Copied local data to iCloud")
+								} catch {
+										print("❌ Failed to copy local data to iCloud: \(error)")
 								}
+								self.saveURL = iCloudURL
+						} else {
+								// ✅ 아무 것도 없으면 iCloud 경로를 그냥 사용
+								self.saveURL = iCloudURL
+								print("☁️ No data found, using fresh iCloud path")
 						}
-						self.saveURL = iCloudURL
+
 						syncStorageIfNeeded()
 				} else {
 						self.saveURL = localURL
