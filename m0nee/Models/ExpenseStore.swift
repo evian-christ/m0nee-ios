@@ -200,18 +200,11 @@ class ExpenseStore: ObservableObject {
 			let rule = recurring.recurrenceRule
 			let calendar = Calendar.current
 			let start = recurring.lastGeneratedDate ?? rule.startDate
-			let today = Date()
-			
-			// Start from either today or the start date, whichever is later
-			var candidate = max(start, today)
-			
-			// If start > today, first occurrence is start
-			if calendar.isDate(candidate, inSameDayAs: rule.startDate) && candidate > today {
-				return rule.startDate
-			}
-			
-			// Increment until we find the next valid date > today
-			repeat {
+			let today = calendar.startOfDay(for: Date())
+			var candidate = calendar.startOfDay(for: start)
+
+			while candidate <= today || !shouldGenerateToday(for: rule, on: candidate) {
+				// 다음 날짜로 이동
 				switch rule.frequencyType {
 				case .everyN:
 					switch rule.period {
@@ -222,14 +215,10 @@ class ExpenseStore: ObservableObject {
 					case .monthly:
 						candidate = calendar.date(byAdding: .month, value: rule.interval, to: candidate) ?? candidate
 					}
-				case .weeklySelectedDays:
-					// Move forward one day until a selected weekday
-					candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
-				case .monthlySelectedDays:
-					// Move forward one day until a selected month-day
+				case .weeklySelectedDays, .monthlySelectedDays:
 					candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
 				}
-			} while candidate <= today
+			}
 
 			return candidate
 		}
