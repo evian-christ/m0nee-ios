@@ -20,7 +20,16 @@ class ExpenseStore: ObservableObject {
 				let fileManager = FileManager.default
 				let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
 				let iCloudURL: URL
-				let useiCloud = UserDefaults.standard.bool(forKey: "useiCloud")
+				let defaults = UserDefaults.standard
+				let hasUseiCloudKey = defaults.object(forKey: "useiCloud") != nil
+
+				let useiCloud: Bool
+				if hasUseiCloudKey {
+						useiCloud = defaults.bool(forKey: "useiCloud")
+				} else {
+						useiCloud = true
+						defaults.set(useiCloud, forKey: "useiCloud")
+				}
 
 				if useiCloud, let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
 						try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
@@ -53,7 +62,6 @@ class ExpenseStore: ObservableObject {
 						self.saveURL = localURL
 				}
 
-				repairICloudIfNeeded()
 				print("💾 Using saveURL: \(saveURL.path)")
 				load()
 				if categories.isEmpty {
@@ -121,35 +129,6 @@ class ExpenseStore: ObservableObject {
 				}
 		}
 
-		private func repairICloudIfNeeded() {
-				guard saveURL.path.contains("Mobile Documents") else { return }
-
-				let fileManager = FileManager.default
-				let iCloudPath = saveURL.path
-				let backupURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-						.appendingPathComponent("expenses_backup_for_recovery.json")
-
-				guard fileManager.fileExists(atPath: backupURL.path) else { return }
-
-				let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudPath)[.modificationDate] as? Date) ?? Date.distantPast
-				let backupDate = (try? fileManager.attributesOfItem(atPath: backupURL.path)[.modificationDate] as? Date) ?? Date.distantPast
-
-				if backupDate > iCloudDate {
-						do {
-								let backupData = try Data(contentsOf: backupURL)
-								try backupData.write(to: saveURL)
-								print("🛟 iCloud was outdated, overwritten with backup")
-								DispatchQueue.main.async {
-										self.restoredFromBackup = true
-								}
-						} catch {
-								print("❌ Failed to repair iCloud with backup: \(error)")
-								DispatchQueue.main.async {
-										self.failedToRestore = true
-								}
-						}
-				}
-		}
 	
 	func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
 			for index in recurringExpenses.indices {
@@ -262,6 +241,7 @@ extension ExpenseStore {
 						let storeData = StoreData(expenses: expenses, categories: categories, recurringExpenses: recurringExpenses)
 						let data = try JSONEncoder().encode(storeData)
 						try data.write(to: saveURL)
+						print("📁 Saved to: \(saveURL.path.contains("Mobile Documents") ? "iCloud" : "Local")")
 						// Also write local backup if using iCloud
 						if saveURL.path.contains("Mobile Documents") {
 								let backupURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
