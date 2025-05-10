@@ -465,7 +465,7 @@ var body: some View {
 						return
 					}
 
-					if isRecurring && (expenseID == nil || store.expenses.first(where: { $0.id == expenseID })?.parentRecurringID == nil) {
+					if expenseID == nil && isRecurring {
 						let rule = RecurrenceRule(
 							period: RecurrenceRule.Period(rawValue: recurrenceDraft.selectedPeriod.rawValue.lowercased()) ?? .daily,
 							frequencyType: frequencyType,
@@ -506,7 +506,9 @@ var body: some View {
 						parentRecurringID: recurringID
 					)
 
-					if !isRecurring {
+					if expenseID == nil && isRecurring {
+						// Do not save Expense; handled by RecurringExpense logic
+					} else {
 						onSave(newExpense)
 					}
 					dismiss()
