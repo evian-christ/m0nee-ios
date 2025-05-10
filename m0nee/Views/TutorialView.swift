@@ -255,214 +255,221 @@ struct TutorialView: View {
 
 	var body: some View {
 		NavigationView {
-			ZStack(alignment: .bottom) {
-				Color(.systemBackground)
-					.ignoresSafeArea()
-				if !isExitingTutorial {
-					TabView(selection: $page) {
-						ForEach(imageGroups.indices, id: \.self) { groupIndex in
-							VStack {
-								Spacer()
-								TabView {
-									ForEach(imageGroups[groupIndex], id: \.self) { imageName in
-										if UIImage(named: imageName) != nil {
-											VStack {
-												Spacer()
-												Image(imageName)
-													.resizable()
-													.scaledToFit()
-													.frame(height: 1000)
-													.padding(.top, 240)
-											}
-										}
-									}
-								}
-								.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-								.offset(x: imageOffset)
-							}
-							.tag(groupIndex)
-						}
-					}
-					.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-					.frame(height: 640)
-					.padding(.bottom, -50)
-					.zIndex(0)
-
-					VStack(spacing: 20) {
-						ZStack {
-							if page == 0 {
-								VStack(spacing: 8) {
-									Text("Record your expenses")
-									Text("A few taps are all it takes to log your spending.")
-										.font(.footnote)
-										.foregroundColor(.gray)
-								}
-								.transition(.opacity.combined(with: .move(edge: .top)))
-							} else if page == 1 {
-								VStack(spacing: 8) {
-									Text("Set your budgets")
-									Text("Manage your money with monthly or category-specific budgets.")
-										.font(.footnote)
-										.foregroundColor(.gray)
-								}
-								.transition(.opacity.combined(with: .move(edge: .top)))
-							} else if page == 2 {
-								VStack(spacing: 8) {
-									Text("Explore insights")
-									Text("Long-press a card to add it to your main screen.")
-										.font(.footnote)
-										.foregroundColor(.gray)
-								}
-								.transition(.opacity.combined(with: .move(edge: .top)))
-							} else {
-								VStack(spacing: 8) {
-									Text("Let’s set you up")
-									Text("Configure your budget to get started.")
-										.font(.footnote)
-										.foregroundColor(.gray)
-								}
-								.transition(.opacity.combined(with: .move(edge: .top)))
-							}
-						}
-						.font(.title2.weight(.semibold))
-						.bold()
-						.multilineTextAlignment(.center)
-						.animation(.easeInOut(duration: 0.3), value: page)
-
-						if showFinalSetupForm {
-							ZStack {
-								Color(.systemBackground)
-									.ignoresSafeArea()
-
-								List {
-									Section {
-										NavigationLink(destination: BudgetSetupView(onComplete: { isEnabled in
-											budgetEnabled = isEnabled
-											enableBudgetPeriod = isEnabled
-											enableBudgetAmount = false
-											enableRating = !isEnabled
-											budgetTrackingDisabled = !isEnabled
-										})) {
-											Text("📊  Budget Tracking")
-												.frame(height: 52)
-										}
-
-										if enableBudgetPeriod {
-											NavigationLink(destination: BudgetPeriodSetupView(onComplete: {
-												enableBudgetAmount = true
-											})) {
-												Text("🗓️  Budget Period")
-													.frame(height: 52)
-											}
-										} else {
-											HStack {
-												Text("🗓️  Budget Period")
-													.strikethrough(budgetTrackingDisabled)
-													.foregroundColor(.gray)
-													.frame(height: 52)
-											}
-										}
-
-										if enableBudgetAmount {
-											NavigationLink(destination: BudgetAmountSetupView(onComplete: {
-												enableRating = true
-											})) {
-												Text("💰  Budget Amount")
-													.frame(height: 52)
-											}
-										} else {
-											HStack {
-												Text("💰  Budget Amount")
-													.strikethrough(budgetTrackingDisabled)
-													.foregroundColor(.gray)
-													.frame(height: 52)
-											}
-										}
-
-										if enableRating {
-											NavigationLink(destination: RatingToggleSetupView(onComplete: {
-												withAnimation {
-													showStartButton = true
+			ZStack(alignment: .topTrailing) {
+				ZStack(alignment: .bottom) {
+					Color(.systemBackground)
+						.ignoresSafeArea()
+					if !isExitingTutorial {
+						TabView(selection: $page) {
+							ForEach(imageGroups.indices, id: \.self) { groupIndex in
+								VStack {
+									Spacer()
+									TabView {
+										ForEach(imageGroups[groupIndex], id: \.self) { imageName in
+											if UIImage(named: imageName) != nil {
+												VStack {
+													Spacer()
+													Image(imageName)
+														.resizable()
+														.scaledToFit()
+														.frame(height: 1000)
+														.padding(.top, 240)
 												}
-											})) {
-												Text("⭐️  Enable Rating")
-													.frame(height: 52)
-											}
-										} else {
-											HStack {
-												Text("⭐️  Enable Rating")
-													.foregroundColor(.gray)
-													.frame(height: 52)
 											}
 										}
 									}
+									.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+									.offset(x: imageOffset)
 								}
-								.scrollDisabled(true)
-								.listStyle(.plain)
-								.background(Color(.systemBackground))
+								.tag(groupIndex)
 							}
 						}
+						.tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+						.frame(height: 640)
+						.padding(.bottom, -50)
+						.zIndex(0)
 
-						if showStartButton {
-							Button(action: {
-								withAnimation(.easeInOut(duration: 0.5)) {
-									isExitingTutorial = true
+						VStack(spacing: 20) {
+							ZStack {
+								if page == 0 {
+									VStack(spacing: 8) {
+										Text("Record your expenses")
+										Text("A few taps are all it takes to log your spending.")
+											.font(.footnote)
+											.foregroundColor(.gray)
+									}
+									.transition(.opacity.combined(with: .move(edge: .top)))
+								} else if page == 1 {
+									VStack(spacing: 8) {
+										Text("Set your budgets")
+										Text("Manage your money with monthly or category-specific budgets.")
+											.font(.footnote)
+											.foregroundColor(.gray)
+									}
+									.transition(.opacity.combined(with: .move(edge: .top)))
+								} else if page == 2 {
+									VStack(spacing: 8) {
+										Text("Explore insights")
+										Text("Long-press a card to add it to your main screen.")
+											.font(.footnote)
+											.foregroundColor(.gray)
+									}
+									.transition(.opacity.combined(with: .move(edge: .top)))
+								} else {
+									VStack(spacing: 8) {
+										Text("Let’s set you up")
+										Text("Configure your budget to get started.")
+											.font(.footnote)
+											.foregroundColor(.gray)
+									}
+									.transition(.opacity.combined(with: .move(edge: .top)))
 								}
-								DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-									hasSeenTutorial = true
-								}
-							}) {
-								Text("Start using Monir")
-									.font(.headline)
-									.frame(maxWidth: .infinity)
-									.padding()
-									.background(Color.accentColor)
-									.foregroundColor(.white)
-									.cornerRadius(12)
-									.padding(.horizontal)
 							}
-							.transition(.move(edge: .bottom).combined(with: .opacity))
-							.padding(.bottom, 40)
-						}
+							.font(.title2.weight(.semibold))
+							.bold()
+							.multilineTextAlignment(.center)
+							.animation(.easeInOut(duration: 0.3), value: page)
 
-						Spacer()
+							if showFinalSetupForm {
+								ZStack {
+									Color(.systemBackground)
+										.ignoresSafeArea()
+
+									List {
+										Section {
+											NavigationLink(destination: BudgetSetupView(onComplete: { isEnabled in
+												budgetEnabled = isEnabled
+												enableBudgetPeriod = isEnabled
+												enableBudgetAmount = false
+												enableRating = !isEnabled
+												budgetTrackingDisabled = !isEnabled
+											})) {
+												Text("📊  Budget Tracking")
+													.frame(height: 52)
+											}
+
+											if enableBudgetPeriod {
+												NavigationLink(destination: BudgetPeriodSetupView(onComplete: {
+													enableBudgetAmount = true
+												})) {
+													Text("🗓️  Budget Period")
+														.frame(height: 52)
+												}
+											} else {
+												HStack {
+													Text("🗓️  Budget Period")
+														.strikethrough(budgetTrackingDisabled)
+														.foregroundColor(.gray)
+														.frame(height: 52)
+												}
+											}
+
+											if enableBudgetAmount {
+												NavigationLink(destination: BudgetAmountSetupView(onComplete: {
+													enableRating = true
+												})) {
+													Text("💰  Budget Amount")
+														.frame(height: 52)
+												}
+											} else {
+												HStack {
+													Text("💰  Budget Amount")
+														.strikethrough(budgetTrackingDisabled)
+														.foregroundColor(.gray)
+														.frame(height: 52)
+												}
+											}
+
+											if enableRating {
+												NavigationLink(destination: RatingToggleSetupView(onComplete: {
+													withAnimation {
+														showStartButton = true
+													}
+												})) {
+													Text("⭐️  Enable Rating")
+														.frame(height: 52)
+												}
+											} else {
+												HStack {
+													Text("⭐️  Enable Rating")
+														.foregroundColor(.gray)
+														.frame(height: 52)
+												}
+											}
+										}
+									}
+									.scrollDisabled(true)
+									.listStyle(.plain)
+									.background(Color(.systemBackground))
+								}
+							}
+
+							if showStartButton {
+								Button(action: {
+									withAnimation(.easeInOut(duration: 0.5)) {
+										isExitingTutorial = true
+									}
+									DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+										hasSeenTutorial = true
+									}
+								}) {
+									Text("Start using Monir")
+										.font(.headline)
+										.frame(maxWidth: .infinity)
+										.padding()
+										.background(Color.accentColor)
+										.foregroundColor(.white)
+										.cornerRadius(12)
+										.padding(.horizontal)
+								}
+								.transition(.move(edge: .bottom).combined(with: .opacity))
+								.padding(.bottom, 40)
+							}
+
+							Spacer()
+						}
+						.padding(.top, 84)
+						.padding(.horizontal)
+						.zIndex(1)
 					}
-					.padding(.top, 84)
-					.padding(.horizontal)
-					.zIndex(1)
 				}
-			}
-			.ignoresSafeArea(edges: .bottom)
-			.onAppear {
-				guard !didBounce else { return }
-				didBounce = true
-				DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-					withAnimation(.easeInOut(duration: 0.2)) {
-						imageOffset = -40
-					}
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+				.ignoresSafeArea(edges: .bottom)
+				.onAppear {
+					guard !didBounce else { return }
+					didBounce = true
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
 						withAnimation(.easeInOut(duration: 0.2)) {
-							imageOffset = 0
+							imageOffset = -40
+						}
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+							withAnimation(.easeInOut(duration: 0.2)) {
+								imageOffset = 0
+							}
 						}
 					}
 				}
-			}
-			.onChange(of: page) { newPage in
-				if newPage == imageGroups.count - 1 {
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-						withAnimation {
-							showFinalSetupForm = true
+				.onChange(of: page) { newPage in
+					if newPage == imageGroups.count - 1 {
+						DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+							withAnimation {
+								showFinalSetupForm = true
+							}
 						}
+					} else {
+						showFinalSetupForm = false
 					}
-				} else {
-					showFinalSetupForm = false
 				}
+				Button("Skip") {
+					hasSeenTutorial = true
+				}
+				.padding()
+				.font(.callout.weight(.semibold))
 			}
+			.navigationViewStyle(.stack)
+			.preferredColorScheme(
+					appearanceMode == "Light" ? .light :
+					appearanceMode == "Dark" ? .dark : nil
+			)
 		}
-		.navigationViewStyle(.stack)
-		.preferredColorScheme(
-				appearanceMode == "Light" ? .light :
-				appearanceMode == "Dark" ? .dark : nil
-		)
 	}
 }
