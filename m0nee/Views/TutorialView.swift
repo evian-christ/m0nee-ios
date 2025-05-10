@@ -330,6 +330,8 @@ struct TutorialView: View {
 							.multilineTextAlignment(.center)
 							.animation(.easeInOut(duration: 0.3), value: page)
 
+							Spacer().frame(height: 24)
+
 							if showFinalSetupForm {
 								ZStack {
 									Color(.systemBackground)
@@ -473,3 +475,4 @@ struct TutorialView: View {
 		}
 	}
 }
+ 	
