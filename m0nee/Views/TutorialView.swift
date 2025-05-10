@@ -292,7 +292,7 @@ struct TutorialView: View {
 						ZStack {
 							if page == 0 {
 								VStack(spacing: 8) {
-									Text("💸 Record your expenses")
+									Text("Record your expenses")
 									Text("A few taps are all it takes to log your spending.")
 										.font(.footnote)
 										.foregroundColor(.gray)
@@ -300,7 +300,7 @@ struct TutorialView: View {
 								.transition(.opacity.combined(with: .move(edge: .top)))
 							} else if page == 1 {
 								VStack(spacing: 8) {
-									Text("📊 Set your budgets")
+									Text("Set your budgets")
 									Text("Manage your money with monthly or category-specific budgets.")
 										.font(.footnote)
 										.foregroundColor(.gray)
@@ -308,7 +308,7 @@ struct TutorialView: View {
 								.transition(.opacity.combined(with: .move(edge: .top)))
 							} else if page == 2 {
 								VStack(spacing: 8) {
-									Text("📈 Explore insights")
+									Text("Explore insights")
 									Text("Long-press a card to add it to your main screen.")
 										.font(.footnote)
 										.foregroundColor(.gray)
@@ -316,7 +316,7 @@ struct TutorialView: View {
 								.transition(.opacity.combined(with: .move(edge: .top)))
 							} else {
 								VStack(spacing: 8) {
-									Text("⚙️ Let’s set you up")
+									Text("Let’s set you up")
 									Text("Configure your budget to get started.")
 										.font(.footnote)
 										.foregroundColor(.gray)
