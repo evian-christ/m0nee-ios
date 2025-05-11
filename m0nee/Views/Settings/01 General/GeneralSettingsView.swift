@@ -14,6 +14,7 @@ struct GeneralSettingsView: View {
 	@AppStorage("showRating") private var showRating: Bool = true
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
+	@AppStorage("isProUser") private var isProUser: Bool = false
 	
 	@State private var showResetAlert = false
 	@State private var showFullResetAlert = false
@@ -41,8 +42,14 @@ struct GeneralSettingsView: View {
 				
 				Section(header: Text("Expense")) {
 					Toggle("Enable Ratings", isOn: $showRating)
-					NavigationLink("Recurring Expenses") {
-						RecurringSettingsView()
+					if isProUser {
+						NavigationLink("Recurring Expenses") {
+							RecurringSettingsView()
+						}
+					} else {
+						NavigationLink("Recurring Expenses") {
+							ProUpgradeModalView(isPresented: .constant(true))
+						}
 					}
 				}
 				
