@@ -14,7 +14,7 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 struct ContentView: View {
 		@State private var pressedExpenseID: UUID?
 	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-		@AppStorage("isProUser") private var isProUser: Bool = false
+		@AppStorage("isProUser") private var isProUser: Bool = true
 	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
 	
 	private var currencySymbol: String {

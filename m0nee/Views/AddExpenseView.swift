@@ -50,6 +50,7 @@ struct AddExpenseView: View {
 	@State private var showingDeleteAlert = false
 	@State private var showingDuplicateAlert = false
 	@State private var showAmountTooLargeAlert = false
+		@AppStorage("isProUser") private var isProUser: Bool = false
 	
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
@@ -354,23 +355,29 @@ var body: some View {
 					}
 			}
 			
-			if expenseID == nil {
-				Section {
-					NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
-						HStack {
-							Text("Repeat")
-							Spacer()
-							Text(repeatDescription)
-								.foregroundColor(.secondary)
+						if expenseID == nil {
+								Section {
+										if isProUser {
+												NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
+														HStack {
+																Text("Repeat")
+																Spacer()
+																Text(repeatDescription)
+																		.foregroundColor(.secondary)
+														}
+												}
+										} else {
+												NavigationLink(destination: ProUpgradeModalView(isPresented: .constant(true))) {
+														HStack {
+																Text("Repeat")
+																Spacer()
+																Text(repeatDescription)
+																		.foregroundColor(.secondary)
+														}
+												}
+										}
+								}
 						}
-					}
-					.onChange(of: recurrenceDraft.dayInterval) { newValue in
-						if newValue == 0 {
-							recurrenceDraft.dayInterval = 1
-						}
-					}
-				}
-			}
 			
 			if let id = expenseID {
 				let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID
