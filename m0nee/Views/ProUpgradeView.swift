@@ -1,7 +1,10 @@
 import SwiftUI
+import StoreKit
 
 struct ProUpgradeModalView: View {
 	@Binding var isPresented: Bool
+	@Environment(\.dismiss) private var dismiss
+	@State private var products: [Product] = []
 
 	var body: some View {
 			ScrollView {
@@ -47,21 +50,43 @@ struct ProUpgradeModalView: View {
 							.padding(.horizontal, 32)
 
 							VStack(spacing: 16) {
-									Button(action: {
-											isPresented = false
-									}) {
-											Text("Subscribe – £1.99 / month")
-													.fontWeight(.semibold)
+									if let monthly = products.first(where: { $0.id == "com.chan.monir.pro.monthly" }) {
+											Button(action: {
+													Task {
+															do {
+																	let result = try await monthly.purchase()
+																	switch result {
+																	case .success(let verification):
+																			switch verification {
+																			case .verified(_):
+																					UserDefaults.standard.set(true, forKey: "isProUser")
+																					isPresented = false
+																			case .unverified(_, _):
+																					print("🔒 Unverified purchase.")
+																			}
+																	default:
+																			break
+																	}
+															} catch {
+																	print("❌ Purchase error: \(error)")
+															}
+													}
+											}) {
+													Text("Subscribe – \(monthly.displayPrice) / month")
+															.fontWeight(.semibold)
+															.frame(maxWidth: .infinity)
+															.padding()
+															.background(Color.accentColor)
+															.foregroundColor(.white)
+															.cornerRadius(12)
+											}
+									} else {
+											ProgressView("Loading subscription...")
 													.frame(maxWidth: .infinity)
 													.padding()
-													.background(Color.accentColor)
-													.foregroundColor(.white)
-													.cornerRadius(12)
 									}
 
-									Button(action: {
-											isPresented = false
-									}) {
+									Button(action: {}) {
 											Text("Buy Lifetime – £19.99")
 													.fontWeight(.semibold)
 													.frame(maxWidth: .infinity)
@@ -70,12 +95,22 @@ struct ProUpgradeModalView: View {
 													.foregroundColor(.primary)
 													.cornerRadius(12)
 									}
+									.disabled(true)
 							}
 							.padding(.horizontal)
 
 							
 					}
 					.padding(.horizontal)
+			}
+			.onAppear {
+				Task {
+					do {
+						products = try await Product.products(for: ["com.chan.monir.pro.monthly"])
+					} catch {
+						print("❌ Failed to load products: \(error)")
+					}
+				}
 			}
 	}
 }
