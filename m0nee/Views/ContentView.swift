@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import StoreKit
 
 func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -> Int? {
 	let cardHeight: CGFloat = 248  // 240 height + 8 vertical padding
@@ -14,7 +15,26 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 struct ContentView: View {
 		@State private var pressedExpenseID: UUID?
 	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-		@AppStorage("isProUser") private var isProUser: Bool = true
+	@AppStorage("isProUser") private var isProUser: Bool = true
+		// MARK: - Pro Entitlement Check
+		private func checkProEntitlement() async -> Bool {
+				do {
+						for await result in Transaction.currentEntitlements {
+								switch result {
+								case .verified(let transaction):
+										if transaction.productID == "com.chan.monir.pro.monthly" ||
+												transaction.productID == "com.chan.monir.pro.lifetime" {
+												return true
+										}
+								case .unverified:
+										continue
+								}
+						}
+				} catch {
+						print("❌ Failed to check entitlements: \(error)")
+				}
+				return false
+		}
 	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
 	
 	private var currencySymbol: String {
@@ -633,14 +653,17 @@ struct ContentView: View {
 			.navigationBarTitleDisplayMode(.inline)
 		}
 		.environmentObject(store)
-		.onAppear {
-			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
-				favouriteCards = decoded
-			} else {
-				favouriteCards = []
-			}
-		}
+				.onAppear {
+						if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+								 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
+								favouriteCards = decoded
+						} else {
+								favouriteCards = []
+						}
+						Task {
+								isProUser = await checkProEntitlement()
+						}
+				}
 		.onReceive(NotificationCenter.default.publisher(for: Notification.Name("favouritesUpdated")), perform: { _ in
 			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
 				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {

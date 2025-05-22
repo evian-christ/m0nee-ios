@@ -86,16 +86,41 @@ struct ProUpgradeModalView: View {
 													.padding()
 									}
 
-									Button(action: {}) {
-											Text("Buy Lifetime – £19.99")
-													.fontWeight(.semibold)
+									if let lifetime = products.first(where: { $0.id == "com.chan.monir.pro.lifetime" }) {
+											Button(action: {
+													Task {
+															do {
+																	let result = try await lifetime.purchase()
+																	switch result {
+																	case .success(let verification):
+																			switch verification {
+																			case .verified(_):
+																					UserDefaults.standard.set(true, forKey: "isProUser")
+																					isPresented = false
+																			case .unverified(_, _):
+																					print("🔒 Unverified purchase.")
+																			}
+																	default:
+																			break
+																	}
+															} catch {
+																	print("❌ Purchase error: \(error)")
+															}
+													}
+											}) {
+													Text("Buy Lifetime – \(lifetime.displayPrice)")
+															.fontWeight(.semibold)
+															.frame(maxWidth: .infinity)
+															.padding()
+															.background(Color.gray.opacity(0.2))
+															.foregroundColor(.primary)
+															.cornerRadius(12)
+											}
+									} else {
+											ProgressView("Loading lifetime option...")
 													.frame(maxWidth: .infinity)
 													.padding()
-													.background(Color.gray.opacity(0.2))
-													.foregroundColor(.primary)
-													.cornerRadius(12)
 									}
-									.disabled(true)
 							}
 							.padding(.horizontal)
 
@@ -106,9 +131,11 @@ struct ProUpgradeModalView: View {
 			.onAppear {
 				Task {
 					do {
-						products = try await Product.products(for: ["com.chan.monir.pro.monthly"])
+						print("🌐 Fetching products from App Store...")
+						products = try await Product.products(for: ["com.chan.monir.pro.monthly", "com.chan.monir.pro.lifetime"])
+						print("✅ Products loaded: \(products.map { $0.id })")
 					} catch {
-						print("❌ Failed to load products: \(error)")
+						print("❌ Failed to load products: \(error.localizedDescription)")
 					}
 				}
 			}
