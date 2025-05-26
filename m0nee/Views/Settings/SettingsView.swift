@@ -30,6 +30,11 @@ struct SettingsView: View {
 					Label("Storage", systemImage: "externaldrive")
 						.frame(minHeight: 44)
 				}
+
+				NavigationLink(destination: SubscriptionSettingsView()) {
+					Label("Monir Pro", systemImage: "star.fill")
+						.frame(minHeight: 44)
+				}
 			}
 
 			Section {
