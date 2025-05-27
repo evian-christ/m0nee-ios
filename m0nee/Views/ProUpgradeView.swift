@@ -1,3 +1,7 @@
+extension Notification.Name {
+		static let didUpgradeToPro = Notification.Name("didUpgradeToPro")
+}
+
 import SwiftUI
 import StoreKit
 
@@ -6,6 +10,7 @@ struct ProUpgradeModalView: View {
 	@Environment(\.dismiss) private var dismiss
 	@State private var products: [Product] = []
 	@State private var currentProductID: String?
+	@State private var showCancelSubscriptionAlert = false
 
 	var body: some View {
 			ScrollView {
@@ -59,8 +64,13 @@ struct ProUpgradeModalView: View {
 																					switch verification {
 																					case .verified(_):
 																							UserDefaults.standard.set(true, forKey: "isProUser")
-																							isPresented = false
-																							dismiss()
+																										NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
+																							if currentProductID == "com.chan.monir.pro.monthly" {
+																								showCancelSubscriptionAlert = true
+																							} else {
+																								isPresented = false
+																								dismiss()
+																							}
 																					case .unverified(_, _):
 																							print("🔒 Unverified purchase.")
 																					}
@@ -72,13 +82,13 @@ struct ProUpgradeModalView: View {
 																	}
 															}
 													}) {
-															Text("Subscribe – \(monthly.displayPrice) / month")
-																	.fontWeight(.semibold)
-																	.frame(maxWidth: .infinity)
-																	.padding()
-																	.background(Color(.systemGray5))
-																	.foregroundColor(.primary)
-																	.cornerRadius(12)
+														Text(currentProductID == "com.chan.monir.pro.monthly" ? "Already Subscribed" : "Subscribe – \(monthly.displayPrice) / month")
+																.fontWeight(.semibold)
+																.frame(maxWidth: .infinity)
+																.padding()
+																.background(currentProductID == "com.chan.monir.pro.monthly" ? Color(.systemGray4) : Color(.systemGray5))
+																.foregroundColor(.primary)
+																.cornerRadius(12)
 													}
 													.disabled(currentProductID == "com.chan.monir.pro.monthly")
 
@@ -103,8 +113,24 @@ struct ProUpgradeModalView: View {
 																					switch verification {
 																					case .verified(_):
 																							UserDefaults.standard.set(true, forKey: "isProUser")
-																							isPresented = false
-																							dismiss()
+																										NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
+
+																							// Re-check entitlements for a monthly subscription
+																							var hasMonthly = false
+																							for await result in Transaction.currentEntitlements {
+																									if case .verified(let transaction) = result,
+																										 transaction.productID == "com.chan.monir.pro.monthly" {
+																											hasMonthly = true
+																											break
+																									}
+																							}
+
+																							if hasMonthly {
+																									showCancelSubscriptionAlert = true
+																							} else {
+																									isPresented = false
+																									dismiss()
+																							}
 																					case .unverified(_, _):
 																							print("🔒 Unverified purchase.")
 																					}
@@ -141,6 +167,19 @@ struct ProUpgradeModalView: View {
 					.padding(.horizontal)
 					.padding(.top, 48)
 					.padding(.vertical, 32)
+			}
+			.alert("Cancel your monthly subscription", isPresented: $showCancelSubscriptionAlert) {
+				Button("Open App Store") {
+					if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+						UIApplication.shared.open(url)
+					}
+				}
+				Button("Close", role: .cancel) {
+					isPresented = false
+					dismiss()
+				}
+			} message: {
+				Text("You’ve purchased a lifetime plan. Please cancel your monthly subscription in the App Store to avoid being charged again.")
 			}
 			.onAppear {
 				Task {

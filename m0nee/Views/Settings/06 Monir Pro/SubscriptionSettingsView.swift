@@ -5,6 +5,7 @@ import StoreKit
 struct SubscriptionSettingsView: View {
 		@AppStorage("isProUser") var isProUser: Bool = false
 		@State private var productID: String?
+		@State private var showUpgradeModal = false
 
 		private var subscriptionLabel: String {
 				switch productID {
@@ -22,46 +23,95 @@ struct SubscriptionSettingsView: View {
 		}
 
 		var body: some View {
-				NavigationView {
-						Form {
-								Section {
-										HStack {
-												Text("Current Plan")
-												Spacer()
-												Text(subscriptionLabel)
-														.foregroundColor(.secondary)
+				Form {
+						Section {
+								HStack {
+										Text("Current Plan")
+										Spacer()
+										Text(subscriptionLabel)
+												.foregroundColor(.secondary)
+								}
+								
+								if productID != "com.chan.monir.pro.lifetime" {
+										Button("Upgrade Plan") {
+												showUpgradeModal = true
 										}
 								}
-								if productID == "com.chan.monir.pro.monthly" {
-										Section {
-												Link("Manage Subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
-										}
-								}
+						}
+						if productID == "com.chan.monir.pro.monthly" {
 								Section {
-										Button("Restore Purchase") {
-												Task {
-														do {
-																try await AppStore.sync()
-																print("🔁 Purchase restored")
-														} catch {
-																print("❌ Restore failed: \(error)")
-														}
+										Link("Manage Subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
+								}
+						}
+						Section {
+								Button("Restore Purchase") {
+										Task {
+												do {
+														try await AppStore.sync()
+														print("🔁 Purchase restored")
+												} catch {
+														print("❌ Restore failed: \(error)")
 												}
 										}
 								}
 						}
-						.navigationTitle("Monir Pro")
-						.task {
+				}
+				.navigationBarTitleDisplayMode(.inline)
+				.navigationTitle("Monir Pro")
+				.task {
+						do {
+								var foundEntitlement = false
+								for await result in Transaction.currentEntitlements {
+										if case .verified(let transaction) = result {
+												if transaction.productID == "com.chan.monir.pro.monthly" ||
+													transaction.productID == "com.chan.monir.pro.lifetime" {
+														productID = transaction.productID
+														foundEntitlement = true
+														break
+												}
+										}
+								}
+								if !foundEntitlement {
+										productID = "free"
+								}
+						} catch {
+								print("❌ Failed to check entitlements: \(error)")
+								productID = "free"
+						}
+				}
+				.sheet(isPresented: $showUpgradeModal, onDismiss: {
+						Task {
 								do {
 										var foundEntitlement = false
 										for await result in Transaction.currentEntitlements {
-												if case .verified(let transaction) = result {
-														if transaction.productID == "com.chan.monir.pro.monthly" ||
-															transaction.productID == "com.chan.monir.pro.lifetime" {
-																productID = transaction.productID
-																foundEntitlement = true
-																break
-														}
+												if case .verified(let transaction) = result,
+													 ["com.chan.monir.pro.monthly", "com.chan.monir.pro.lifetime"].contains(transaction.productID) {
+														productID = transaction.productID
+														foundEntitlement = true
+														break
+												}
+										}
+										if !foundEntitlement {
+												productID = "free"
+										}
+								} catch {
+										print("❌ Failed to check entitlements: \(error)")
+										productID = "free"
+								}
+						}
+				}) {
+						ProUpgradeModalView(isPresented: $showUpgradeModal)
+				}
+				.onReceive(NotificationCenter.default.publisher(for: .didUpgradeToPro)) { _ in
+						Task {
+								do {
+										var foundEntitlement = false
+										for await result in Transaction.currentEntitlements {
+												if case .verified(let transaction) = result,
+													 ["com.chan.monir.pro.monthly", "com.chan.monir.pro.lifetime"].contains(transaction.productID) {
+														productID = transaction.productID
+														foundEntitlement = true
+														break
 												}
 										}
 										if !foundEntitlement {
