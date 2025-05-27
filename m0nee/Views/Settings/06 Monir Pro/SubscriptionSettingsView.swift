@@ -32,6 +32,11 @@ struct SubscriptionSettingsView: View {
 														.foregroundColor(.secondary)
 										}
 								}
+								if productID == "com.chan.monir.pro.monthly" {
+										Section {
+												Link("Manage Subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
+										}
+								}
 						}
 						.navigationTitle("Monir Pro")
 						.task {
