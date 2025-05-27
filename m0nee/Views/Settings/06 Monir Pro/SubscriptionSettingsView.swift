@@ -37,6 +37,18 @@ struct SubscriptionSettingsView: View {
 												Link("Manage Subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
 										}
 								}
+								Section {
+										Button("Restore Purchase") {
+												Task {
+														do {
+																try await AppStore.sync()
+																print("🔁 Purchase restored")
+														} catch {
+																print("❌ Restore failed: \(error)")
+														}
+												}
+										}
+								}
 						}
 						.navigationTitle("Monir Pro")
 						.task {
