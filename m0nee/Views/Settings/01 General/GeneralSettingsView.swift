@@ -64,8 +64,6 @@ struct GeneralSettingsView: View {
 					}
 					.foregroundColor(.red)
 				}
-				
-				
 			}
 			.navigationTitle("General")
 			.navigationBarTitleDisplayMode(.inline)

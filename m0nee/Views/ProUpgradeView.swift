@@ -9,12 +9,6 @@ struct ProUpgradeModalView: View {
 	var body: some View {
 			ScrollView {
 					VStack(spacing: 24) {
-							Spacer().frame(height: 32)
-
-							Image(systemName: "star.circle.fill")
-									.font(.system(size: 48))
-									.foregroundColor(.yellow)
-
 							Text("Upgrade to Monir Pro")
 									.font(.title.bold())
 
@@ -22,34 +16,34 @@ struct ProUpgradeModalView: View {
 									.font(.body)
 									.foregroundColor(.secondary)
 									.multilineTextAlignment(.center)
-									.lineSpacing(2)
 									.padding(.horizontal)
 
-							VStack(alignment: .leading, spacing: 12) {
+							VStack(alignment: .leading, spacing: 16) {
 									HStack(spacing: 8) {
-											Image(systemName: "checkmark.circle.fill")
-													.foregroundColor(.green)
+											Image(systemName: "arrow.triangle.2.circlepath")
+													.foregroundColor(.accentColor)
 											Text("Recurring expense feature")
 									}
 									HStack(spacing: 8) {
-											Image(systemName: "checkmark.circle.fill")
-													.foregroundColor(.green)
+											Image(systemName: "chart.xyaxis.line")
+													.foregroundColor(.accentColor)
 											Text("Advanced insight cards")
 									}
 									HStack(spacing: 8) {
-											Image(systemName: "checkmark.circle.fill")
-													.foregroundColor(.green)
+											Image(systemName: "square.and.arrow.up")
+													.foregroundColor(.accentColor)
 											Text("Export & import feature")
 									}
+									HStack(spacing: 8) {
+											Image(systemName: "person.2")
+													.foregroundColor(.accentColor)
+											Text("Family Sharing")
+									}
 							}
-							.padding(.top, 12)
-							.padding(.bottom, 20)
-							.font(.subheadline)
-							.foregroundColor(.secondary)
-							.frame(maxWidth: .infinity, alignment: .leading)
 							.padding(.horizontal, 32)
+							.frame(maxWidth: .infinity, alignment: .leading)
 
-							VStack(spacing: 16) {
+							VStack(spacing: 24) {
 									if let monthly = products.first(where: { $0.id == "com.chan.monir.pro.monthly" }) {
 											Button(action: {
 													Task {
@@ -76,10 +70,14 @@ struct ProUpgradeModalView: View {
 															.fontWeight(.semibold)
 															.frame(maxWidth: .infinity)
 															.padding()
-															.background(Color.accentColor)
-															.foregroundColor(.white)
+															.background(Color(.systemGray3))
+															.foregroundColor(.primary)
 															.cornerRadius(12)
 											}
+
+											Text("Plan auto-renews for \(monthly.displayPrice)/month until cancelled.")
+													.font(.footnote)
+													.foregroundColor(.secondary)
 									} else {
 											ProgressView("Loading subscription...")
 													.frame(maxWidth: .infinity)
@@ -112,10 +110,14 @@ struct ProUpgradeModalView: View {
 															.fontWeight(.semibold)
 															.frame(maxWidth: .infinity)
 															.padding()
-															.background(Color.gray.opacity(0.2))
+															.background(Color(.systemGray3))
 															.foregroundColor(.primary)
 															.cornerRadius(12)
 											}
+
+											Text("Pay once, use forever")
+													.font(.footnote)
+													.foregroundColor(.secondary)
 									} else {
 											ProgressView("Loading lifetime option...")
 													.frame(maxWidth: .infinity)
@@ -123,10 +125,10 @@ struct ProUpgradeModalView: View {
 									}
 							}
 							.padding(.horizontal)
-
-							
 					}
 					.padding(.horizontal)
+					.padding(.top, 48)
+					.padding(.vertical, 32)
 			}
 			.onAppear {
 				Task {
