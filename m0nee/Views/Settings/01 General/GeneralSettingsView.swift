@@ -65,16 +65,7 @@ struct GeneralSettingsView: View {
 					.foregroundColor(.red)
 				}
 				
-				Section {
-					Button(action: {
-						isProUser.toggle()
-					}) {
-						Text(isProUser ? "Revoke Pro User" : "Become Pro User")
-							.frame(maxWidth: .infinity)
-							.multilineTextAlignment(.center)
-					}
-					.foregroundColor(.accentColor)
-				}
+				
 			}
 			.navigationTitle("General")
 			.navigationBarTitleDisplayMode(.inline)
