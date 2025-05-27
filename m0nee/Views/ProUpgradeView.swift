@@ -5,6 +5,7 @@ struct ProUpgradeModalView: View {
 	@Binding var isPresented: Bool
 	@Environment(\.dismiss) private var dismiss
 	@State private var products: [Product] = []
+	@State private var currentProductID: String?
 
 	var body: some View {
 			ScrollView {
@@ -17,6 +18,7 @@ struct ProUpgradeModalView: View {
 									.foregroundColor(.secondary)
 									.multilineTextAlignment(.center)
 									.padding(.horizontal)
+							Spacer().frame(height: 0)
 
 							VStack(alignment: .leading, spacing: 16) {
 									HStack(spacing: 8) {
@@ -43,41 +45,47 @@ struct ProUpgradeModalView: View {
 							.padding(.horizontal, 32)
 							.frame(maxWidth: .infinity, alignment: .leading)
 
+							Spacer().frame(height: 16)
+
 							VStack(spacing: 24) {
 									if let monthly = products.first(where: { $0.id == "com.chan.monir.pro.monthly" }) {
-											Button(action: {
-													Task {
-															do {
-																	let result = try await monthly.purchase()
-																	switch result {
-																	case .success(let verification):
-																			switch verification {
-																			case .verified(_):
-																					UserDefaults.standard.set(true, forKey: "isProUser")
-																					isPresented = false
-																			case .unverified(_, _):
-																					print("🔒 Unverified purchase.")
+											VStack(spacing: 4) {
+													Button(action: {
+															Task {
+																	do {
+																			let result = try await monthly.purchase()
+																			switch result {
+																			case .success(let verification):
+																					switch verification {
+																					case .verified(_):
+																							UserDefaults.standard.set(true, forKey: "isProUser")
+																							isPresented = false
+																							dismiss()
+																					case .unverified(_, _):
+																							print("🔒 Unverified purchase.")
+																					}
+																			default:
+																					break
 																			}
-																	default:
-																			break
+																	} catch {
+																			print("❌ Purchase error: \(error)")
 																	}
-															} catch {
-																	print("❌ Purchase error: \(error)")
 															}
+													}) {
+															Text("Subscribe – \(monthly.displayPrice) / month")
+																	.fontWeight(.semibold)
+																	.frame(maxWidth: .infinity)
+																	.padding()
+																	.background(Color(.systemGray5))
+																	.foregroundColor(.primary)
+																	.cornerRadius(12)
 													}
-											}) {
-													Text("Subscribe – \(monthly.displayPrice) / month")
-															.fontWeight(.semibold)
-															.frame(maxWidth: .infinity)
-															.padding()
-															.background(Color(.systemGray3))
-															.foregroundColor(.primary)
-															.cornerRadius(12)
-											}
+													.disabled(currentProductID == "com.chan.monir.pro.monthly")
 
-											Text("Plan auto-renews for \(monthly.displayPrice)/month until cancelled.")
-													.font(.footnote)
-													.foregroundColor(.secondary)
+													Text("Plan auto-renews for \(monthly.displayPrice)/month until cancelled.")
+															.font(.footnote)
+															.foregroundColor(.secondary)
+											}
 									} else {
 											ProgressView("Loading subscription...")
 													.frame(maxWidth: .infinity)
@@ -85,39 +93,43 @@ struct ProUpgradeModalView: View {
 									}
 
 									if let lifetime = products.first(where: { $0.id == "com.chan.monir.pro.lifetime" }) {
-											Button(action: {
-													Task {
-															do {
-																	let result = try await lifetime.purchase()
-																	switch result {
-																	case .success(let verification):
-																			switch verification {
-																			case .verified(_):
-																					UserDefaults.standard.set(true, forKey: "isProUser")
-																					isPresented = false
-																			case .unverified(_, _):
-																					print("🔒 Unverified purchase.")
+											VStack(spacing: 4) {
+													Button(action: {
+															Task {
+																	do {
+																			let result = try await lifetime.purchase()
+																			switch result {
+																			case .success(let verification):
+																					switch verification {
+																					case .verified(_):
+																							UserDefaults.standard.set(true, forKey: "isProUser")
+																							isPresented = false
+																							dismiss()
+																					case .unverified(_, _):
+																							print("🔒 Unverified purchase.")
+																					}
+																			default:
+																					break
 																			}
-																	default:
-																			break
+																	} catch {
+																			print("❌ Purchase error: \(error)")
 																	}
-															} catch {
-																	print("❌ Purchase error: \(error)")
 															}
+													}) {
+															Text("Buy Lifetime – \(lifetime.displayPrice)")
+																	.fontWeight(.semibold)
+																	.frame(maxWidth: .infinity)
+																	.padding()
+																	.background(Color(.systemGray5))
+																	.foregroundColor(.primary)
+																	.cornerRadius(12)
 													}
-											}) {
-													Text("Buy Lifetime – \(lifetime.displayPrice)")
-															.fontWeight(.semibold)
-															.frame(maxWidth: .infinity)
-															.padding()
-															.background(Color(.systemGray3))
-															.foregroundColor(.primary)
-															.cornerRadius(12)
-											}
+													.disabled(currentProductID == "com.chan.monir.pro.lifetime")
 
-											Text("Pay once, use forever")
-													.font(.footnote)
-													.foregroundColor(.secondary)
+													Text("Pay once, use forever")
+															.font(.footnote)
+															.foregroundColor(.secondary)
+											}
 									} else {
 											ProgressView("Loading lifetime option...")
 													.frame(maxWidth: .infinity)
@@ -136,10 +148,20 @@ struct ProUpgradeModalView: View {
 						print("🌐 Fetching products from App Store...")
 						products = try await Product.products(for: ["com.chan.monir.pro.monthly", "com.chan.monir.pro.lifetime"])
 						print("✅ Products loaded: \(products.map { $0.id })")
+
+						for await result in Transaction.currentEntitlements {
+							if case .verified(let transaction) = result {
+								if ["com.chan.monir.pro.monthly", "com.chan.monir.pro.lifetime"].contains(transaction.productID) {
+									currentProductID = transaction.productID
+									break
+								}
+							}
+						}
 					} catch {
-						print("❌ Failed to load products: \(error.localizedDescription)")
+						print("❌ Failed to load products or entitlements: \(error.localizedDescription)")
 					}
 				}
 			}
 	}
 }
+ 
