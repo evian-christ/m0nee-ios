@@ -6,28 +6,23 @@ struct ImportView: View {
 		@EnvironmentObject var store: ExpenseStore
 		@State private var showImporter = false
 		@State private var importError: String?
+		@State private var pendingContent: String? = nil
+		@State private var showImportOptions = false
 
 		var body: some View {
-				VStack(spacing: 24) {
-						Text("Import CSV")
-								.font(.title)
-								.padding(.top)
+				NavigationView {
+						Form {
+								Button("Select CSV File") {
+										showImporter = true
+								}
 
-						Button("Select CSV File") {
-								showImporter = true
+								if let error = importError {
+										Text("Import failed: \(error)")
+												.foregroundColor(.red)
+								}
 						}
-						.padding()
-						.buttonStyle(.borderedProminent)
-
-						if let error = importError {
-								Text("Import failed: \(error)")
-										.foregroundColor(.red)
-										.padding()
-						}
-
-						Spacer()
+						.navigationTitle("Import CSV")
 				}
-				.padding()
 				.fileImporter(
 						isPresented: $showImporter,
 						allowedContentTypes: [.commaSeparatedText, .plainText],
@@ -45,14 +40,45 @@ struct ImportView: View {
 
 								let data = try Data(contentsOf: selectedFile)
 								if let content = String(data: data, encoding: .utf8) {
-										try importCSV(content)
-										dismiss()
+										pendingContent = content
+										showImportOptions = true
 								} else {
 										importError = "Invalid encoding"
 								}
 						} catch {
 								importError = error.localizedDescription
 						}
+				}
+				.alert("Import Data", isPresented: $showImportOptions) {
+						Button("Reset and Import") {
+								if let content = pendingContent {
+										// Clear existing data
+										store.expenses.removeAll()
+										store.recurringExpenses.removeAll()
+										// Import new data
+										do {
+												try importCSV(content)
+												dismiss()
+										} catch {
+												importError = error.localizedDescription
+										}
+								}
+						}
+						Button("Append and Import") {
+								if let content = pendingContent {
+										do {
+												try importCSV(content)
+												dismiss()
+										} catch {
+												importError = error.localizedDescription
+										}
+								}
+						}
+						Button("Cancel", role: .cancel) {
+								pendingContent = nil
+						}
+				} message: {
+						Text("Would you like to reset existing data before importing, or append to existing data?")
 				}
 		}
 
