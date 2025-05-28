@@ -57,6 +57,9 @@ struct ImportView: View {
 		}
 
 		func importCSV(_ content: String) throws {
+				let dateFormatter = DateFormatter()
+				dateFormatter.dateFormat = "yyyy-MM-dd"
+
 				let allRows = content.components(separatedBy: "\n").filter { !$0.isEmpty }
 				let rows = allRows.dropFirst()
 
@@ -90,14 +93,15 @@ struct ImportView: View {
 										lastGeneratedDate: lastGenerated
 								)
 								store.recurringExpenses.append(recurring)
-						} else 
+						} else
 						*/
-						if columns.count >= 4 {
-								// Regular expense fallback
-								let date = ISO8601DateFormatter().date(from: columns[0]) ?? Date()
-								let name = columns[1]
-								let amount = Double(columns[2]) ?? 0
-								let category = columns[3]
+						if columns.count >= 6 {
+								let dateString = columns[0]
+								let timeString = columns[1]
+								let date = DateFormatter.dateFromCSV(dateString: dateString, timeString: timeString) ?? Date()
+								let name = columns[2]
+								let amount = Double(columns[3]) ?? 0
+								let category = columns[4]
 
 								let expense = Expense(
 										id: UUID(),
