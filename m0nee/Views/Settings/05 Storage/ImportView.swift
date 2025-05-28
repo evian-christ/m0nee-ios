@@ -1,6 +1,25 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// Splits a CSV row into columns, respecting quoted fields
+private func splitCSVRow(_ row: String) -> [String] {
+		var columns: [String] = []
+		var current = ""
+		var inQuotes = false
+		for char in row {
+				if char == "\"" {
+						inQuotes.toggle()
+				} else if char == "," && !inQuotes {
+						columns.append(current)
+						current = ""
+				} else {
+						current.append(char)
+				}
+		}
+		columns.append(current)
+		return columns
+}
+
 struct ImportView: View {
 		@Environment(\.dismiss) private var dismiss
 		@EnvironmentObject var store: ExpenseStore
@@ -84,30 +103,37 @@ struct ImportView: View {
 		func importCSV(_ content: String) throws {
 				let dateFormatter = DateFormatter()
 				dateFormatter.dateFormat = "yyyy-MM-dd"
+				let dateTimeFormatter = DateFormatter()
+				dateTimeFormatter.dateFormat = "dd-MM-yyyy HH:mm"
 
 				let allRows = content.components(separatedBy: "\n").filter { !$0.isEmpty }
+				var inRecurringSection = false
 
 				for row in allRows {
-						let trimmedLowercasedRow = row.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-						if trimmedLowercasedRow.hasPrefix("# recurringexpenses") {
-								break
+						let trimmed = row.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+						// Detect start of recurring section by keyword
+						if trimmed.contains("recurringexpenses") {
+								inRecurringSection = true
+								continue
 						}
-
-						// Skip header row that might be duplicated mid-file
-						if trimmedLowercasedRow.contains("date") && trimmedLowercasedRow.contains("name") {
+						// Skip header rows
+						if trimmed.contains("date") && trimmed.contains("name") {
 								continue
 						}
 
-						let columns = row.components(separatedBy: ",")
+						let columns = splitCSVRow(row)
+						// Skip rows with an empty date column
 						let dateStringRaw = columns[0].trimmingCharacters(in: .whitespacesAndNewlines)
 						guard !dateStringRaw.isEmpty else { continue }
-						if columns.count >= 6 {
+						// Regular expenses (before recurring section)
+						if !inRecurringSection {
+								guard columns.count >= 6 else { continue }
+								let dateString = columns[0]
 								let timeString = columns[1]
-								let date = DateFormatter.dateFromCSV(dateString: dateStringRaw, timeString: timeString) ?? Date()
+								let date = DateFormatter.dateFromCSV(dateString: dateString, timeString: timeString) ?? Date()
 								let name = columns[2]
 								let amount = Double(columns[3]) ?? 0
 								let category = columns[4]
-
 								let expense = Expense(
 										id: UUID(),
 										date: date,
@@ -119,9 +145,49 @@ struct ImportView: View {
 										memo: ""
 								)
 								store.expenses.append(expense)
+						} else {
+								// Recurring expenses
+								// Expecting 12 columns as per export:
+								// StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note
+								guard columns.count >= 12 else { continue }
+								let startDate = dateTimeFormatter.date(from: columns[0]) ?? Date()
+								let name = columns[1]
+								let amount = Double(columns[2]) ?? 0
+								let category = columns[3]
+								let frequencyType = columns[4] // rawValue for RecurrenceRule.FrequencyType
+								let interval = Int(columns[5]) ?? 1
+								let period = columns[6] // rawValue for RecurrenceRule.Period
+								let weekdays = columns[7].split(separator: "|").compactMap { Int($0) }
+								let monthDays = columns[8].split(separator: "|").compactMap { Int($0) }
+								let endDate = dateFormatter.date(from: columns[9])
+								let lastGen = dateFormatter.date(from: columns[10])
+								let memo = columns[11]
+
+								let rule = RecurrenceRule(
+										period: RecurrenceRule.Period(rawValue: period) ?? .monthly,
+										frequencyType: RecurrenceRule.FrequencyType(rawValue: frequencyType) ?? .everyN,
+										interval: interval,
+										selectedWeekdays: weekdays,
+										selectedMonthDays: monthDays,
+										startDate: startDate,
+										endDate: endDate
+								)
+								let recurring = RecurringExpense(
+										id: UUID(),
+										name: name,
+										amount: amount,
+										category: category,
+										details: "",
+										rating: nil,
+										memo: memo,
+										startDate: startDate,
+										recurrenceRule: rule,
+										lastGeneratedDate: lastGen
+								)
+								store.recurringExpenses.append(recurring)
 						}
 				}
-				// Persist imported expenses
+				// Persist all changes
 				store.save()
 		}
 }

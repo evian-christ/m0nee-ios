@@ -24,7 +24,7 @@ struct ExportView: View {
 		let fileName = "Monir_Export.csv"
 		let path = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
 		
-		var csvText = "Date,Time,Name,Amount,Category,Details,Rating,Note,IsRecurring\n"
+		var csvText = "Date,Time,Name,Amount,Category,Details,Rating,Note,IsRecurring,ParentRecurringID\n"
 		
 		for expense in store.expenses {
 			let date = DateFormatter.m0neeCSV.string(from: expense.date)
@@ -36,14 +36,16 @@ struct ExportView: View {
 			let rating = expense.rating.map { "\($0)" } ?? ""
 			let note = escape(expense.memo ?? "")
 			let isRecurring = expense.isRecurring ? "Yes" : "No"
-			csvText += "\(date),\(time),\(name),\(amount),\(category),\(details),\(rating),\(note),\(isRecurring)\n"
+			let parentRecurringID = expense.parentRecurringID?.uuidString ?? ""
+			csvText += "\(date),\(time),\(name),\(amount),\(category),\(details),\(rating),\(note),\(isRecurring),\(parentRecurringID)\n"
 		}
 
 				csvText += "\n# RecurringExpenses\n"
 				csvText += "StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note\n"
 
 				for recurring in store.recurringExpenses {
-						let start = DateFormatter.m0neeCSV.string(from: recurring.startDate)
+						// Format start date with both date and time (dd-MM-yyyy HH:mm)
+						let start = "\(DateFormatter.m0neeCSV.string(from: recurring.startDate)) \(DateFormatter.m0neeTimeOnly.string(from: recurring.startDate))"
 						let name = escape(recurring.name)
 						let amount = String(format: "%.2f", recurring.amount)
 						let category = escape(recurring.category)

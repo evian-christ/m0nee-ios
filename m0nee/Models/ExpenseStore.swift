@@ -85,7 +85,8 @@ class ExpenseStore: ObservableObject {
 					
 					save()
 				}
-				
+			//recurringExpenses.removeAll()
+			//save()
 				generateExpensesFromRecurringIfNeeded()
 		}
 		
