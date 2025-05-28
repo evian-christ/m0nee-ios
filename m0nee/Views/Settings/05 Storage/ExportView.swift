@@ -37,6 +37,26 @@ struct ExportView: View {
 			let isRecurring = expense.isRecurring ? "Yes" : "No"
 			csvText += "\(date),\(name),\(amount),\(category),\(details),\(rating),\(note),\(isRecurring)\n"
 		}
+
+				csvText += "\n# RecurringExpenses\n"
+				csvText += "StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note\n"
+
+				for recurring in store.recurringExpenses {
+						let start = DateFormatter.m0neeCSV.string(from: recurring.startDate)
+						let name = escape(recurring.name)
+						let amount = String(format: "%.2f", recurring.amount)
+						let category = escape(recurring.category)
+						let cycle = escape(recurring.recurrenceRule.frequencyType.rawValue)
+						let interval = "\(recurring.recurrenceRule.interval)"
+						let period = recurring.recurrenceRule.period.rawValue
+						let selectedWeekdays = recurring.recurrenceRule.selectedWeekdays?.map { String($0) }.joined(separator: "|") ?? ""
+						let selectedMonthDays = recurring.recurrenceRule.selectedMonthDays?.map { String($0) }.joined(separator: "|") ?? ""
+						let endDate = recurring.recurrenceRule.endDate != nil ? DateFormatter.m0neeCSV.string(from: recurring.recurrenceRule.endDate!) : ""
+						let note = escape(recurring.memo ?? "")
+						let lastGenerated = recurring.lastGeneratedDate != nil ? DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!) : ""
+
+						csvText += "\(start),\(name),\(amount),\(category),\(cycle),\(interval),\(period),\(selectedWeekdays),\(selectedMonthDays),\(endDate),\(lastGenerated),\(note)\n"
+				}
 		
 		do {
 			try csvText.write(to: path, atomically: true, encoding: .utf8)

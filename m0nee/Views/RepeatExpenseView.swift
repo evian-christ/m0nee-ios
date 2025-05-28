@@ -196,15 +196,7 @@ struct RepeatExpenseView: View {
 		.navigationTitle("Repeat")
 		.navigationBarTitleDisplayMode(.inline)
 		.onAppear {
-			if draft.frequencyType == .weeklySelectedDays && draft.selectedPeriod == .daily,
-				 draft.selectedWeekdays.isEmpty {
-				draft.selectedWeekdays = Array(1...7)
-			}
-
-			if draft.frequencyType == .monthlySelectedDays && draft.selectedPeriod == .daily,
-				 draft.selectedMonthDays.isEmpty {
-				draft.selectedMonthDays = Array(1...31);
-			}
+			// Do not auto-fill default values for selectedWeekdays or selectedMonthDays anymore.
 		}
 	}
 }

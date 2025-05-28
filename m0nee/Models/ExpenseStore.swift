@@ -313,6 +313,19 @@ extension ExpenseStore {
 				mutableRecurring.lastGeneratedDate = recurring.startDate
 			}
 
+			// Clear unused fields depending on frequency type before saving
+			switch mutableRecurring.recurrenceRule.frequencyType {
+			case .weeklySelectedDays:
+				mutableRecurring.recurrenceRule.selectedMonthDays = nil
+				mutableRecurring.recurrenceRule.interval = 0
+			case .monthlySelectedDays:
+				mutableRecurring.recurrenceRule.selectedWeekdays = nil
+				mutableRecurring.recurrenceRule.interval = 0
+			case .everyN:
+				mutableRecurring.recurrenceRule.selectedWeekdays = nil
+				mutableRecurring.recurrenceRule.selectedMonthDays = nil
+			}
+
 			recurringExpenses.append(mutableRecurring)
 			generateExpensesFromSingleRecurringIfNeeded(&recurringExpenses[recurringExpenses.count - 1], upTo: Date())
 			save()
