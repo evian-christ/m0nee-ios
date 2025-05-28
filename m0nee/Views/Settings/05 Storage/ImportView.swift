@@ -96,5 +96,7 @@ struct ImportView: View {
 								store.expenses.append(expense)
 						}
 				}
+				// Persist imported expenses
+				store.save()
 		}
 }
