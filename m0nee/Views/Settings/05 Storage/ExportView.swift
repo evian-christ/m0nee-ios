@@ -56,7 +56,9 @@ struct ExportView: View {
 						let selectedMonthDays = recurring.recurrenceRule.selectedMonthDays?.map { String($0) }.joined(separator: "|") ?? ""
 						let endDate = recurring.recurrenceRule.endDate != nil ? DateFormatter.m0neeCSV.string(from: recurring.recurrenceRule.endDate!) : ""
 						let note = escape(recurring.memo ?? "")
-						let lastGenerated = recurring.lastGeneratedDate != nil ? DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!) : ""
+						let lastGenerated = recurring.lastGeneratedDate != nil
+								? "\(DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!)) \(DateFormatter.m0neeTimeOnly.string(from: recurring.lastGeneratedDate!))"
+								: ""
 
 						csvText += "\(start),\(name),\(amount),\(category),\(cycle),\(interval),\(period),\(selectedWeekdays),\(selectedMonthDays),\(endDate),\(lastGenerated),\(note),\(recurring.id.uuidString)\n"
 				}

@@ -127,13 +127,17 @@ struct ImportView: View {
 						guard !dateStringRaw.isEmpty else { continue }
 						// Regular expenses (before recurring section)
 						if !inRecurringSection {
-								guard columns.count >= 6 else { continue }
+								guard columns.count >= 10 else { continue }
 								let dateString = columns[0]
 								let timeString = columns[1]
 								let date = DateFormatter.dateFromCSV(dateString: dateString, timeString: timeString) ?? Date()
 								let name = columns[2]
 								let amount = Double(columns[3]) ?? 0
 								let category = columns[4]
+								let isRecurring = (columns.count > 8)
+									? ["true", "yes"].contains(columns[8].trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+									: false
+								let parentRecurringID = (columns.count > 9) ? UUID(uuidString: columns[9]) : nil
 								let expense = Expense(
 										id: UUID(),
 										date: date,
@@ -142,7 +146,9 @@ struct ImportView: View {
 										category: category,
 										details: "",
 										rating: nil,
-										memo: ""
+										memo: "",
+										isRecurring: isRecurring,
+										parentRecurringID: parentRecurringID
 								)
 								store.expenses.append(expense)
 						} else {
@@ -172,8 +178,9 @@ struct ImportView: View {
 										startDate: startDate,
 										endDate: endDate
 								)
+								let recurringID = (columns.count > 12) ? UUID(uuidString: columns[12]) ?? UUID() : UUID()
 								let recurring = RecurringExpense(
-										id: UUID(),
+										id: recurringID,
 										name: name,
 										amount: amount,
 										category: category,
