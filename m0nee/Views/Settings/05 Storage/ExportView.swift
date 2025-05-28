@@ -41,7 +41,7 @@ struct ExportView: View {
 		}
 
 				csvText += "\n# RecurringExpenses\n"
-				csvText += "StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note,RecurringExpenseID\n"
+				csvText += "StartDate,LastGeneratedDate,Name,Amount,Category,Details,Rating,Note,Interval,Period,SelectedWeekdays,SelectedMonthDays,RecurringExpenseID\n"
 
 				for recurring in store.recurringExpenses {
 						// Format start date with both date and time (dd-MM-yyyy HH:mm)
@@ -49,18 +49,21 @@ struct ExportView: View {
 						let name = escape(recurring.name)
 						let amount = String(format: "%.2f", recurring.amount)
 						let category = escape(recurring.category)
-						let cycle = escape(recurring.recurrenceRule.frequencyType.rawValue)
 						let interval = "\(recurring.recurrenceRule.interval)"
 						let period = recurring.recurrenceRule.period.rawValue
 						let selectedWeekdays = recurring.recurrenceRule.selectedWeekdays?.map { String($0) }.joined(separator: "|") ?? ""
 						let selectedMonthDays = recurring.recurrenceRule.selectedMonthDays?.map { String($0) }.joined(separator: "|") ?? ""
-						let endDate = recurring.recurrenceRule.endDate != nil ? DateFormatter.m0neeCSV.string(from: recurring.recurrenceRule.endDate!) : ""
 						let note = escape(recurring.memo ?? "")
 						let lastGenerated = recurring.lastGeneratedDate != nil
 								? "\(DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!)) \(DateFormatter.m0neeTimeOnly.string(from: recurring.lastGeneratedDate!))"
 								: ""
-
-						csvText += "\(start),\(name),\(amount),\(category),\(cycle),\(interval),\(period),\(selectedWeekdays),\(selectedMonthDays),\(endDate),\(lastGenerated),\(note),\(recurring.id.uuidString)\n"
+						let details = escape(recurring.details ?? "")
+						let rating = recurring.rating.map { "\($0)" } ?? ""
+						csvText += """
+						\(start),\(lastGenerated),\(name),\(amount),\(category),\
+						\(details),\(rating),\(note),\(interval),\(period),\
+						\(selectedWeekdays),\(selectedMonthDays),\(recurring.id.uuidString)\n
+						"""
 				}
 		
 		do {

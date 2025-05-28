@@ -165,8 +165,8 @@ struct ImportView: View {
 								let period = columns[6] // rawValue for RecurrenceRule.Period
 								let weekdays = columns[7].split(separator: "|").compactMap { Int($0) }
 								let monthDays = columns[8].split(separator: "|").compactMap { Int($0) }
-								let endDate = dateFormatter.date(from: columns[9])
-								let lastGen = dateFormatter.date(from: columns[10])
+								let endDate = dateTimeFormatter.date(from: columns[9])
+								let lastGen = dateTimeFormatter.date(from: columns[10])
 								let memo = columns[11]
 
 								let rule = RecurrenceRule(
