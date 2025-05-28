@@ -10,19 +10,18 @@ struct ImportView: View {
 		@State private var showImportOptions = false
 
 		var body: some View {
-				NavigationView {
-						Form {
-								Button("Select CSV File") {
-										showImporter = true
-								}
-
-								if let error = importError {
-										Text("Import failed: \(error)")
-												.foregroundColor(.red)
-								}
+				Form {
+						Button("Select CSV File") {
+								showImporter = true
 						}
-						.navigationTitle("Import CSV")
+
+						if let error = importError {
+								Text("Import failed: \(error)")
+										.foregroundColor(.red)
+						}
 				}
+				.navigationTitle("Import Data")
+				.navigationBarTitleDisplayMode(.inline)
 				.fileImporter(
 						isPresented: $showImporter,
 						allowedContentTypes: [.commaSeparatedText, .plainText],
