@@ -41,7 +41,7 @@ struct ExportView: View {
 		}
 
 				csvText += "\n# RecurringExpenses\n"
-				csvText += "StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note\n"
+				csvText += "StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note,RecurringExpenseID\n"
 
 				for recurring in store.recurringExpenses {
 						// Format start date with both date and time (dd-MM-yyyy HH:mm)
@@ -58,7 +58,7 @@ struct ExportView: View {
 						let note = escape(recurring.memo ?? "")
 						let lastGenerated = recurring.lastGeneratedDate != nil ? DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!) : ""
 
-						csvText += "\(start),\(name),\(amount),\(category),\(cycle),\(interval),\(period),\(selectedWeekdays),\(selectedMonthDays),\(endDate),\(lastGenerated),\(note)\n"
+						csvText += "\(start),\(name),\(amount),\(category),\(cycle),\(interval),\(period),\(selectedWeekdays),\(selectedMonthDays),\(endDate),\(lastGenerated),\(note),\(recurring.id.uuidString)\n"
 				}
 		
 		do {
