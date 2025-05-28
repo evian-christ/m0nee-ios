@@ -138,54 +138,58 @@ struct ImportView: View {
 									? ["true", "yes"].contains(columns[8].trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
 									: false
 								let parentRecurringID = (columns.count > 9) ? UUID(uuidString: columns[9]) : nil
+								let details = columns[5]
+								let rating = Int(columns[6])
+								let memo = columns[7]
 								let expense = Expense(
 										id: UUID(),
 										date: date,
 										name: name,
 										amount: amount,
 										category: category,
-										details: "",
-										rating: nil,
-										memo: "",
+										details: details,
+										rating: rating,
+										memo: memo,
 										isRecurring: isRecurring,
 										parentRecurringID: parentRecurringID
 								)
 								store.expenses.append(expense)
 						} else {
 								// Recurring expenses
-								// Expecting 12 columns as per export:
-								// StartDate,Name,Amount,Category,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,EndDate,LastGeneratedDate,Note
-								guard columns.count >= 12 else { continue }
-								let startDate = dateTimeFormatter.date(from: columns[0]) ?? Date()
-								let name = columns[1]
-								let amount = Double(columns[2]) ?? 0
-								let category = columns[3]
-								let frequencyType = columns[4] // rawValue for RecurrenceRule.FrequencyType
-								let interval = Int(columns[5]) ?? 1
-								let period = columns[6] // rawValue for RecurrenceRule.Period
-								let weekdays = columns[7].split(separator: "|").compactMap { Int($0) }
-								let monthDays = columns[8].split(separator: "|").compactMap { Int($0) }
-								let endDate = dateTimeFormatter.date(from: columns[9])
-								let lastGen = dateTimeFormatter.date(from: columns[10])
-								let memo = columns[11]
+								// Expecting 14 columns as per updated export:
+								guard columns.count >= 14 else { continue }
+								let startDate        = dateTimeFormatter.date(from: columns[0]) ?? Date()
+								let lastGen          = dateTimeFormatter.date(from: columns[1])
+								let name             = columns[2]
+								let amount           = Double(columns[3]) ?? 0
+								let category         = columns[4]
+								let details          = columns[5]
+								let rating           = Int(columns[6])
+								let memo             = columns[7]
+								let frequencyRaw     = columns[8]
+								let interval         = Int(columns[9]) ?? 1
+								let periodRaw        = columns[10]
+								let weekdays         = columns[11].split(separator: "|").compactMap { Int($0) }
+								let monthDays        = columns[12].split(separator: "|").compactMap { Int($0) }
+								let recurringID      = UUID(uuidString: columns[13]) ?? UUID()
 
 								let rule = RecurrenceRule(
-										period: RecurrenceRule.Period(rawValue: period) ?? .monthly,
-										frequencyType: RecurrenceRule.FrequencyType(rawValue: frequencyType) ?? .everyN,
+										period: RecurrenceRule.Period(rawValue: periodRaw) ?? .monthly,
+										frequencyType: RecurrenceRule.FrequencyType(rawValue: frequencyRaw) ?? .everyN,
 										interval: interval,
 										selectedWeekdays: weekdays,
 										selectedMonthDays: monthDays,
 										startDate: startDate,
-										endDate: endDate
+										endDate: nil
 								)
-								let recurringID = (columns.count > 12) ? UUID(uuidString: columns[12]) ?? UUID() : UUID()
+
 								let recurring = RecurringExpense(
 										id: recurringID,
 										name: name,
 										amount: amount,
 										category: category,
-										details: "",
-										rating: nil,
+										details: details,
+										rating: rating,
 										memo: memo,
 										startDate: startDate,
 										recurrenceRule: rule,

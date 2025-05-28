@@ -41,7 +41,7 @@ struct ExportView: View {
 		}
 
 				csvText += "\n# RecurringExpenses\n"
-				csvText += "StartDate,LastGeneratedDate,Name,Amount,Category,Details,Rating,Note,Interval,Period,SelectedWeekdays,SelectedMonthDays,RecurringExpenseID\n"
+				csvText += "StartDate,LastGeneratedDate,Name,Amount,Category,Details,Rating,Note,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,RecurringExpenseID\n"
 
 				for recurring in store.recurringExpenses {
 						// Format start date with both date and time (dd-MM-yyyy HH:mm)
@@ -54,6 +54,7 @@ struct ExportView: View {
 						let selectedWeekdays = recurring.recurrenceRule.selectedWeekdays?.map { String($0) }.joined(separator: "|") ?? ""
 						let selectedMonthDays = recurring.recurrenceRule.selectedMonthDays?.map { String($0) }.joined(separator: "|") ?? ""
 						let note = escape(recurring.memo ?? "")
+						let frequencyType = recurring.recurrenceRule.frequencyType.rawValue
 						let lastGenerated = recurring.lastGeneratedDate != nil
 								? "\(DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!)) \(DateFormatter.m0neeTimeOnly.string(from: recurring.lastGeneratedDate!))"
 								: ""
@@ -61,8 +62,8 @@ struct ExportView: View {
 						let rating = recurring.rating.map { "\($0)" } ?? ""
 						csvText += """
 						\(start),\(lastGenerated),\(name),\(amount),\(category),\
-						\(details),\(rating),\(note),\(interval),\(period),\
-						\(selectedWeekdays),\(selectedMonthDays),\(recurring.id.uuidString)\n
+						\(details),\(rating),\(note),\(frequencyType),\(interval),\
+						\(period),\(selectedWeekdays),\(selectedMonthDays),\(recurring.id.uuidString)\n
 						"""
 				}
 		
