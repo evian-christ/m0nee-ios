@@ -61,44 +61,24 @@ struct ImportView: View {
 				dateFormatter.dateFormat = "yyyy-MM-dd"
 
 				let allRows = content.components(separatedBy: "\n").filter { !$0.isEmpty }
-				let rows = allRows.dropFirst()
 
-				for row in rows {
+				for row in allRows {
+						let trimmedLowercasedRow = row.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+						if trimmedLowercasedRow.hasPrefix("# recurringexpenses") {
+								break
+						}
+
+						// Skip header row that might be duplicated mid-file
+						if trimmedLowercasedRow.contains("date") && trimmedLowercasedRow.contains("name") {
+								continue
+						}
+
 						let columns = row.components(separatedBy: ",")
-
-						// Detect recurring expense format
-						/*
-						if columns.count >= 7 {
-								// Assume recurring expense format
-								let name = columns[0]
-								let amount = Double(columns[1]) ?? 0
-								let category = columns[2]
-								let startDate = ISO8601DateFormatter().date(from: columns[3]) ?? Date()
-								let frequencyType = columns[4]
-								let period = columns[5]
-								let weekdays = columns[6].split(separator: "|").compactMap { Int($0) }
-								let monthdays = columns.count > 7 ? columns[7].split(separator: "|").compactMap { Int($0) } : []
-								let lastGenerated = columns.count > 8 ? ISO8601DateFormatter().date(from: columns[8]) : nil
-
-								let recurring = RecurringExpense(
-										id: UUID(),
-										name: name,
-										amount: amount,
-										category: category,
-										startDate: startDate,
-										frequencyType: frequencyType,
-										selectedPeriod: period,
-										selectedWeekdays: weekdays,
-										selectedMonthDays: monthdays,
-										lastGeneratedDate: lastGenerated
-								)
-								store.recurringExpenses.append(recurring)
-						} else
-						*/
+						let dateStringRaw = columns[0].trimmingCharacters(in: .whitespacesAndNewlines)
+						guard !dateStringRaw.isEmpty else { continue }
 						if columns.count >= 6 {
-								let dateString = columns[0]
 								let timeString = columns[1]
-								let date = DateFormatter.dateFromCSV(dateString: dateString, timeString: timeString) ?? Date()
+								let date = DateFormatter.dateFromCSV(dateString: dateStringRaw, timeString: timeString) ?? Date()
 								let name = columns[2]
 								let amount = Double(columns[3]) ?? 0
 								let category = columns[4]
