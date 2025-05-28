@@ -13,9 +13,12 @@ struct StorageSettingsView: View {
 										}
 						}
 
-						Section(header: Text("Export")) {
+						Section(header: Text("Export & Import")) {
 								NavigationLink(destination: ExportView().environmentObject(store)) {
 										Text("Export Data")
+								}
+								NavigationLink(destination: ImportView().environmentObject(store)) {
+										Text("Import Data")
 								}
 						}
 				}
