@@ -7,6 +7,7 @@ struct InsightsView: View {
 		@StateObject private var store = ExpenseStore()
 		@State private var showHelpTooltip = false
 		@AppStorage("isProUser") private var isProUser: Bool = false
+		@State private var showProUpgradeModal = false
 	
 	private var currentBudgetDates: (startDate: Date, endDate: Date) {
 		let calendar = Calendar.current
@@ -85,7 +86,10 @@ struct InsightsView: View {
 								}
 						}
 				}
-	}
+				.sheet(isPresented: $showProUpgradeModal) {
+						ProUpgradeModalView(isPresented: $showProUpgradeModal)
+				}
+		}
 	
 	func currentMonth() -> String {
 		let formatter = DateFormatter()
@@ -162,17 +166,18 @@ struct InsightsView: View {
 					if type.isProOnly && !isProUser {
 							VStack {
 									Spacer()
-									HStack {
-											Spacer()
-											Text("Monir Pro only")
-													.font(.caption)
-													.padding(6)
-													.background(Color.black.opacity(0.6))
-													.foregroundColor(.white)
-													.cornerRadius(6)
-											Spacer()
+									Button(action: {
+										showProUpgradeModal = true
+									}) {
+										Text("Upgrade to Monir Pro")
+											.font(.subheadline).bold()
+											.foregroundColor(.white)
+											.padding(.vertical, 10)
+											.padding(.horizontal, 20)
+											.background(Color.blue.opacity(0.8))
+											.cornerRadius(10)
 									}
-									Spacer()
+									.padding(.bottom, 20)
 							}
 					}
 			}

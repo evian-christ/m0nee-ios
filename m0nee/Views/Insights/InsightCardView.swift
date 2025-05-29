@@ -47,7 +47,7 @@ enum InsightCardType: String, Identifiable, Codable {
 	
 	var isProOnly: Bool {
 			switch self {
-			case .categoryBudgetProgress, .categoryRating:
+			case .categoryBudgetProgress, .categoryRating, .budgetProgress:
 					return true
 			default:
 					return false
