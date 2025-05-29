@@ -23,6 +23,15 @@ struct AppearanceSettingsView: View {
 					}
 				}
 			}
+			
+			Section(header: Text("Language")) {
+				Button("Change Language in Settings") {
+					if let url = URL(string: UIApplication.openSettingsURLString) {
+						UIApplication.shared.open(url)
+					}
+				}
+				.foregroundColor(.blue)
+			}
 		}
 		.navigationTitle("Appearance")
 		.navigationBarTitleDisplayMode(.inline)

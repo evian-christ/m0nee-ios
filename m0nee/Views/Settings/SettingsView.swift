@@ -51,7 +51,7 @@ struct SettingsView: View {
 				.listRowSeparator(.hidden)
 			}
 		}
-		.navigationTitle("Settings")
+		.navigationTitle("settings_title")
 		.navigationBarTitleDisplayMode(.inline)
 	}
 }

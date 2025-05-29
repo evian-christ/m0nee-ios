@@ -72,7 +72,7 @@ struct InsightCardView: View {
 	
 	var body: some View {
 		ZStack(alignment: .top) {
-			RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6))
+			RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray5))
 			
 			VStack(alignment: .leading, spacing: 12) {
 				if type != .budgetProgress && type != .categoryBudgetProgress && type != .totalSpending {

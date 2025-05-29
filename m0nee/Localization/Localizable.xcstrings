@@ -1,0 +1,674 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    " " : {
+
+    },
+    "%@  %.0f" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  %2$.0f"
+          }
+        }
+      }
+    },
+    "%@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "%@ Budget" : {
+
+    },
+    "%@%.0f" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$.0f"
+          }
+        }
+      }
+    },
+    "%@%.2f" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$.2f"
+          }
+        }
+      }
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "⭐️  Enable Rating" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⭐️ 지출 평가 켜기"
+          }
+        }
+      }
+    },
+    "⭐️ Enable Rating" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⭐️ 지출 평가 켜기"
+          }
+        }
+      }
+    },
+    "💰  Budget Amount" : {
+
+    },
+    "💰 Budget Amount" : {
+
+    },
+    "📊  Budget Tracking" : {
+
+    },
+    "📊 Budget Tracking" : {
+
+    },
+    "🗓️  Budget Period" : {
+
+    },
+    "🗓️ Budget Period" : {
+
+    },
+    "£%@" : {
+
+    },
+    "0.00" : {
+
+    },
+    "A few taps are all it takes to log your spending." : {
+
+    },
+    "A similar expense already exists. Are you sure you want to add this?" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add Anyway" : {
+
+    },
+    "Add Expense" : {
+
+    },
+    "Add New" : {
+
+    },
+    "Add to Favourite" : {
+
+    },
+    "Advanced insight cards" : {
+
+    },
+    "All" : {
+
+    },
+    "Already Subscribed" : {
+
+    },
+    "Amount" : {
+
+    },
+    "Amount Too Large" : {
+
+    },
+    "Appearance" : {
+
+    },
+    "Append and Import" : {
+
+    },
+    "Are you sure you want to delete this category?" : {
+
+    },
+    "Are you sure you want to restore all settings to default?" : {
+
+    },
+    "Automatic" : {
+
+    },
+    "Budget" : {
+
+    },
+    "Budget & Planning" : {
+
+    },
+    "Budget by Category" : {
+
+    },
+    "Budget Period" : {
+
+    },
+    "Buy Lifetime – %@" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Cancel your monthly subscription" : {
+
+    },
+    "Categories" : {
+
+    },
+    "Category" : {
+
+    },
+    "Category Budgets" : {
+
+    },
+    "Category Name" : {
+
+    },
+    "Change Color" : {
+
+    },
+    "Change Icon" : {
+
+    },
+    "Change Language in Settings" : {
+
+    },
+    "Choose Color" : {
+
+    },
+    "Choose how often your budget resets." : {
+
+    },
+    "Choose Icon" : {
+
+    },
+    "Choose whether to rate your expenses (1–5 stars) for later insights." : {
+
+    },
+    "Close" : {
+
+    },
+    "Compact" : {
+
+    },
+    "Configure your budget to get started." : {
+
+    },
+    "Currency" : {
+
+    },
+    "Currency Symbol" : {
+
+    },
+    "Current Plan" : {
+
+    },
+    "Custom" : {
+
+    },
+    "Danger Zone" : {
+
+    },
+    "Dark" : {
+
+    },
+    "Date" : {
+
+    },
+    "days" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete \"%@\"?" : {
+
+    },
+    "Delete Expense" : {
+
+    },
+    "Delete only this expense" : {
+
+    },
+    "Delete recurring rule only" : {
+
+    },
+    "Delete rule and all related expenses" : {
+
+    },
+    "Delete this and recurring rule" : {
+
+    },
+    "Delete this expense?" : {
+
+    },
+    "Delete this recurring rule?" : {
+
+    },
+    "Detailed" : {
+
+    },
+    "Details" : {
+
+    },
+    "Display Mode" : {
+
+    },
+    "Don't Use Budget Tracking" : {
+
+    },
+    "Don't Use Ratings" : {
+
+    },
+    "Done" : {
+
+    },
+    "Duplicate Expense" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit %@" : {
+
+    },
+    "Enable Budget Tracking" : {
+
+    },
+    "Enable Budget Tracking in Settings to unlock this insight." : {
+
+    },
+    "Enable Ratings" : {
+
+    },
+    "Enter amount" : {
+
+    },
+    "Enter budget for %@" : {
+
+    },
+    "Erase" : {
+
+    },
+    "Erase All Settings & Data" : {
+
+    },
+    "Erase Everything" : {
+
+    },
+    "Error" : {
+
+    },
+    "Every" : {
+
+    },
+    "Every N days" : {
+
+    },
+    "Every N months" : {
+
+    },
+    "Every N weeks" : {
+
+    },
+    "Expense" : {
+
+    },
+    "Expense not found" : {
+
+    },
+    "Explore insights" : {
+
+    },
+    "Export & Import" : {
+
+    },
+    "Export & import feature" : {
+
+    },
+    "Export as CSV" : {
+
+    },
+    "Export Data" : {
+
+    },
+    "Family Sharing" : {
+
+    },
+    "Frequency" : {
+
+    },
+    "General" : {
+
+    },
+    "general_settings_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        }
+      }
+    },
+    "Go to the Insights tab and long-press on cards to add them here." : {
+
+    },
+    "Got it" : {
+
+    },
+    "Group expenses by day" : {
+
+    },
+    "iCloud" : {
+
+    },
+    "Import Data" : {
+
+    },
+    "Import failed: %@" : {
+
+    },
+    "Initial settings" : {
+
+    },
+    "Insights" : {
+
+    },
+    "Language" : {
+
+    },
+    "Let’s set you up" : {
+
+    },
+    "Light" : {
+
+    },
+    "Loading lifetime option..." : {
+
+    },
+    "Loading subscription..." : {
+
+    },
+    "Long-press a card\nand select \"Add to Favourite\"\nto add it to the main screen." : {
+
+    },
+    "Long-press a card to add it to your main screen." : {
+
+    },
+    "Made with ❤️ in SwiftUI" : {
+
+    },
+    "Main screen" : {
+
+    },
+    "Manage Categories" : {
+
+    },
+    "Manage Subscription" : {
+
+    },
+    "Manage your money with monthly or category-specific budgets." : {
+
+    },
+    "Monir Pro" : {
+
+    },
+    "Monir v1.1.0" : {
+
+    },
+    "Monthly" : {
+
+    },
+    "Monthly on selected days" : {
+
+    },
+    "months" : {
+
+    },
+    "Name" : {
+
+    },
+    "New Category" : {
+
+    },
+    "Next" : {
+
+    },
+    "No expenses here yet 💸" : {
+
+    },
+    "No Insight Cards Added" : {
+
+    },
+    "No recurring expenses" : {
+
+    },
+    "Note" : {
+
+    },
+    "OK" : {
+
+    },
+    "Open App Store" : {
+
+    },
+    "Optional" : {
+
+    },
+    "Pay once, use forever" : {
+
+    },
+    "Period" : {
+
+    },
+    "Pin Insight Cards" : {
+
+    },
+    "Plan auto-renews for %@/month until cancelled." : {
+
+    },
+    "Rating" : {
+
+    },
+    "Record your expenses" : {
+
+    },
+    "Recurrence Details" : {
+
+    },
+    "Recurring expense feature" : {
+
+    },
+    "Recurring Expenses" : {
+
+    },
+    "Remove from Favourite" : {
+
+    },
+    "Repeat" : {
+
+    },
+    "Required" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Reset and Import" : {
+
+    },
+    "Restore" : {
+
+    },
+    "Restore All Settings" : {
+
+    },
+    "Restore Purchase" : {
+
+    },
+    "Restore Settings" : {
+
+    },
+    "Save" : {
+
+    },
+    "Search icons" : {
+
+    },
+    "Select Category" : {
+
+    },
+    "Select CSV File" : {
+
+    },
+    "Select Period" : {
+
+    },
+    "Set a spending limit to stay in control.\nYou can pick how often later." : {
+
+    },
+    "Set Budget" : {
+
+    },
+    "Set how much you can spend during the selected period." : {
+
+    },
+    "Set your budgets" : {
+
+    },
+    "settings_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
+          }
+        }
+      }
+    },
+    "Skip" : {
+
+    },
+    "Spending vs. Time" : {
+
+    },
+    "Standard" : {
+
+    },
+    "Start day of month" : {
+
+    },
+    "Start day of week" : {
+
+    },
+    "Start using Monir" : {
+
+    },
+    "Starts on" : {
+
+    },
+    "Storage" : {
+
+    },
+    "Storage & Export" : {
+
+    },
+    "Subscribe – %@ / month" : {
+
+    },
+    "Tap the ➕ up there and record your first glorious impulse buy." : {
+
+    },
+    "The entered amount exceeds the maximum allowed. Please double-check the amount." : {
+
+    },
+    "Theme" : {
+
+    },
+    "This will also delete %lld expense(s) under this category." : {
+
+    },
+    "This will delete all expenses and reset all settings and categories to default. This action cannot be undone." : {
+
+    },
+    "Total" : {
+
+    },
+    "Total Spending" : {
+
+    },
+    "Unlock powerful features to manage your money better." : {
+
+    },
+    "Upgrade Plan" : {
+
+    },
+    "Upgrade to Monir Pro" : {
+
+    },
+    "Use Budget Tracking" : {
+
+    },
+    "Use iCloud for Data" : {
+
+    },
+    "Use Ratings" : {
+
+    },
+    "Week of %@" : {
+
+    },
+    "Weekly" : {
+
+    },
+    "Weekly on selected days" : {
+
+    },
+    "weeks" : {
+
+    },
+    "Would you like to reset existing data before importing, or append to existing data?" : {
+
+    },
+    "You’ve purchased a lifetime plan. Please cancel your monthly subscription in the App Store to avoid being charged again." : {
+
+    }
+  },
+  "version" : "1.0"
+}
