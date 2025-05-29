@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct InsightsView: View {
-	@AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
-	@State private var favourites: [InsightCardType] = []
-	@State private var deleteTrigger = UUID()
-	@StateObject private var store = ExpenseStore()
+		@AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
+		@State private var favourites: [InsightCardType] = []
+		@State private var deleteTrigger = UUID()
+		@StateObject private var store = ExpenseStore()
+		@State private var showHelpTooltip = false
 	
 	private var currentBudgetDates: (startDate: Date, endDate: Date) {
 		let calendar = Calendar.current
@@ -89,13 +90,38 @@ struct InsightsView: View {
 			}
 			.navigationTitle("Insights")
 			.navigationBarTitleDisplayMode(.inline)
-			
-		}
-		.toolbar {
-			ToolbarItem(placement: .navigationBarTrailing) {
-				EditButton()
+			.overlay(alignment: .topTrailing) {
+					if showHelpTooltip {
+							VStack(alignment: .trailing, spacing: 8) {
+									Text("Long-press a card\nand select \"Add to Favourite\"\nto add it to the main screen.")
+											.font(.caption)
+											.padding(10)
+											.background(Color(.systemGray6))
+											.cornerRadius(8)
+											.shadow(radius: 3)
+
+									Button(action: {
+											showHelpTooltip = false
+									}) {
+											Text("Got it")
+													.font(.caption2)
+													.foregroundColor(.blue)
+									}
+							}
+							.padding(.top, 10)
+							.padding(.trailing, 16)
+							.transition(.opacity)
+							.animation(.easeInOut, value: showHelpTooltip)
+					}
 			}
 		}
+				.toolbar {
+						ToolbarItem(placement: .navigationBarTrailing) {
+								Button(action: { showHelpTooltip.toggle() }) {
+										Image(systemName: "questionmark.circle")
+								}
+						}
+				}
 	}
 	
 	func currentMonth() -> String {
