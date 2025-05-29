@@ -18,6 +18,7 @@ struct GeneralSettingsView: View {
 	
 	@State private var showResetAlert = false
 	@State private var showFullResetAlert = false
+	@State private var showProUpgradeSheet = false
 	
 	@ObservedObject var store: ExpenseStore
 	
@@ -47,8 +48,11 @@ struct GeneralSettingsView: View {
 							RecurringSettingsView()
 						}
 					} else {
-						NavigationLink("Recurring Expenses") {
-							ProUpgradeModalView(isPresented: .constant(true))
+						NavigationLink(destination: ProUpgradeModalView(isPresented: $showProUpgradeSheet)) {
+							HStack {
+								Text("Recurring Expenses")
+								Spacer()
+							}
 						}
 					}
 				}
@@ -65,24 +69,27 @@ struct GeneralSettingsView: View {
 					.foregroundColor(.red)
 				}
 			}
-			.navigationTitle("General")
-			.navigationBarTitleDisplayMode(.inline)
-			.alert("Restore Settings", isPresented: $showResetAlert) {
-				Button("Restore", role: .destructive) {
-					restoreDefaults()
-				}
-				Button("Cancel", role: .cancel) {}
-			} message: {
-				Text("Are you sure you want to restore all settings to default?")
+		}
+		.sheet(isPresented: $showProUpgradeSheet) {
+			ProUpgradeModalView(isPresented: $showProUpgradeSheet)
+		}
+		.navigationTitle("General")
+		.navigationBarTitleDisplayMode(.inline)
+		.alert("Restore Settings", isPresented: $showResetAlert) {
+			Button("Restore", role: .destructive) {
+				restoreDefaults()
 			}
-			.alert("Erase Everything", isPresented: $showFullResetAlert) {
-				Button("Erase", role: .destructive) {
-					eraseAllData()
-				}
-				Button("Cancel", role: .cancel) {}
-			} message: {
-				Text("This will delete all expenses and reset all settings and categories to default. This action cannot be undone.")
+			Button("Cancel", role: .cancel) {}
+		} message: {
+			Text("Are you sure you want to restore all settings to default?")
+		}
+		.alert("Erase Everything", isPresented: $showFullResetAlert) {
+			Button("Erase", role: .destructive) {
+				eraseAllData()
 			}
+			Button("Cancel", role: .cancel) {}
+		} message: {
+			Text("This will delete all expenses and reset all settings and categories to default. This action cannot be undone.")
 		}
 	}
 	

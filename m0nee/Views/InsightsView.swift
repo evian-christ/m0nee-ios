@@ -6,6 +6,7 @@ struct InsightsView: View {
 		@State private var deleteTrigger = UUID()
 		@StateObject private var store = ExpenseStore()
 		@State private var showHelpTooltip = false
+		@AppStorage("isProUser") private var isProUser: Bool = false
 	
 	private var currentBudgetDates: (startDate: Date, endDate: Date) {
 		let calendar = Calendar.current
@@ -38,48 +39,10 @@ struct InsightsView: View {
 		ZStack {
 			ScrollView {
 				LazyVStack(spacing: 16) {
-					Section {
-						ForEach(InsightCardType.allCases, id: \.rawValue) { type in
-							ZStack(alignment: .topLeading) {
-								VStack {
-									InsightCardView(
-										type: type,
-										expenses: currentExpenses,
-										startDate: currentBudgetDates.startDate,
-										endDate: currentBudgetDates.endDate
-									)
-								}
-								.frame(height: 260)
-								.id(type) // ensure stable identity
-								.transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
-								.animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
-								.contextMenu {
-									if isFavourited(type) {
-										Button {
-											toggleFavourite(type)
-										} label: {
-											Label("Remove from Favourite", systemImage: "star.slash")
-										}
-									} else {
-										Button {
-											toggleFavourite(type)
-										} label: {
-											Label("Add to Favourite", systemImage: "star")
-										}
-									}
-									Button(role: .cancel) {
-										// Cancel logic or nothing
-									} label: {
-										Label("Cancel", systemImage: "xmark")
-									}
-								}
-								.padding(.horizontal, 20)
-								.padding(.vertical, 2)
-							}
-						}
+					ForEach(InsightCardType.allCases, id: \.rawValue) { type in
+						insightCardRow(for: type)
 					}
 				}
-				.environment(\.editMode, .constant(.active))
 				.padding(.vertical)
 				.onAppear {
 					favourites = loadFavourites()
@@ -158,5 +121,60 @@ struct InsightsView: View {
 	
 	private func isFavourited(_ type: InsightCardType) -> Bool {
 		favourites.contains(type)
+	}
+
+	@ViewBuilder
+	private func insightCardRow(for type: InsightCardType) -> some View {
+			ZStack {
+					InsightCardView(
+							type: type,
+							expenses: currentExpenses,
+							startDate: currentBudgetDates.startDate,
+							endDate: currentBudgetDates.endDate
+					)
+					.frame(height: 260)
+					.opacity(type.isProOnly && !isProUser ? 0.35 : 1.0)
+					.id(type)
+					.transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
+					.animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
+					.contextMenu {
+							if isFavourited(type) {
+									Button {
+											toggleFavourite(type)
+									} label: {
+											Label("Remove from Favourite", systemImage: "star.slash")
+									}
+							} else {
+									Button {
+											toggleFavourite(type)
+									} label: {
+											Label("Add to Favourite", systemImage: "star")
+									}
+									.disabled(type.isProOnly && !isProUser)
+							}
+							Button(role: .cancel) { } label: {
+									Label("Cancel", systemImage: "xmark")
+							}
+					}
+					.padding(.horizontal, 20)
+					.padding(.vertical, 2)
+
+					if type.isProOnly && !isProUser {
+							VStack {
+									Spacer()
+									HStack {
+											Spacer()
+											Text("Monir Pro only")
+													.font(.caption)
+													.padding(6)
+													.background(Color.black.opacity(0.6))
+													.foregroundColor(.white)
+													.cornerRadius(6)
+											Spacer()
+									}
+									Spacer()
+							}
+					}
+			}
 	}
 }

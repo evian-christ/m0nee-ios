@@ -44,6 +44,15 @@ enum InsightCardType: String, Identifiable, Codable {
 			return "chart.pie"
 		}
 	}
+	
+	var isProOnly: Bool {
+			switch self {
+			case .categoryBudgetProgress, .categoryRating:
+					return true
+			default:
+					return false
+			}
+	}
 }
 
 struct InsightCardView: View {

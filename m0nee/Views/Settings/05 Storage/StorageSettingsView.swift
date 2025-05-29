@@ -25,11 +25,17 @@ struct StorageSettingsView: View {
 												Text("Import Data")
 										}
 								} else {
-										Button("Export Data") {
-												showUpgradeModal = true
+										NavigationLink(destination: ProUpgradeModalView(isPresented: $showUpgradeModal)) {
+												HStack {
+														Text("Export Data")
+														Spacer()
+												}
 										}
-										Button("Import Data") {
-												showUpgradeModal = true
+										NavigationLink(destination: ProUpgradeModalView(isPresented: $showUpgradeModal)) {
+												HStack {
+														Text("Import Data")
+														Spacer()
+												}
 										}
 								}
 						}
