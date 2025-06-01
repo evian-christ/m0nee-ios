@@ -248,6 +248,14 @@ extension ExpenseStore {
 				} catch {
 						print("Failed to save: \(error)")
 				}
+				// --- Widget/App Group Sync ---
+				if let encodedExpenses = try? JSONEncoder().encode(expenses) {
+						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+						sharedDefaults?.set(encodedExpenses, forKey: "shared_expenses")
+						print("[✅ WidgetSync] Saved \(expenses.count) expenses to shared_expenses.")
+				} else {
+						print("[❌ WidgetSync] Failed to encode expenses for widget.")
+				}
 		}
 		
 		private func load() {
