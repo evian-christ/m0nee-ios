@@ -6,27 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		645612802D9D49ED00B42A73 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 645612632D9D49EB00B42A73 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6456126A2D9D49EB00B42A73;
-			remoteInfo = m0nee;
-		};
-		6456128A2D9D49ED00B42A73 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 645612632D9D49EB00B42A73 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6456126A2D9D49EB00B42A73;
-			remoteInfo = m0nee;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		6456126B2D9D49EB00B42A73 /* m0nee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = m0nee.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		6456127F2D9D49ED00B42A73 /* m0neeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = m0neeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		645612892D9D49ED00B42A73 /* m0neeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = m0neeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -68,20 +49,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6456127C2D9D49ED00B42A73 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		645612862D9D49ED00B42A73 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -99,8 +66,6 @@
 			isa = PBXGroup;
 			children = (
 				6456126B2D9D49EB00B42A73 /* m0nee.app */,
-				6456127F2D9D49ED00B42A73 /* m0neeTests.xctest */,
-				645612892D9D49ED00B42A73 /* m0neeUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,52 +95,6 @@
 			productReference = 6456126B2D9D49EB00B42A73 /* m0nee.app */;
 			productType = "com.apple.product-type.application";
 		};
-		6456127E2D9D49ED00B42A73 /* m0neeTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 645612972D9D49ED00B42A73 /* Build configuration list for PBXNativeTarget "m0neeTests" */;
-			buildPhases = (
-				6456127B2D9D49ED00B42A73 /* Sources */,
-				6456127C2D9D49ED00B42A73 /* Frameworks */,
-				6456127D2D9D49ED00B42A73 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				645612812D9D49ED00B42A73 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				645612822D9D49ED00B42A73 /* m0neeTests */,
-			);
-			name = m0neeTests;
-			packageProductDependencies = (
-			);
-			productName = m0neeTests;
-			productReference = 6456127F2D9D49ED00B42A73 /* m0neeTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		645612882D9D49ED00B42A73 /* m0neeUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6456129A2D9D49ED00B42A73 /* Build configuration list for PBXNativeTarget "m0neeUITests" */;
-			buildPhases = (
-				645612852D9D49ED00B42A73 /* Sources */,
-				645612862D9D49ED00B42A73 /* Frameworks */,
-				645612872D9D49ED00B42A73 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6456128B2D9D49ED00B42A73 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				6456128C2D9D49ED00B42A73 /* m0neeUITests */,
-			);
-			name = m0neeUITests;
-			packageProductDependencies = (
-			);
-			productName = m0neeUITests;
-			productReference = 645612892D9D49ED00B42A73 /* m0neeUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -188,14 +107,6 @@
 				TargetAttributes = {
 					6456126A2D9D49EB00B42A73 = {
 						CreatedOnToolsVersion = 16.3;
-					};
-					6456127E2D9D49ED00B42A73 = {
-						CreatedOnToolsVersion = 16.3;
-						TestTargetID = 6456126A2D9D49EB00B42A73;
-					};
-					645612882D9D49ED00B42A73 = {
-						CreatedOnToolsVersion = 16.3;
-						TestTargetID = 6456126A2D9D49EB00B42A73;
 					};
 				};
 			};
@@ -215,28 +126,12 @@
 			projectRoot = "";
 			targets = (
 				6456126A2D9D49EB00B42A73 /* m0nee */,
-				6456127E2D9D49ED00B42A73 /* m0neeTests */,
-				645612882D9D49ED00B42A73 /* m0neeUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		645612692D9D49EB00B42A73 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6456127D2D9D49ED00B42A73 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		645612872D9D49ED00B42A73 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,34 +148,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6456127B2D9D49ED00B42A73 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		645612852D9D49ED00B42A73 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		645612812D9D49ED00B42A73 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6456126A2D9D49EB00B42A73 /* m0nee */;
-			targetProxy = 645612802D9D49ED00B42A73 /* PBXContainerItemProxy */;
-		};
-		6456128B2D9D49ED00B42A73 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6456126A2D9D49EB00B42A73 /* m0nee */;
-			targetProxy = 6456128A2D9D49ED00B42A73 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		645612932D9D49ED00B42A73 /* Debug */ = {
@@ -292,7 +160,7 @@
 				CODE_SIGN_ENTITLEMENTS = m0nee/m0nee.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KA6F76NJV4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -313,7 +181,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0nee;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -337,7 +205,7 @@
 				CODE_SIGN_ENTITLEMENTS = m0nee/m0nee.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KA6F76NJV4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -358,7 +226,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0nee;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -497,96 +365,6 @@
 			};
 			name = Release;
 		};
-		645612982D9D49ED00B42A73 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = KA6F76NJV4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0neeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/m0nee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/m0nee";
-				XROS_DEPLOYMENT_TARGET = 2.4;
-			};
-			name = Debug;
-		};
-		645612992D9D49ED00B42A73 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = KA6F76NJV4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0neeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/m0nee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/m0nee";
-				XROS_DEPLOYMENT_TARGET = 2.4;
-			};
-			name = Release;
-		};
-		6456129B2D9D49ED00B42A73 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = KA6F76NJV4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0neeUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = m0nee;
-				XROS_DEPLOYMENT_TARGET = 2.4;
-			};
-			name = Debug;
-		};
-		6456129C2D9D49ED00B42A73 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = KA6F76NJV4;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0neeUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = m0nee;
-				XROS_DEPLOYMENT_TARGET = 2.4;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -604,24 +382,6 @@
 			buildConfigurations = (
 				645612932D9D49ED00B42A73 /* Debug */,
 				645612942D9D49ED00B42A73 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		645612972D9D49ED00B42A73 /* Build configuration list for PBXNativeTarget "m0neeTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				645612982D9D49ED00B42A73 /* Debug */,
-				645612992D9D49ED00B42A73 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6456129A2D9D49ED00B42A73 /* Build configuration list for PBXNativeTarget "m0neeUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6456129B2D9D49ED00B42A73 /* Debug */,
-				6456129C2D9D49ED00B42A73 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
