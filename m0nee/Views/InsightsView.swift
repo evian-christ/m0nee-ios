@@ -47,6 +47,10 @@ struct InsightsView: View {
 				.padding(.vertical)
 				.onAppear {
 					favourites = loadFavourites()
+										if let encoded = try? JSONEncoder().encode(currentExpenses) {
+												let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+												sharedDefaults?.set(encoded, forKey: "shared_expenses")
+										}
 				}
 				.onChange(of: favourites) { _ in
 					saveFavourites()

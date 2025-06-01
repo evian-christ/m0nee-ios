@@ -6,8 +6,42 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		646CEEB52DECB62B00B3D14A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 646CEEB42DECB62B00B3D14A /* WidgetKit.framework */; };
+		646CEEB72DECB62B00B3D14A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 646CEEB62DECB62B00B3D14A /* SwiftUI.framework */; };
+		646CEEC62DECB62D00B3D14A /* MonirInsightsWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		646CEEC42DECB62D00B3D14A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 645612632D9D49EB00B42A73 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 646CEEB12DECB62B00B3D14A;
+			remoteInfo = MonirInsightsWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		646CEEC72DECB62D00B3D14A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				646CEEC62DECB62D00B3D14A /* MonirInsightsWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		6456126B2D9D49EB00B42A73 /* m0nee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = m0nee.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MonirInsightsWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		646CEEB42DECB62B00B3D14A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		646CEEB62DECB62B00B3D14A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		646CEECD2DECB6D400B3D14A /* MonirInsightsWidgetExtensionRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MonirInsightsWidgetExtensionRelease.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -17,6 +51,13 @@
 				Info.plist,
 			);
 			target = 6456126A2D9D49EB00B42A73 /* m0nee */;
+		};
+		646CEECB2DECB62D00B3D14A /* Exceptions for "MonirInsightsWidget" folder in "MonirInsightsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -39,6 +80,14 @@
 			path = m0neeUITests;
 			sourceTree = "<group>";
 		};
+		646CEEB82DECB62B00B3D14A /* MonirInsightsWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				646CEECB2DECB62D00B3D14A /* Exceptions for "MonirInsightsWidget" folder in "MonirInsightsWidgetExtension" target */,
+			);
+			path = MonirInsightsWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,15 +98,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		646CEEAF2DECB62B00B3D14A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				646CEEB72DECB62B00B3D14A /* SwiftUI.framework in Frameworks */,
+				646CEEB52DECB62B00B3D14A /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		645612622D9D49EB00B42A73 = {
 			isa = PBXGroup;
 			children = (
+				646CEECD2DECB6D400B3D14A /* MonirInsightsWidgetExtensionRelease.entitlements */,
 				6456126D2D9D49EB00B42A73 /* m0nee */,
 				645612822D9D49ED00B42A73 /* m0neeTests */,
 				6456128C2D9D49ED00B42A73 /* m0neeUITests */,
+				646CEEB82DECB62B00B3D14A /* MonirInsightsWidget */,
+				646CEEB32DECB62B00B3D14A /* Frameworks */,
 				6456126C2D9D49EB00B42A73 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,8 +127,18 @@
 			isa = PBXGroup;
 			children = (
 				6456126B2D9D49EB00B42A73 /* m0nee.app */,
+				646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		646CEEB32DECB62B00B3D14A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				646CEEB42DECB62B00B3D14A /* WidgetKit.framework */,
+				646CEEB62DECB62B00B3D14A /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -80,10 +151,12 @@
 				645612672D9D49EB00B42A73 /* Sources */,
 				645612682D9D49EB00B42A73 /* Frameworks */,
 				645612692D9D49EB00B42A73 /* Resources */,
+				646CEEC72DECB62D00B3D14A /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				646CEEC52DECB62D00B3D14A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				6456126D2D9D49EB00B42A73 /* m0nee */,
@@ -94,6 +167,28 @@
 			productName = m0nee;
 			productReference = 6456126B2D9D49EB00B42A73 /* m0nee.app */;
 			productType = "com.apple.product-type.application";
+		};
+		646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 646CEECA2DECB62D00B3D14A /* Build configuration list for PBXNativeTarget "MonirInsightsWidgetExtension" */;
+			buildPhases = (
+				646CEEAE2DECB62B00B3D14A /* Sources */,
+				646CEEAF2DECB62B00B3D14A /* Frameworks */,
+				646CEEB02DECB62B00B3D14A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				646CEEB82DECB62B00B3D14A /* MonirInsightsWidget */,
+			);
+			name = MonirInsightsWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = MonirInsightsWidgetExtension;
+			productReference = 646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -106,6 +201,9 @@
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					6456126A2D9D49EB00B42A73 = {
+						CreatedOnToolsVersion = 16.3;
+					};
+					646CEEB12DECB62B00B3D14A = {
 						CreatedOnToolsVersion = 16.3;
 					};
 				};
@@ -126,12 +224,20 @@
 			projectRoot = "";
 			targets = (
 				6456126A2D9D49EB00B42A73 /* m0nee */,
+				646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		645612692D9D49EB00B42A73 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		646CEEB02DECB62B00B3D14A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -148,7 +254,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		646CEEAE2DECB62B00B3D14A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		646CEEC52DECB62D00B3D14A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */;
+			targetProxy = 646CEEC42DECB62D00B3D14A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		645612932D9D49ED00B42A73 /* Debug */ = {
@@ -202,7 +323,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = m0nee/m0nee.entitlements;
+				CODE_SIGN_ENTITLEMENTS = m0nee/m0neeRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -365,6 +486,68 @@
 			};
 			name = Release;
 		};
+		646CEEC82DECB62D00B3D14A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KA6F76NJV4;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MonirInsightsWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MonirInsightsWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0nee.MonirInsightsWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		646CEEC92DECB62D00B3D14A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MonirInsightsWidgetExtensionRelease.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KA6F76NJV4;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MonirInsightsWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MonirInsightsWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0nee.MonirInsightsWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -382,6 +565,15 @@
 			buildConfigurations = (
 				645612932D9D49ED00B42A73 /* Debug */,
 				645612942D9D49ED00B42A73 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		646CEECA2DECB62D00B3D14A /* Build configuration list for PBXNativeTarget "MonirInsightsWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				646CEEC82DECB62D00B3D14A /* Debug */,
+				646CEEC92DECB62D00B3D14A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
