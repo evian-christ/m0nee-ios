@@ -8,8 +8,6 @@ struct TotalSpendingCardView: View {
 
 	var body: some View {
 		let amountSpent = expenses.reduce(0) { $0 + $1.amount }
-		print("🔍 budgetTrackingEnabled:", budgetTrackingEnabled)
-		print("🔍 monthlyBudget:", monthlyBudget)
 
 		return VStack {
 			Spacer()

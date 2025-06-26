@@ -24,11 +24,20 @@ struct Provider: TimelineProvider {
 		}
 
 		private func loadExpenses() -> [Expense] {
-				guard let data = UserDefaults(suiteName: "group.com.yourname.Monir")?.data(forKey: "shared_expenses"),
-							let expenses = try? JSONDecoder().decode([Expense].self, from: data) else {
+				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+				guard let data = sharedDefaults?.data(forKey: "shared_expenses") else {
+						print("[❌ Widget] No data found in shared_expenses")
 						return []
 				}
-				return expenses
+
+				do {
+						let expenses = try JSONDecoder().decode([Expense].self, from: data)
+						print("[✅ Widget] Decoded \(expenses.count) expenses from shared_expenses")
+						return expenses
+				} catch {
+						print("[❌ Widget] Failed to decode shared_expenses: \(error)")
+						return []
+				}
 		}
 }
 

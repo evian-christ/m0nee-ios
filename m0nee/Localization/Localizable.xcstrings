@@ -1347,6 +1347,7 @@
       }
     },
     "Plan auto-renews for %@/month until cancelled." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1725,6 +1726,9 @@
           }
         }
       }
+    },
+    "This is a 1-month auto-renewed subscription for %@/month until cancelled." : {
+
     },
     "This will also delete %lld expense(s) under this category." : {
       "localizations" : {

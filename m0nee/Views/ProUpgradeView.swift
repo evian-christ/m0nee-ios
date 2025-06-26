@@ -92,7 +92,7 @@ struct ProUpgradeModalView: View {
 													}
 													.disabled(currentProductID == "com.chan.monir.pro.monthly")
 
-													Text("Plan auto-renews for \(monthly.displayPrice)/month until cancelled.")
+													Text("This is a 1-month auto-renewed subscription for \(monthly.displayPrice)/month until cancelled.")
 															.font(.footnote)
 															.foregroundColor(.secondary)
 											}

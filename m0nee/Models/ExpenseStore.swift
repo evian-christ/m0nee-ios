@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import WidgetKit
 
 private struct StoreData: Codable {
 		var expenses: [Expense]
@@ -231,20 +232,20 @@ extension ExpenseStore {
 						let storeData = StoreData(expenses: expenses, categories: categories, recurringExpenses: recurringExpenses)
 						let data = try JSONEncoder().encode(storeData)
 						try data.write(to: saveURL)
-						print("📁 Saved to: \(saveURL.path.contains("Mobile Documents") ? "iCloud" : "Local")")
+						//print("📁 Saved to: \(saveURL.path.contains("Mobile Documents") ? "iCloud" : "Local")")
 						// Also write local backup if using iCloud
 						if saveURL.path.contains("Mobile Documents") {
 								let backupURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 										.appendingPathComponent("expenses_backup_for_recovery.json")
 								do {
 										try data.write(to: backupURL)
-										print("🛟 Local backup saved at \(backupURL.path)")
+										//print("🛟 Local backup saved at \(backupURL.path)")
 								} catch {
-										print("❌ Failed to save local backup: \(error)")
+										//print("❌ Failed to save local backup: \(error)")
 								}
 						}
 						let isICloud = saveURL.path.contains("Mobile Documents")
-						print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
+						//print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
 				} catch {
 						print("Failed to save: \(error)")
 				}
@@ -252,7 +253,16 @@ extension ExpenseStore {
 				if let encodedExpenses = try? JSONEncoder().encode(expenses) {
 						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
 						sharedDefaults?.set(encodedExpenses, forKey: "shared_expenses")
-						print("[✅ WidgetSync] Saved \(expenses.count) expenses to shared_expenses.")
+						//print("[✅ WidgetSync] Saved \(expenses.count) expenses to shared_expenses.")
+						// Refresh the widget timeline
+						WidgetCenter.shared.reloadAllTimelines()
+												// Read back the saved data to verify
+												if let readData = UserDefaults(suiteName: "group.com.chankim.Monir")?.data(forKey: "shared_expenses"),
+													 let decodedExpenses = try? JSONDecoder().decode([Expense].self, from: readData) {
+														//print("[📦 App] Verified read back: \(decodedExpenses.count) expenses from shared_expenses")
+												} else {
+														//print("[⚠️ App] Failed to read shared_expenses from shared container")
+												}
 				} else {
 						print("[❌ WidgetSync] Failed to encode expenses for widget.")
 				}
