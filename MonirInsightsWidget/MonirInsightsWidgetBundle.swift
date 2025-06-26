@@ -10,9 +10,10 @@ import SwiftUI
 
 @main
 struct MonirInsightsWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        MonirInsightsWidget()
-        MonirInsightsWidgetControl()
-        MonirInsightsWidgetLiveActivity()
-    }
+		var body: some Widget {
+				MonirInsightsWidget()
+				MonirInsightsWidgetControl()
+				MonirInsightsWidgetLiveActivity()
+				TotalSpendingWidget()
+		}
 }

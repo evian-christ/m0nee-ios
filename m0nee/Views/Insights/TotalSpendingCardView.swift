@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 struct TotalSpendingCardView: View {
 	let expenses: [Expense]
@@ -8,6 +9,19 @@ struct TotalSpendingCardView: View {
 
 	var body: some View {
 		let amountSpent = expenses.reduce(0) { $0 + $1.amount }
+
+		let widgetData = TotalSpendingWidgetData(
+			amountSpent: amountSpent,
+			monthlyBudget: monthlyBudget,
+			currencySymbol: currencySymbol,
+			budgetTrackingEnabled: budgetTrackingEnabled
+		)
+
+		if let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir"),
+			 let encoded = try? JSONEncoder().encode(widgetData) {
+			sharedDefaults.set(encoded, forKey: "totalSpendingWidgetData")
+			WidgetCenter.shared.reloadAllTimelines()
+		}
 
 		return VStack {
 			Spacer()
@@ -37,4 +51,11 @@ struct TotalSpendingCardView: View {
 			Spacer()
 		}
 	}
+}
+
+struct TotalSpendingWidgetData: Codable {
+	let amountSpent: Double
+	let monthlyBudget: Double
+	let currencySymbol: String
+	let budgetTrackingEnabled: Bool
 }
