@@ -38,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		6456126B2D9D49EB00B42A73 /* m0nee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = m0nee.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		646734FA2E0DA37E00F726EE /* MonirInsightsWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MonirInsightsWidgetExtension.entitlements; sourceTree = "<group>"; };
 		646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MonirInsightsWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		646CEEB42DECB62B00B3D14A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		646CEEB62DECB62B00B3D14A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -114,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				646CEECD2DECB6D400B3D14A /* MonirInsightsWidgetExtensionRelease.entitlements */,
+				646734FA2E0DA37E00F726EE /* MonirInsightsWidgetExtension.entitlements */,
 				6456126D2D9D49EB00B42A73 /* m0nee */,
 				645612822D9D49ED00B42A73 /* m0neeTests */,
 				6456128C2D9D49ED00B42A73 /* m0neeUITests */,
@@ -491,6 +493,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MonirInsightsWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

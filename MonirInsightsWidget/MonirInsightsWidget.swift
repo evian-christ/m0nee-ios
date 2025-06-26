@@ -24,7 +24,22 @@ struct Provider: TimelineProvider {
 		}
 
 		private func loadExpenses() -> [Expense] {
+			
 				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+
+				// Debug: list all keys in the shared UserDefaults
+				if let dict = sharedDefaults?.dictionaryRepresentation() {
+						print("[🔍 Widget] Shared defaults keys: \(dict.keys.sorted())")
+				} else {
+						print("[🔍 Widget] Could not read shared UserDefaults")
+				}
+
+				// Debug: show raw JSON payload if present
+				if let rawData = sharedDefaults?.data(forKey: "shared_expenses"),
+					 let jsonString = String(data: rawData, encoding: .utf8) {
+						print("[🔍 Widget] Raw JSON payload: \(jsonString)")
+				}
+
 				guard let data = sharedDefaults?.data(forKey: "shared_expenses") else {
 						print("[❌ Widget] No data found in shared_expenses")
 						return []
