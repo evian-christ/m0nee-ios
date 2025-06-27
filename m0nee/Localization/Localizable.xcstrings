@@ -532,9 +532,6 @@
     "Contact Us" : {
 
     },
-    "Contact Us Page" : {
-
-    },
     "Currency" : {
       "localizations" : {
         "ko" : {
@@ -1370,7 +1367,7 @@
     "Privacy Policy" : {
 
     },
-    "Privacy Policy Page" : {
+    "Q&A" : {
 
     },
     "Rating" : {
@@ -1724,9 +1721,6 @@
       }
     },
     "Terms of Use" : {
-
-    },
-    "Terms of Use Page" : {
 
     },
     "The entered amount exceeds the maximum allowed. Please double-check the amount." : {

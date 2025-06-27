@@ -10,15 +10,19 @@ import SwiftUI
 struct SupportSettingsView: View {
 		var body: some View {
 				List {
-						NavigationLink(destination: Text("Contact Us Page")) {
+						Link(destination: URL(string: "https://ckim.dev/monir/main")!) {
+								Label("Q&A", systemImage: "questionmark.circle")
+						}
+						
+						Link(destination: URL(string: "mailto:monir.careteam@gmail.com")!) {
 								Label("Contact Us", systemImage: "envelope")
 						}
 
-						NavigationLink(destination: Text("Terms of Use Page")) {
+						Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
 								Label("Terms of Use", systemImage: "doc.text")
 						}
 
-						NavigationLink(destination: Text("Privacy Policy Page")) {
+						Link(destination: URL(string: "https://ckim.dev/monir/privacy")!) {
 								Label("Privacy Policy", systemImage: "lock")
 						}
 				}
