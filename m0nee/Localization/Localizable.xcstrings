@@ -779,6 +779,7 @@
       }
     },
     "Enable Budget Tracking in Settings to unlock this insight." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {

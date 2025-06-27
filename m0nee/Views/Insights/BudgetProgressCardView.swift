@@ -32,10 +32,6 @@ struct BudgetProgressCardView: View {
 		}()
 		
 		ZStack {
-			// Background with blur
-			RoundedRectangle(cornerRadius: 16)
-				.fill(Color(.systemGray6))
-
 			// Foreground content
 			VStack(alignment: .leading, spacing: 8) {
 				Label("Spending vs. Time", systemImage: "gauge.with.needle")
@@ -60,18 +56,6 @@ struct BudgetProgressCardView: View {
 			.padding(.horizontal, 0)
 			.frame(maxWidth: .infinity)
 			.frame(height: 240)
-			.blur(radius: !budgetTrackingEnabled ? 2.5 : 0)
-
-			// Overlay message
-			if !budgetTrackingEnabled {
-				Text("Enable Budget Tracking in Settings to unlock this insight.")
-					.font(.headline)
-					.multilineTextAlignment(.center)
-					.padding()
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
-					.background(Color(.systemGray6).opacity(0.7))
-					.cornerRadius(16)
-			}
 		}
 		
 		.cornerRadius(16)

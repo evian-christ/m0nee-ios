@@ -145,14 +145,16 @@ struct InsightCardView: View {
 			.blur(
 				radius:
 					(type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ||
-				(type == .categoryRating && !showRating)
-				? 6 : 0
+					(type == .categoryRating && !showRating) ||
+					(type == .budgetProgress && !enableBudgetTracking)
+					? 6 : 0
 			)
 			
 			
 			let restrictionMessages: [InsightCardType: (Bool, String)] = [
 				.categoryBudgetProgress: (enableBudgetTracking && budgetByCategory, "Enable Budget by Category in Settings to see this card."),
-				.categoryRating: (showRating, "Enable Ratings in Settings to see this card.")
+				.categoryRating: (showRating, "Enable Ratings in Settings to see this card."),
+				.budgetProgress: (enableBudgetTracking, "Enable Budget Tracking in Settings to see this card.")
 			]
 
 			if let restriction = restrictionMessages[type], restriction.0 == false {
