@@ -35,6 +35,10 @@ struct SettingsView: View {
 					Label("Monir Pro", systemImage: "star.fill")
 						.frame(minHeight: 44)
 				}
+				NavigationLink(destination: SupportSettingsView()) {
+					Label("Help & Support", systemImage: "questionmark.circle")
+						.frame(minHeight: 44)
+				}
 			}
 
 			Section {
