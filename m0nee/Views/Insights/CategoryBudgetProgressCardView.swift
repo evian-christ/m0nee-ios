@@ -43,7 +43,6 @@ struct CategoryBudgetProgressCardView: View {
 			}
 			.padding(.horizontal, 8)
 			.frame(maxWidth: .infinity, alignment: .leading)
-			.background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray6)))
 		}
 	}
 }
