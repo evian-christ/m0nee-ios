@@ -13,6 +13,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		645A333D2E16F8380085E8E0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 645612632D9D49EB00B42A73 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6456126A2D9D49EB00B42A73;
+			remoteInfo = m0nee;
+		};
 		646CEEC42DECB62D00B3D14A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 645612632D9D49EB00B42A73 /* Project object */;
@@ -38,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		6456126B2D9D49EB00B42A73 /* m0nee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = m0nee.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		645A33392E16F8380085E8E0 /* m0neeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = m0neeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		646734FA2E0DA37E00F726EE /* MonirInsightsWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MonirInsightsWidgetExtension.entitlements; sourceTree = "<group>"; };
 		646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MonirInsightsWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		646CEEB42DECB62B00B3D14A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -71,14 +79,9 @@
 			path = m0nee;
 			sourceTree = "<group>";
 		};
-		645612822D9D49ED00B42A73 /* m0neeTests */ = {
+		645A333A2E16F8380085E8E0 /* m0neeTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = m0neeTests;
-			sourceTree = "<group>";
-		};
-		6456128C2D9D49ED00B42A73 /* m0neeUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = m0neeUITests;
 			sourceTree = "<group>";
 		};
 		646CEEB82DECB62B00B3D14A /* MonirInsightsWidget */ = {
@@ -93,6 +96,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		645612682D9D49EB00B42A73 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		645A33362E16F8380085E8E0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -117,9 +127,8 @@
 				646CEECD2DECB6D400B3D14A /* MonirInsightsWidgetExtensionRelease.entitlements */,
 				646734FA2E0DA37E00F726EE /* MonirInsightsWidgetExtension.entitlements */,
 				6456126D2D9D49EB00B42A73 /* m0nee */,
-				645612822D9D49ED00B42A73 /* m0neeTests */,
-				6456128C2D9D49ED00B42A73 /* m0neeUITests */,
 				646CEEB82DECB62B00B3D14A /* MonirInsightsWidget */,
+				645A333A2E16F8380085E8E0 /* m0neeTests */,
 				646CEEB32DECB62B00B3D14A /* Frameworks */,
 				6456126C2D9D49EB00B42A73 /* Products */,
 			);
@@ -130,6 +139,7 @@
 			children = (
 				6456126B2D9D49EB00B42A73 /* m0nee.app */,
 				646CEEB22DECB62B00B3D14A /* MonirInsightsWidgetExtension.appex */,
+				645A33392E16F8380085E8E0 /* m0neeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -170,6 +180,29 @@
 			productReference = 6456126B2D9D49EB00B42A73 /* m0nee.app */;
 			productType = "com.apple.product-type.application";
 		};
+		645A33382E16F8380085E8E0 /* m0neeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 645A333F2E16F8380085E8E0 /* Build configuration list for PBXNativeTarget "m0neeTests" */;
+			buildPhases = (
+				645A33352E16F8380085E8E0 /* Sources */,
+				645A33362E16F8380085E8E0 /* Frameworks */,
+				645A33372E16F8380085E8E0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				645A333E2E16F8380085E8E0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				645A333A2E16F8380085E8E0 /* m0neeTests */,
+			);
+			name = m0neeTests;
+			packageProductDependencies = (
+			);
+			productName = m0neeTests;
+			productReference = 645A33392E16F8380085E8E0 /* m0neeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 646CEECA2DECB62D00B3D14A /* Build configuration list for PBXNativeTarget "MonirInsightsWidgetExtension" */;
@@ -199,11 +232,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					6456126A2D9D49EB00B42A73 = {
 						CreatedOnToolsVersion = 16.3;
+					};
+					645A33382E16F8380085E8E0 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 6456126A2D9D49EB00B42A73;
 					};
 					646CEEB12DECB62B00B3D14A = {
 						CreatedOnToolsVersion = 16.3;
@@ -227,12 +264,20 @@
 			targets = (
 				6456126A2D9D49EB00B42A73 /* m0nee */,
 				646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */,
+				645A33382E16F8380085E8E0 /* m0neeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		645612692D9D49EB00B42A73 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		645A33372E16F8380085E8E0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -256,6 +301,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		645A33352E16F8380085E8E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		646CEEAE2DECB62B00B3D14A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -266,6 +318,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		645A333E2E16F8380085E8E0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6456126A2D9D49EB00B42A73 /* m0nee */;
+			targetProxy = 645A333D2E16F8380085E8E0 /* PBXContainerItemProxy */;
+		};
 		646CEEC52DECB62D00B3D14A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */;
@@ -488,6 +545,47 @@
 			};
 			name = Release;
 		};
+		645A33402E16F8380085E8E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KA6F76NJV4;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0neeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/m0nee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/m0nee";
+			};
+			name = Debug;
+		};
+		645A33412E16F8380085E8E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KA6F76NJV4;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0neeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/m0nee.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/m0nee";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		646CEEC82DECB62D00B3D14A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -508,7 +606,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0nee.MonirInsightsWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -539,7 +637,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = chankim.m0nee.MonirInsightsWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -568,6 +666,15 @@
 			buildConfigurations = (
 				645612932D9D49ED00B42A73 /* Debug */,
 				645612942D9D49ED00B42A73 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		645A333F2E16F8380085E8E0 /* Build configuration list for PBXNativeTarget "m0neeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				645A33402E16F8380085E8E0 /* Debug */,
+				645A33412E16F8380085E8E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
