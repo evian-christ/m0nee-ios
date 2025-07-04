@@ -523,4 +523,68 @@ struct ExpenseStoreTests {
         // (though in this test, it should remain nil as no generation occurred).
         #expect(store.recurringExpenses.first?.lastGeneratedDate == nil)
     }
+
+    @Test func testUpdateExpense() {
+        // ARRANGE: Set up the store with an expense to be updated.
+        let store = ExpenseStore(forTesting: true) // Use forTesting: true to bypass persistence during setup
+        let originalExpense = Expense(id: UUID(), date: dateFrom("2025-07-01"), name: "Old Name", amount: 10.0, category: "Misc", details: nil, rating: nil, memo: nil)
+        store.expenses.append(originalExpense) // Directly add to the in-memory array
+        let initialCount = store.expenses.count
+
+        // Create an updated version of the expense
+        var updatedExpense = originalExpense
+        updatedExpense.name = "New Name"
+        updatedExpense.amount = 25.0
+
+        // ACT: Call the update function.
+        store.update(updatedExpense)
+
+        // ASSERT: Verify that the expense was updated and no new expenses were added/removed.
+        #expect(store.expenses.count == initialCount)
+        
+        // 1. Find the expense in the store (it's still an optional here).
+        let foundExpenseOptional = store.expenses.first(where: { $0.id == updatedExpense.id })
+
+        // 2. Assert that the expense was found (i.e., it's not nil).
+        #expect(foundExpenseOptional != nil, "Updated expense not found in store.")
+
+        // 3. Safely unwrap the optional. We can force unwrap here because the previous #expect
+        // would have failed the test if foundExpenseOptional was nil.
+        let expenseInStore = foundExpenseOptional!
+
+        // 4. Perform assertions on the unwrapped expense's properties.
+        #expect(expenseInStore.name == "New Name")
+        #expect(expenseInStore.amount == 25.0)
+    }
+
+    @Test func testAddCategory() {
+        // ARRANGE: Create a new, empty ExpenseStore instance.
+        let store = ExpenseStore(forTesting: true)
+        let initialCategoryCount = store.categories.count
+        
+        // Create a new category item.
+        let newCategory = CategoryItem(name: "Utilities", symbol: "lightbulb.fill", color: CodableColor(.green))
+
+        // ACT: Call the function to add the category.
+        store.addCategory(newCategory)
+
+        // ASSERT: Check if the category was added and the count increased.
+        #expect(store.categories.count == initialCategoryCount + 1)
+        #expect(store.categories.contains(where: { $0.name == "Utilities" }))
+    }
+
+    @Test func testRemoveCategory() {
+        // ARRANGE: Set up the store with a category to be removed.
+        let store = ExpenseStore(forTesting: true)
+        let categoryToRemove = CategoryItem(name: "Books", symbol: "book.closed.fill", color: CodableColor(.brown))
+        store.addCategory(categoryToRemove)
+        let initialCategoryCount = store.categories.count
+
+        // ACT: Call the function to remove the category.
+        store.removeCategory(categoryToRemove)
+
+        // ASSERT: Check if the category was removed and the count decreased.
+        #expect(store.categories.count == initialCategoryCount - 1)
+        #expect(store.categories.contains(where: { $0.id == categoryToRemove.id }) == false)
+    }
 }
