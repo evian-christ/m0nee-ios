@@ -210,4 +210,155 @@ struct m0neeTests {
         #expect(generatedDates.contains(dateFrom("2025-07-08")))
         #expect(generatedDates.contains(dateFrom("2025-07-15")))
     }
+
+    @Test func testGenerateMonthlyRecurringExpense() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-10")
+        let endDate = dateFrom("2025-10-10") // Generate for 4 months
+
+        let rule = RecurrenceRule(
+            period: .monthly,
+            frequencyType: .everyN,
+            interval: 1, // Every 1 month
+            startDate: startDate
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Monthly Rent",
+            amount: 1200.0,
+            category: "Rent",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        store.generateExpensesFromRecurringIfNeeded(currentDate: endDate)
+
+        // ASSERT
+        #expect(store.expenses.count == 4) // Expect 4 expenses: July, Aug, Sep, Oct
+        
+        let generatedDates = store.expenses.map { Calendar.current.startOfDay(for: $0.date) }.sorted()
+        #expect(generatedDates.contains(dateFrom("2025-07-10")))
+        #expect(generatedDates.contains(dateFrom("2025-08-10")))
+        #expect(generatedDates.contains(dateFrom("2025-09-10")))
+        #expect(generatedDates.contains(dateFrom("2025-10-10")))
+    }
+
+    @Test func testGenerateWeeklySelectedDays() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01") // Tuesday
+        let endDate = dateFrom("2025-07-09") // A little over a week
+
+        // Rule: Repeat on Monday (2) and Wednesday (4)
+        let rule = RecurrenceRule(
+            period: .weekly, // This period is less relevant for selected days
+            frequencyType: .weeklySelectedDays,
+            interval: 0, // Interval is not used for this frequency type
+            selectedWeekdays: [2, 4], // Monday, Wednesday
+            startDate: startDate
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Gym Session",
+            amount: 15.0,
+            category: "Health",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        store.generateExpensesFromRecurringIfNeeded(currentDate: endDate)
+
+        // ASSERT
+        #expect(store.expenses.count == 3) // Expect 3 expenses: Wed (Jul 2), Mon (Jul 7), Wed (Jul 9)
+        
+        let generatedDates = store.expenses.map { Calendar.current.startOfDay(for: $0.date) }.sorted()
+        #expect(generatedDates.contains(dateFrom("2025-07-02"))) // First Wednesday
+        #expect(generatedDates.contains(dateFrom("2025-07-07"))) // First Monday
+        #expect(generatedDates.contains(dateFrom("2025-07-09"))) // Second Wednesday
+    }
+
+    @Test func testGenerateMonthlySelectedDays() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01")
+        let endDate = dateFrom("2025-08-20") // Cover two months
+
+        // Rule: Repeat on the 5th and 20th of each month
+        let rule = RecurrenceRule(
+            period: .monthly, // This period is less relevant for selected days
+            frequencyType: .monthlySelectedDays,
+            interval: 0, // Interval is not used
+            selectedMonthDays: [5, 20],
+            startDate: startDate
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Paycheck Deposit",
+            amount: 2000.0,
+            category: "Income",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        store.generateExpensesFromRecurringIfNeeded(currentDate: endDate)
+
+        // ASSERT
+        #expect(store.expenses.count == 4) // Expect 4 expenses: July 5, July 20, Aug 5, Aug 20
+        
+        let generatedDates = store.expenses.map { Calendar.current.startOfDay(for: $0.date) }.sorted()
+        #expect(generatedDates.contains(dateFrom("2025-07-05")))
+        #expect(generatedDates.contains(dateFrom("2025-07-20")))
+        #expect(generatedDates.contains(dateFrom("2025-08-05")))
+        #expect(generatedDates.contains(dateFrom("2025-08-20")))
+    }
+
+    @Test func testGenerateRecurringExpenses_NoDuplicatesOnRerun() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01")
+        let midDate = dateFrom("2025-07-03")
+        let endDate = dateFrom("2025-07-05")
+
+        let rule = RecurrenceRule(period: .daily, frequencyType: .everyN, interval: 1, startDate: startDate)
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Daily Standup Coffee",
+            amount: 4.0,
+            category: "Food",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT 1: Run generation for the first few days.
+        store.generateExpensesFromRecurringIfNeeded(currentDate: midDate)
+
+        // ASSERT 1: Check that the first batch of expenses was created.
+        #expect(store.expenses.count == 3) // Should have expenses for July 1, 2, 3.
+
+        // ACT 2: Run generation again for a longer period.
+        store.generateExpensesFromRecurringIfNeeded(currentDate: endDate)
+
+        // ASSERT 2: Check that only new expenses were added, without creating duplicates.
+        #expect(store.expenses.count == 5) // Should have a TOTAL of 5 expenses (July 1, 2, 3, 4, 5).
+        
+        // Optional: A more detailed check to be certain.
+        let finalDates = store.expenses.map { $0.date }.map { Calendar.current.startOfDay(for: $0) }
+        let uniqueDates = Set(finalDates)
+        #expect(uniqueDates.count == 5)
+    }
 }
