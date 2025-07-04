@@ -17,7 +17,13 @@ class ExpenseStore: ObservableObject {
 		
 		private var saveURL: URL
 		
-		init() {
+		// 기존 init()을 새로운 init(forTesting:)으로 연결
+		convenience init() {
+			self.init(forTesting: false)
+		}
+
+		// 테스트를 위한 새로운 초기화 메서드
+		init(forTesting: Bool = false) {
 				let fileManager = FileManager.default
 				let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
 				let iCloudURL: URL
@@ -58,14 +64,14 @@ class ExpenseStore: ObservableObject {
 								print("☁️ No data found, using fresh iCloud path")
 						}
 
-						syncStorageIfNeeded()
+						if !forTesting { syncStorageIfNeeded() }
 				} else {
 						self.saveURL = localURL
 				}
 
 				print("💾 Using saveURL: \(saveURL.path)")
-				load()
-				if categories.isEmpty {
+				if !forTesting { load() }
+				if categories.isEmpty && !forTesting {
 					categories = [
 						CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
 						CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
@@ -88,7 +94,7 @@ class ExpenseStore: ObservableObject {
 				}
 			//recurringExpenses.removeAll()
 			//save()
-				generateExpensesFromRecurringIfNeeded()
+				if !forTesting { generateExpensesFromRecurringIfNeeded() }
 		}
 		
 		func addCategory(_ category: CategoryItem) {
@@ -138,44 +144,52 @@ class ExpenseStore: ObservableObject {
 				let rule = recurring.recurrenceRule
 				let calendar = Calendar.current
 
-				var lastDate = calendar.date(byAdding: .day, value: 0, to: recurring.lastGeneratedDate ?? rule.startDate) ?? rule.startDate
+				// Capture the last generated date *before* this run starts
+				let initialLastGeneratedDate = recurring.lastGeneratedDate
+
+				// Determine the actual start date for this generation run
+				// Start from the day after the initialLastGeneratedDate, or from rule.startDate if no previous generation
+				var currentGenerationDate: Date
+				if let lastGen = initialLastGeneratedDate {
+					currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
+				} else {
+					currentGenerationDate = rule.startDate
+				}
+
 				let endDate = currentDate
 
-				while lastDate <= endDate {
-					if shouldGenerateToday(for: rule, on: lastDate) {
-						let alreadyGenerated = calendar.isDate(lastDate, inSameDayAs: recurring.lastGeneratedDate ?? .distantPast)
-
-						if !alreadyGenerated {
-							let newExpense = Expense(
-								id: UUID(),
-								date: lastDate,
-								name: recurring.name,
-								amount: recurring.amount,
-								category: recurring.category,
-								details: recurring.details,
-								rating: recurring.rating,
-								memo: recurring.memo,
-								isRecurring: true,
-								parentRecurringID: recurring.id
-							)
-							add(newExpense)
-							recurring.lastGeneratedDate = lastDate
-						}
+				while currentGenerationDate <= endDate {
+					if shouldGenerateToday(for: rule, on: currentGenerationDate) {
+						let newExpense = Expense(
+							id: UUID(),
+							date: currentGenerationDate,
+							name: recurring.name,
+							amount: recurring.amount,
+							category: recurring.category,
+							details: recurring.details,
+							rating: recurring.rating,
+							memo: recurring.memo,
+							isRecurring: true,
+							parentRecurringID: recurring.id
+						)
+						add(newExpense)
+						// Update lastGeneratedDate as we generate
+						recurring.lastGeneratedDate = currentGenerationDate
 					}
 
+					// Advance currentGenerationDate based on recurrence rule
 					switch rule.frequencyType {
 					case .everyN:
 						switch rule.period {
 						case .daily:
-							lastDate = calendar.date(byAdding: .day, value: rule.interval, to: lastDate) ?? lastDate
+							currentGenerationDate = calendar.date(byAdding: .day, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
 						case .weekly:
-							lastDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: lastDate) ?? lastDate
+							currentGenerationDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
 						case .monthly:
-							lastDate = calendar.date(byAdding: .month, value: rule.interval, to: lastDate) ?? lastDate
-						
+							currentGenerationDate = calendar.date(byAdding: .month, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
 						}
 					case .weeklySelectedDays, .monthlySelectedDays:
-						lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+						currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
 					}
 				}
 
@@ -470,43 +484,49 @@ extension ExpenseStore {
 			let rule = recurring.recurrenceRule
 			let calendar = Calendar.current
 
-			var lastDate = calendar.date(byAdding: .day, value: 0, to: recurring.lastGeneratedDate ?? rule.startDate) ?? rule.startDate
+			// Determine the actual start date for this generation run
+			// Start from the day after the initialLastGeneratedDate, or from rule.startDate if no previous generation
+			var currentGenerationDate: Date
+			if let lastGen = recurring.lastGeneratedDate {
+				currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
+			} else {
+				currentGenerationDate = rule.startDate
+			}
+
 			let endDate = currentDate
 
-			while lastDate <= endDate {
-				if shouldGenerateToday(for: rule, on: lastDate) {
-					let alreadyGenerated = calendar.isDate(lastDate, inSameDayAs: recurring.lastGeneratedDate ?? .distantPast)
-					if !alreadyGenerated {
-						let newExpense = Expense(
-							id: UUID(),
-							date: lastDate,
-							name: recurring.name,
-							amount: recurring.amount,
-							category: recurring.category,
-							details: recurring.details,
+			while currentGenerationDate <= endDate {
+				if shouldGenerateToday(for: rule, on: currentGenerationDate) {
+					let newExpense = Expense(
+						id: UUID(),
+						date: currentGenerationDate,
+						name: recurring.name,
+						amount: recurring.amount,
+						category: recurring.category,
+						details: recurring.details,
 							rating: recurring.rating,
 							memo: recurring.memo,
 							isRecurring: true,
 							parentRecurringID: recurring.id
 						)
-						add(newExpense)
-						recurring.lastGeneratedDate = lastDate
-					}
+					add(newExpense)
+					// Update lastGeneratedDate as we generate
+					recurring.lastGeneratedDate = currentGenerationDate
 				}
 
+				// Advance currentGenerationDate based on recurrence rule
 				switch rule.frequencyType {
 				case .everyN:
 					switch rule.period {
 					case .daily:
-						lastDate = calendar.date(byAdding: .day, value: rule.interval, to: lastDate) ?? lastDate
+						currentGenerationDate = calendar.date(byAdding: .day, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
 					case .weekly:
-						lastDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: lastDate) ?? lastDate
+						currentGenerationDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
 					case .monthly:
-						lastDate = calendar.date(byAdding: .month, value: rule.interval, to: lastDate) ?? lastDate
-						
+						currentGenerationDate = calendar.date(byAdding: .month, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
 					}
 				case .weeklySelectedDays, .monthlySelectedDays:
-					lastDate = calendar.date(byAdding: .day, value: 1, to: lastDate) ?? lastDate
+					currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
 				}
 			}
 		}
