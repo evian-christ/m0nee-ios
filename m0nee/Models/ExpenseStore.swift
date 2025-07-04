@@ -178,19 +178,7 @@ class ExpenseStore: ObservableObject {
 					}
 
 					// Advance currentGenerationDate based on recurrence rule
-					switch rule.frequencyType {
-					case .everyN:
-						switch rule.period {
-						case .daily:
-							currentGenerationDate = calendar.date(byAdding: .day, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
-						case .weekly:
-							currentGenerationDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
-						case .monthly:
-							currentGenerationDate = calendar.date(byAdding: .month, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
-						}
-					case .weeklySelectedDays, .monthlySelectedDays:
-						currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
-					}
+									currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
 				}
 
 				recurringExpenses[index] = recurring
@@ -227,22 +215,8 @@ class ExpenseStore: ObservableObject {
 		          // Loop indefinitely until a valid next occurrence is found.
 		          // The loop should continue as long as the candidate date does NOT satisfy the rule.
 		          while !shouldGenerateToday(for: rule, on: candidate) {
-		              // Advance candidate date based on the rule's period, but always by at least one day
-		              // to ensure progress and avoid infinite loops if shouldGenerateToday is always false.
-		              switch rule.frequencyType {
-		              case .everyN:
-		                  switch rule.period {
-		                  case .daily:
-		                     candidate = calendar.date(byAdding: .day, value: rule.interval, to: candidate) ?? candidate
-		                  case .weekly:
-		                      candidate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: candidate) ?? candidate
-		                  case .monthly:
-		                      candidate = calendar.date(byAdding: .month, value: rule.interval, to: candidate) ?? candidate
-		                  }
-		              case .weeklySelectedDays, .monthlySelectedDays:
-		                  // For selected days, we always advance by one day until we hit a selected day
-		                  candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
-		              }
+		              // Always advance by one day to ensure progress and eventually hit a valid date.
+		              candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
 		          }
 		 
 		          // If we reach here, candidate is the first date after lastGeneratedDate (or startDate) that satisfies the rule.
@@ -473,10 +447,20 @@ extension ExpenseStore {
 					return daysBetween >= 0 && daysBetween % rule.interval == 0
 
 				case .weekly:
+					let startWeekday = calendar.component(.weekday, from: rule.startDate)
+					let currentWeekday = calendar.component(.weekday, from: date)
+
+					guard startWeekday == currentWeekday else { return false }
+
 					let weeksBetween = calendar.dateComponents([.weekOfYear], from: rule.startDate, to: date).weekOfYear ?? 0
 					return weeksBetween >= 0 && weeksBetween % rule.interval == 0
 
 				case .monthly:
+					let startDay = calendar.component(.day, from: rule.startDate)
+					let currentDay = calendar.component(.day, from: date)
+
+					guard startDay == currentDay else { return false }
+
 					let monthsBetween = calendar.dateComponents([.month], from: rule.startDate, to: date).month ?? 0
 					return monthsBetween >= 0 && monthsBetween % rule.interval == 0
 
@@ -525,19 +509,7 @@ extension ExpenseStore {
 				}
 
 				// Advance currentGenerationDate based on recurrence rule
-				switch rule.frequencyType {
-				case .everyN:
-					switch rule.period {
-					case .daily:
-						currentGenerationDate = calendar.date(byAdding: .day, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
-					case .weekly:
-						currentGenerationDate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
-					case .monthly:
-						currentGenerationDate = calendar.date(byAdding: .month, value: rule.interval, to: currentGenerationDate) ?? currentGenerationDate
-					}
-				case .weeklySelectedDays, .monthlySelectedDays:
-					currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
-				}
+				currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
 			}
 		}
 }
