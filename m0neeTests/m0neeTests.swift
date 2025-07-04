@@ -406,4 +406,121 @@ struct m0neeTests {
         #expect(store.recurringExpenses.count == 1)
         #expect(store.recurringExpenses.first?.lastGeneratedDate == currentDate)
     }
+
+    @Test func testDeleteRecurringExpense_RemovesRuleButNotChildren() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01")
+        let generationDate = dateFrom("2025-07-03")
+
+        let rule = RecurrenceRule(
+            period: .daily,
+            frequencyType: .everyN,
+            interval: 1,
+            startDate: startDate
+        )
+        
+        let recurringToDelete = RecurringExpense(
+            id: UUID(),
+            name: "Daily Coffee Subscription",
+            amount: 3.50,
+            category: "Food",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        
+        // Add the recurring expense and generate some instances
+        store.recurringExpenses = [recurringToDelete]
+        store.generateExpensesFromRecurringIfNeeded(currentDate: generationDate)
+        
+        let initialExpenseCount = store.expenses.count
+        let initialRecurringCount = store.recurringExpenses.count
+
+        // ACT
+        store.removeRecurringExpense(id: recurringToDelete.id)
+
+        // ASSERT
+        // 1. The recurring expense rule should be removed.
+        #expect(store.recurringExpenses.count == initialRecurringCount - 1)
+        #expect(store.recurringExpenses.contains(where: { $0.id == recurringToDelete.id }) == false)
+        
+        // 2. The previously generated expenses should still exist.
+        #expect(store.expenses.count == initialExpenseCount)
+        #expect(store.expenses.contains(where: { $0.parentRecurringID == recurringToDelete.id }))
+    }
+
+    @Test func testGenerateExpenseWithIntervalGreaterThanOne() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01")
+        let endDate = dateFrom("2025-07-07") // Generate for a week
+
+        // Rule: Every 2 days
+        let rule = RecurrenceRule(
+            period: .daily,
+            frequencyType: .everyN,
+            interval: 2, // Every 2 days
+            startDate: startDate
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Bi-Daily Delivery",
+            amount: 7.0,
+            category: "Food",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        store.generateExpensesFromRecurringIfNeeded(currentDate: endDate)
+
+        // ASSERT
+        #expect(store.expenses.count == 4) // Expect expenses for July 1, 3, 5, 7
+        
+        let generatedDates = store.expenses.map { Calendar.current.startOfDay(for: $0.date) }.sorted()
+        #expect(generatedDates.contains(dateFrom("2025-07-01")))
+        #expect(generatedDates.contains(dateFrom("2025-07-03")))
+        #expect(generatedDates.contains(dateFrom("2025-07-05")))
+        #expect(generatedDates.contains(dateFrom("2025-07-07")))
+    }
+
+    @Test func testRecurringExpense_StartsInFuture() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-10") // Recurring expense starts in the future
+        let currentDate = dateFrom("2025-07-05") // Simulate today's date, before start date
+
+        let rule = RecurrenceRule(
+            period: .daily,
+            frequencyType: .everyN,
+            interval: 1,
+            startDate: startDate
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Future Subscription",
+            amount: 20.0,
+            category: "Subscriptions",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        store.generateExpensesFromRecurringIfNeeded(currentDate: currentDate)
+
+        // ASSERT
+        // No expenses should be generated because the start date is in the future.
+        #expect(store.expenses.count == 0)
+        
+        // The lastGeneratedDate should still be nil or the startDate if it was already set
+        // (though in this test, it should remain nil as no generation occurred).
+        #expect(store.recurringExpenses.first?.lastGeneratedDate == nil)
+    }
 }
