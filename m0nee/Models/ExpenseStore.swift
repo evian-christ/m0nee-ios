@@ -212,32 +212,42 @@ class ExpenseStore: ObservableObject {
 		}
 
 		/// Returns the next occurrence date after today (or the next after lastGeneratedDate) for the given recurring expense.
-		func nextOccurrence(for recurring: RecurringExpense) -> Date? {
-			let rule = recurring.recurrenceRule
-			let calendar = Calendar.current
-			let start = recurring.lastGeneratedDate ?? rule.startDate
-			let today = calendar.startOfDay(for: Date())
-			var candidate = calendar.startOfDay(for: start)
-
-			while candidate <= today || !shouldGenerateToday(for: rule, on: candidate) {
-				// 다음 날짜로 이동
-				switch rule.frequencyType {
-				case .everyN:
-					switch rule.period {
-					case .daily:
-						candidate = calendar.date(byAdding: .day, value: rule.interval, to: candidate) ?? candidate
-					case .weekly:
-						candidate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: candidate) ?? candidate
-					case .monthly:
-						candidate = calendar.date(byAdding: .month, value: rule.interval, to: candidate) ?? candidate
-					}
-				case .weeklySelectedDays, .monthlySelectedDays:
-					candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
-				}
-			}
-
-			return candidate
-		}
+	func nextOccurrence(for recurring: RecurringExpense) -> Date? {
+			         let rule = recurring.recurrenceRule
+			         let calendar = Calendar.current
+			
+			         // Start searching from the day after the last generated date, or the rule's start date if none.
+			         var candidate: Date
+			         if let lastGen = recurring.lastGeneratedDate {
+			             candidate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
+			         } else {
+		              candidate = rule.startDate
+		          }
+		 
+		          // Loop indefinitely until a valid next occurrence is found.
+		          // The loop should continue as long as the candidate date does NOT satisfy the rule.
+		          while !shouldGenerateToday(for: rule, on: candidate) {
+		              // Advance candidate date based on the rule's period, but always by at least one day
+		              // to ensure progress and avoid infinite loops if shouldGenerateToday is always false.
+		              switch rule.frequencyType {
+		              case .everyN:
+		                  switch rule.period {
+		                  case .daily:
+		                     candidate = calendar.date(byAdding: .day, value: rule.interval, to: candidate) ?? candidate
+		                  case .weekly:
+		                      candidate = calendar.date(byAdding: .weekOfYear, value: rule.interval, to: candidate) ?? candidate
+		                  case .monthly:
+		                      candidate = calendar.date(byAdding: .month, value: rule.interval, to: candidate) ?? candidate
+		                  }
+		              case .weeklySelectedDays, .monthlySelectedDays:
+		                  // For selected days, we always advance by one day until we hit a selected day
+		                  candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
+		              }
+		          }
+		 
+		          // If we reach here, candidate is the first date after lastGeneratedDate (or startDate) that satisfies the rule.
+		          return candidate
+		      }
 }
 
 extension ExpenseStore {

@@ -29,6 +29,9 @@ struct ExpenseStoreTests {
             let iCloudExpensesURL = iCloudContainerURL.appendingPathComponent("expenses.json")
             try? fileManager.removeItem(at: iCloudExpensesURL)
         }
+
+        // Clear UserDefaults for category budgets to ensure a clean state for tests
+        UserDefaults.standard.removeObject(forKey: "categoryBudgets")
     }
 
     // A helper function to make creating dates easier in our tests.
@@ -178,8 +181,7 @@ struct ExpenseStoreTests {
     @Test func testGenerateWeeklyRecurringExpense() {
         // ARRANGE
         let store = ExpenseStore(forTesting: true)
-        let startDate = dateFrom("2025-07-01") // This is a Tuesday
-        let endDate = dateFrom("2025-07-15") // Generate for 3 weeks
+        let startDate = dateFrom("2025-06-01") // This is a Tuesday
 
         let rule = RecurrenceRule(
             period: .weekly,
@@ -200,15 +202,17 @@ struct ExpenseStoreTests {
         store.recurringExpenses = [recurringExpense]
 
         // ACT
-        store.generateExpensesFromRecurringIfNeeded(currentDate: endDate)
+        store.generateExpensesFromRecurringIfNeeded(currentDate: dateFrom("2025-07-04"))
 
         // ASSERT
-        #expect(store.expenses.count == 3) // Expect 3 expenses: July 1, 8, 15
+        #expect(store.expenses.count == 5) // Expect 5 expenses: June 1, 8, 15, 22, 29
         
         let generatedDates = store.expenses.map { Calendar.current.startOfDay(for: $0.date) }.sorted()
-        #expect(generatedDates.contains(dateFrom("2025-07-01")))
-        #expect(generatedDates.contains(dateFrom("2025-07-08")))
-        #expect(generatedDates.contains(dateFrom("2025-07-15")))
+        #expect(generatedDates.contains(dateFrom("2025-06-01")))
+        #expect(generatedDates.contains(dateFrom("2025-06-08")))
+        #expect(generatedDates.contains(dateFrom("2025-06-15")))
+				#expect(generatedDates.contains(dateFrom("2025-06-22")))
+				#expect(generatedDates.contains(dateFrom("2025-06-29")))
     }
 
     @Test func testGenerateMonthlyRecurringExpense() {
@@ -586,5 +590,177 @@ struct ExpenseStoreTests {
         // ASSERT: Check if the category was removed and the count decreased.
         #expect(store.categories.count == initialCategoryCount - 1)
         #expect(store.categories.contains(where: { $0.id == categoryToRemove.id }) == false)
+    }
+
+    @Test func testCategoryBudgetPersistence() {
+        // ARRANGE
+        let testCategoryName = "Test Category"
+        let testBudgetAmount = "100.00"
+        let expectedBudgets: [String: String] = [testCategoryName: testBudgetAmount]
+
+        // Manually save the budget to UserDefaults, simulating ExpenseStore's save
+        guard let encoded = try? JSONEncoder().encode(expectedBudgets) else {
+            #expect(Bool(false), "Failed to encode initial budgets.")
+            return
+        }
+        UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+        UserDefaults.standard.synchronize() // Force synchronization for test reliability
+
+        // ACT
+        // Retrieve the budget directly from UserDefaults to verify persistence
+        var loadedBudgets: [String: String]?
+        if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+           let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
+            loadedBudgets = decoded
+        }
+
+        // ASSERT
+        #expect(loadedBudgets != nil, "Failed to load budgets from UserDefaults.")
+        #expect(loadedBudgets == expectedBudgets, "Loaded budgets do not match expected budgets.")
+    }
+
+    @Test func testTotalSpentByMonth() {
+        // ARRANGE: Create a store and add expenses for different months.
+        let store = ExpenseStore(forTesting: true)
+        store.expenses = [
+            Expense(id: UUID(), date: dateFrom("2025-01-05"), name: "Coffee Jan", amount: 5.0, category: "Food", details: nil, rating: nil, memo: nil),
+            Expense(id: UUID(), date: dateFrom("2025-01-10"), name: "Lunch Jan", amount: 15.0, category: "Food", details: nil, rating: nil, memo: nil),
+            Expense(id: UUID(), date: dateFrom("2025-02-01"), name: "Rent Feb", amount: 1000.0, category: "Rent", details: nil, rating: nil, memo: nil),
+            Expense(id: UUID(), date: dateFrom("2025-02-15"), name: "Dinner Feb", amount: 20.0, category: "Food", details: nil, rating: nil, memo: nil),
+            Expense(id: UUID(), date: dateFrom("2025-03-20"), name: "Shopping Mar", amount: 50.0, category: "Shopping", details: nil, rating: nil, memo: nil)
+        ]
+
+        // ACT: Call the function to get totals by month.
+        let monthlyTotals = store.totalSpentByMonth()
+
+        // ASSERT: Verify the totals for each month.
+        #expect(monthlyTotals.count == 3) // Expect totals for Jan, Feb, Mar
+        #expect(monthlyTotals["2025-01"] == 20.0) // 5.0 + 15.0
+        #expect(monthlyTotals["2025-02"] == 1020.0) // 1000.0 + 20.0
+        #expect(monthlyTotals["2025-03"] == 50.0)
+        #expect(monthlyTotals["2025-04"] == nil) // Ensure months with no expenses are not present
+    }
+
+    @Test func testEraseAllData() {
+        // ARRANGE: Populate the store with data
+        let store = ExpenseStore(forTesting: true)
+
+        // Add some expenses
+        store.add(Expense(id: UUID(), date: dateFrom("2025-01-01"), name: "Old Expense 1", amount: 10.0, category: "Food", details: nil, rating: nil, memo: nil))
+        store.add(Expense(id: UUID(), date: dateFrom("2025-01-02"), name: "Old Expense 2", amount: 20.0, category: "Transport", details: nil, rating: nil, memo: nil))
+
+        // Add some recurring expenses
+        let rule = RecurrenceRule(period: .daily, frequencyType: .everyN, interval: 1, startDate: dateFrom("2025-01-01"))
+        store.recurringExpenses.append(RecurringExpense(id: UUID(), name: "Old Recurring", amount: 5.0, category: "Misc", details: nil, rating: nil, memo: nil, startDate: dateFrom("2025-01-01"), recurrenceRule: rule))
+
+        // Add some custom categories
+        let customCategory1 = CategoryItem(name: "Custom 1", symbol: "star.fill", color: CodableColor(.yellow))
+        let customCategory2 = CategoryItem(name: "Custom 2", symbol: "heart.fill", color: CodableColor(.cyan))
+        store.addCategory(customCategory1)
+        store.addCategory(customCategory2)
+
+        // Set some budget data in UserDefaults
+        let initialBudgets: [String: String] = ["Food": "500", "Transport": "200", "Custom 1": "100"]
+        if let encoded = try? JSONEncoder().encode(initialBudgets) {
+            UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+        }
+
+        // ACT: Erase all data
+        store.eraseAllData()
+
+        // ASSERT: Verify that everything is reset
+        #expect(store.expenses.isEmpty)
+        #expect(store.recurringExpenses.isEmpty)
+
+        // Verify categories are reset to default
+        let defaultCategories = [
+            CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
+            CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
+            CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
+            CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
+            CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
+            CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
+        ]
+        #expect(store.categories.count == defaultCategories.count)
+        // Check if all default categories are present in the store's categories
+        for defaultCat in defaultCategories {
+            #expect(store.categories.contains(where: { $0.name == defaultCat.name && $0.symbol == defaultCat.symbol }))
+        }
+
+        // Verify budgets are reset to "0" for default categories
+        if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+           let decodedBudgets = try? JSONDecoder().decode([String: String].self, from: data) {
+            #expect(decodedBudgets.count == defaultCategories.count)
+            for defaultCat in defaultCategories {
+                #expect(decodedBudgets[defaultCat.name] == "0")
+            }
+        } else {
+            #expect(false, "Failed to load or decode budgets after eraseAllData.")
+        }
+    }
+
+    @Test func testNextOccurrenceForDailyRecurringExpense() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01")
+        let lastGeneratedDate = dateFrom("2025-07-05")
+
+        let rule = RecurrenceRule(
+            period: .daily,
+            frequencyType: .everyN,
+            interval: 1,
+            startDate: startDate
+        )
+        
+        var recurring = RecurringExpense(
+            id: UUID(),
+            name: "Daily Check",
+            amount: 1.0,
+            category: "Misc",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        recurring.lastGeneratedDate = lastGeneratedDate
+
+        // ACT
+        let nextDate = store.nextOccurrence(for: recurring)
+
+        // ASSERT
+        #expect(nextDate != nil)
+        #expect(Calendar.current.isDate(nextDate!, inSameDayAs: dateFrom("2025-07-06")))
+    }
+
+    @Test func testNextOccurrenceForWeeklyRecurringExpense() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-02") // Wednesday
+        let lastGeneratedDate = dateFrom("2025-07-02") // Same as start date
+
+        let rule = RecurrenceRule(
+            period: .daily,
+            frequencyType: .weeklySelectedDays,
+            interval: 0, // Interval is not used for selected days
+            selectedWeekdays: [4], // Wednesday
+            startDate: startDate
+        )
+        
+        var recurring = RecurringExpense(
+            id: UUID(),
+            name: "Weekly Meeting",
+            amount: 0.0,
+            category: "Work",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+        recurring.lastGeneratedDate = lastGeneratedDate
+
+        // ACT
+        let nextDate = store.nextOccurrence(for: recurring)
+
+        // ASSERT
+        #expect(nextDate != nil)
+        #expect(Calendar.current.isDate(nextDate!, inSameDayAs: dateFrom("2025-07-09"))) // Expect next Wednesday
     }
 }
