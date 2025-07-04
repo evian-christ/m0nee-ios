@@ -13,7 +13,11 @@ import StoreKit
 class ExpenseStore: ObservableObject {
 		@Published var expenses: [Expense] = []
 		@Published var productID: String? // Track the product ID for pro status
-		@Published var isPromoProUser: Bool = false // Track promo code activation
+		@Published var isPromoProUser: Bool = false {
+			didSet {
+				UserDefaults.standard.set(isPromoProUser, forKey: "isPromoProUser")
+			}
+		} // Track promo code activation
 
 		var isProUser: Bool {
 			return productID == "com.chan.monir.pro.monthly" || productID == "com.chan.monir.pro.lifetime" || isPromoProUser
@@ -45,6 +49,9 @@ class ExpenseStore: ObservableObject {
 						useiCloud = true
 						defaults.set(useiCloud, forKey: "useiCloud")
 				}
+
+				// Load isPromoProUser from UserDefaults
+				self.isPromoProUser = defaults.bool(forKey: "isPromoProUser")
 
 				if useiCloud, let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
 						try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)

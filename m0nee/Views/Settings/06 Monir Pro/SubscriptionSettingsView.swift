@@ -61,21 +61,28 @@ struct SubscriptionSettingsView: View {
 						}
 						
 						Section(header: Text("Promo Code")) {
-								TextField("Enter promo code", text: $promoCodeInput)
-										.autocapitalization(.none)
-										.disableAutocorrection(true)
-								Button("Apply Code") {
-										if promoCodeInput == "MONIRPRO" { // Hardcoded promo code for now
-												expenseStore.isPromoProUser = true
-												promoCodeMessage = "Promo code applied! You now have Monir Pro features."
-										} else {
-												promoCodeMessage = "Invalid promo code."
-										}
-								}
-								Text(promoCodeMessage)
-										.font(.footnote)
-										.foregroundColor(expenseStore.isPromoProUser ? .green : .red)
-						}
+    HStack {
+        TextField("Enter promo code", text: $promoCodeInput)
+            .autocapitalization(.none)
+            .disableAutocorrection(true)
+        Button("Apply") {
+            if promoCodeInput == "m0nee" { // New promo code
+                expenseStore.isPromoProUser = true
+                promoCodeMessage = "Promo code applied! You now have Monir Pro features."
+            } else if promoCodeInput == "fika" { // Revoke promo code
+                expenseStore.isPromoProUser = false
+                promoCodeMessage = "Promo mode revoked. You are no longer a Pro user via promo code."
+            } else {
+                promoCodeMessage = "Invalid promo code."
+            }
+        }
+        .buttonStyle(.borderedProminent) // Add some styling
+        .disabled(promoCodeInput.isEmpty || expenseStore.productID == "com.chan.monir.pro.lifetime") // Disable if text field is empty or if lifetime pro
+    }
+    Text(promoCodeMessage)
+        .font(.footnote)
+        .foregroundColor(expenseStore.isPromoProUser ? .green : .red)
+}
 				}
 				.navigationBarTitleDisplayMode(.inline)
 				.navigationTitle("Monir Pro")
