@@ -289,6 +289,9 @@
         }
       }
     },
+    "Apply Code" : {
+
+    },
     "Are you sure you want to delete this category?" : {
       "localizations" : {
         "ko" : {
@@ -821,6 +824,9 @@
           }
         }
       }
+    },
+    "Enter promo code" : {
+
     },
     "Erase" : {
       "localizations" : {
@@ -1368,6 +1374,9 @@
       }
     },
     "Privacy Policy" : {
+
+    },
+    "Promo Code" : {
 
     },
     "Q&A" : {

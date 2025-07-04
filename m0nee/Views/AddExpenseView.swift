@@ -50,7 +50,7 @@ struct AddExpenseView: View {
 	@State private var showingDeleteAlert = false
 	@State private var showingDuplicateAlert = false
 	@State private var showAmountTooLargeAlert = false
-		@AppStorage("isProUser") private var isProUser: Bool = false
+		
 	
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
@@ -357,7 +357,7 @@ var body: some View {
 			
 						if expenseID == nil {
 								Section {
-										if isProUser {
+										if store.isProUser {
 												NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
 														HStack {
 																Text("Repeat")

@@ -18,7 +18,7 @@ struct m0neeApp: App {
 										print("✅ Transaction update received: \(transaction.productID)")
 										if transaction.productID == "com.chan.monir.pro.monthly" ||
 											 transaction.productID == "com.chan.monir.pro.lifetime" {
-												UserDefaults.standard.set(true, forKey: "isProUser")
+												store.productID = transaction.productID
 										}
 										await transaction.finish()
 								case .unverified(let transaction, let error):
@@ -30,8 +30,9 @@ struct m0neeApp: App {
 
 		var body: some Scene {
 				WindowGroup {
-						RootView(store: store)
+						RootView()
 								.environment(\.managedObjectContext, persistenceController.container.viewContext)
+								.environmentObject(store)
 				}
 		}
 }
@@ -40,12 +41,12 @@ struct RootView: View {
 		@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false
 		@State private var showMain = false
 
-		let store: ExpenseStore
+		@EnvironmentObject var store: ExpenseStore
 
 		var body: some View {
 				ZStack {
 						if showMain {
-								ContentView(store: store)
+								ContentView()
 										.transition(.opacity)
 						} else if hasSeenTutorial {
 								Color.primary
@@ -59,5 +60,6 @@ struct RootView: View {
 										.transition(.opacity)
 						}
 				}
+				.environmentObject(store)
 		}
 }

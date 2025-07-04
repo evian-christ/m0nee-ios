@@ -1,12 +1,11 @@
 import SwiftUI
 
 struct InsightsView: View {
+		@EnvironmentObject var store: ExpenseStore
 		@AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
 		@State private var favourites: [InsightCardType] = []
 		@State private var deleteTrigger = UUID()
-		@StateObject private var store = ExpenseStore()
 		@State private var showHelpTooltip = false
-		@AppStorage("isProUser") private var isProUser: Bool = false
 		@State private var showProUpgradeModal = false
 	
 	private var currentBudgetDates: (startDate: Date, endDate: Date) {
@@ -137,7 +136,7 @@ struct InsightsView: View {
 							endDate: currentBudgetDates.endDate
 					)
 					.frame(height: 260)
-					.opacity(type.isProOnly && !isProUser ? 0.35 : 1.0)
+					.opacity(type.isProOnly && !store.isProUser ? 0.35 : 1.0)
 					.id(type)
 					.transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
 					.animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
@@ -154,7 +153,7 @@ struct InsightsView: View {
 									} label: {
 											Label("Add to Favourite", systemImage: "star")
 									}
-									.disabled(type.isProOnly && !isProUser)
+									.disabled(type.isProOnly && !store.isProUser)
 							}
 							Button(role: .cancel) { } label: {
 									Label("Cancel", systemImage: "xmark")
@@ -163,7 +162,7 @@ struct InsightsView: View {
 					.padding(.horizontal, 20)
 					.padding(.vertical, 2)
 
-					if type.isProOnly && !isProUser {
+					if type.isProOnly && !store.isProUser {
 							VStack {
 									Spacer()
 									Button(action: {

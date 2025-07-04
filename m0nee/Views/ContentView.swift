@@ -13,28 +13,10 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 }
 
 struct ContentView: View {
-		@State private var pressedExpenseID: UUID?
+	@EnvironmentObject var store: ExpenseStore
+	@State private var pressedExpenseID: UUID?
 	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("isProUser") private var isProUser: Bool = true
-		// MARK: - Pro Entitlement Check
-		private func checkProEntitlement() async -> Bool {
-				do {
-						for await result in Transaction.currentEntitlements {
-								switch result {
-								case .verified(let transaction):
-										if transaction.productID == "com.chan.monir.pro.monthly" ||
-												transaction.productID == "com.chan.monir.pro.lifetime" {
-												return true
-										}
-								case .unverified:
-										continue
-								}
-						}
-				} catch {
-						print("❌ Failed to check entitlements: \(error)")
-				}
-				return false
-		}
+	
 	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
 	
 	private var currencySymbol: String {
@@ -45,7 +27,7 @@ struct ContentView: View {
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = false
 	@AppStorage("groupByDay") private var groupByDay: Bool = false
-	@ObservedObject var store: ExpenseStore
+	
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
 	@State private var showingInsights = false
@@ -165,9 +147,7 @@ struct ContentView: View {
 		}
 	}
 	
-	init(store: ExpenseStore) {
-		self.store = store
-		
+	init() {
 		let formatter = DateFormatter()
 		formatter.dateFormat = "yyyy-MM"
 		let recentMonth = formatter.string(from: Date())
@@ -305,97 +285,97 @@ struct ContentView: View {
 				EmptyView()
 			}
 			.hidden()
-				} else if displayMode == "Standard" {
-					Button {
-						pressedExpenseID = expense.wrappedValue.id
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
-							selectedExpenseID = expense.wrappedValue.id
-						}
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-							pressedExpenseID = nil
-						}
-					} label: {
-						ZStack {
-							VStack(spacing: 8) {
-								HStack(alignment: .center, spacing: 12) {
-									if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
-										ZStack {
-											Circle()
-												.fill(categoryItem.color.color)
-												.frame(width: 32, height: 32)
-											Image(systemName: categoryItem.symbol)
-												.font(.system(size: 14))
-												.foregroundColor(.white)
-										}
-									} else {
-										ZStack {
-											Circle()
-												.fill(Color.gray.opacity(0.3))
-												.frame(width: 32, height: 32)
-											Image(systemName: "questionmark")
-												.font(.system(size: 14))
-												.foregroundColor(.gray)
-										}
-									}
-
-									VStack(alignment: .leading, spacing: 2) {
-										HStack(spacing: 4) {
-											Text(expense.wrappedValue.name)
-												.lineLimit(1)
-												.truncationMode(.tail)
-											if expense.wrappedValue.isRecurring {
-												Image(systemName: "arrow.triangle.2.circlepath")
-													.font(.caption)
-													.foregroundColor(.blue)
-											}
-										}
-										.font(.system(.body, design: .default))
-										.fontWeight(.semibold)
-										.foregroundColor(.primary)
-
-										Text(expense.wrappedValue.category)
-											.font(.footnote)
-											.foregroundColor(.secondary)
-									}
-
-									Spacer()
-
-									VStack(alignment: .trailing, spacing: 2) {
-										Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
-											.font(.system(size: 17, weight: .medium))
-											.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
-
-										Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
-											.font(.caption2)
-											.foregroundColor(.gray)
-									}
-
-									Image(systemName: "chevron.right")
-										.font(.caption)
+		} else if displayMode == "Standard" {
+			Button {
+				pressedExpenseID = expense.wrappedValue.id
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
+					selectedExpenseID = expense.wrappedValue.id
+				}
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+					pressedExpenseID = nil
+				}
+			} label: {
+				ZStack {
+					VStack(spacing: 8) {
+						HStack(alignment: .center, spacing: 12) {
+							if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
+								ZStack {
+									Circle()
+										.fill(categoryItem.color.color)
+										.frame(width: 32, height: 32)
+									Image(systemName: categoryItem.symbol)
+										.font(.system(size: 14))
+										.foregroundColor(.white)
+								}
+							} else {
+								ZStack {
+									Circle()
+										.fill(Color.gray.opacity(0.3))
+										.frame(width: 32, height: 32)
+									Image(systemName: "questionmark")
+										.font(.system(size: 14))
 										.foregroundColor(.gray)
 								}
 							}
-							.padding(.horizontal)
-							.padding(.vertical, 8)
-							.background(
-									pressedExpenseID == expense.wrappedValue.id
-									? Color.gray.opacity(0.3) // ✅ 눌렀을 때 색상
-									: Color(.systemBackground) // 기본 배경
-							)
+
+							VStack(alignment: .leading, spacing: 2) {
+								HStack(spacing: 4) {
+									Text(expense.wrappedValue.name)
+										.lineLimit(1)
+										.truncationMode(.tail)
+									if expense.wrappedValue.isRecurring {
+										Image(systemName: "arrow.triangle.2.circlepath")
+											.font(.caption)
+											.foregroundColor(.blue)
+									}
+								}
+								.font(.system(.body, design: .default))
+								.fontWeight(.semibold)
+								.foregroundColor(.primary)
+
+								Text(expense.wrappedValue.category)
+									.font(.footnote)
+									.foregroundColor(.secondary)
+							}
+
+							Spacer()
+
+							VStack(alignment: .trailing, spacing: 2) {
+								Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+									.font(.system(size: 17, weight: .medium))
+									.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+
+								Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
+									.font(.caption2)
+									.foregroundColor(.gray)
+							}
+
+							Image(systemName: "chevron.right")
+								.font(.caption)
+								.foregroundColor(.gray)
 						}
 					}
-					.buttonStyle(.plain)
+					.padding(.horizontal)
+					.padding(.vertical, 8)
+					.background(
+							pressedExpenseID == expense.wrappedValue.id
+							? Color.gray.opacity(0.3) // ✅ 눌렀을 때 색상
+							: Color(.systemBackground) // 기본 배경
+					)
+				}
+			}
+			.buttonStyle(.plain)
 
-					NavigationLink(
-						destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store),
-						tag: expense.wrappedValue.id,
-						selection: $selectedExpenseID
-					) {
-						EmptyView()
-					}
-					.hidden()
-					Divider()
-} else if displayMode == "Detailed" {
+			NavigationLink(
+				destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store),
+				tag: expense.wrappedValue.id,
+				selection: $selectedExpenseID
+			) {
+				EmptyView()
+			}
+			.hidden()
+			Divider()
+		} else if displayMode == "Detailed" {
 			Button {
 				pressedExpenseID = expense.wrappedValue.id
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
@@ -488,7 +468,7 @@ struct ContentView: View {
 				EmptyView()
 			}
 			.hidden()
-	Divider()
+			Divider()
 		}
 	}
 	
@@ -533,12 +513,12 @@ struct ContentView: View {
 								if groupByDay {
 									ForEach(sortedDates, id: \.self) { date in
 										Section(header:
-															HStack {
-											Text(DateFormatter.m0neeListSection.string(from: date))
-												.font(.caption)
-												.foregroundColor(Color.blue.opacity(0.7))
-											Spacer()
-										}
+											HStack {
+												Text(DateFormatter.m0neeListSection.string(from: date))
+													.font(.caption)
+													.foregroundColor(Color.blue.opacity(0.7))
+												Spacer()
+											}
 											.padding(.horizontal, 16)
 											.padding(.top, 15)
 											.padding(.bottom, 8)
@@ -653,17 +633,35 @@ struct ContentView: View {
 			.navigationBarTitleDisplayMode(.inline)
 		}
 		.environmentObject(store)
-				.onAppear {
-						if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-								 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
-								favouriteCards = decoded
-						} else {
-								favouriteCards = []
+		.onAppear {
+			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
+				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
+				favouriteCards = decoded
+			} else {
+				favouriteCards = []
+			}
+			Task {
+				do {
+					var foundEntitlement = false
+					for await result in Transaction.currentEntitlements {
+						if case .verified(let transaction) = result {
+							if transaction.productID == "com.chan.monir.pro.monthly" ||
+								transaction.productID == "com.chan.monir.pro.lifetime" {
+								store.productID = transaction.productID
+								foundEntitlement = true
+								break
+							}
 						}
-						Task {
-								isProUser = await checkProEntitlement()
-						}
+					}
+					if !foundEntitlement {
+						store.productID = "free"
+					}
+				} catch {
+					print("❌ Failed to check entitlements: \(error)")
+					store.productID = "free"
 				}
+			}
+		}
 		.onReceive(NotificationCenter.default.publisher(for: Notification.Name("favouritesUpdated")), perform: { _ in
 			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
 				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
@@ -711,7 +709,6 @@ struct ContentView: View {
 		return month
 	}
 }
-
 
 
 extension Array where Element: Equatable {

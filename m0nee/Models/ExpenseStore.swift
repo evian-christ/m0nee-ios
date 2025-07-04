@@ -8,8 +8,16 @@ private struct StoreData: Codable {
 		var recurringExpenses: [RecurringExpense]
 }
 
+import StoreKit
+
 class ExpenseStore: ObservableObject {
 		@Published var expenses: [Expense] = []
+		@Published var productID: String? // Track the product ID for pro status
+		@Published var isPromoProUser: Bool = false // Track promo code activation
+
+		var isProUser: Bool {
+			return productID == "com.chan.monir.pro.monthly" || productID == "com.chan.monir.pro.lifetime" || isPromoProUser
+		}
 		@Published var categories: [CategoryItem] = []
 		@Published var recurringExpenses: [RecurringExpense] = []
 		@Published var restoredFromBackup: Bool = false
