@@ -10,7 +10,7 @@ import Foundation
 import Testing
 @testable import m0nee // Import your app module to access its code
 
-struct m0neeTests {
+struct ExpenseStoreTests {
 
     // This initializer runs once before all tests in this struct.
     // It ensures a clean slate by deleting the persistence files.
