@@ -361,4 +361,49 @@ struct m0neeTests {
         let uniqueDates = Set(finalDates)
         #expect(uniqueDates.count == 5)
     }
+
+    @Test func testAddRecurringExpense_GeneratesInitialExpenses() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let startDate = dateFrom("2025-07-01")
+        let currentDate = dateFrom("2025-07-04") // Simulate today's date
+
+        let rule = RecurrenceRule(
+            period: .daily,
+            frequencyType: .everyN,
+            interval: 1,
+            startDate: startDate
+        )
+        
+        let newRecurring = RecurringExpense(
+            id: UUID(),
+            name: "New Daily Subscription",
+            amount: 10.0,
+            category: "Subscriptions",
+            details: nil, rating: nil, memo: nil,
+            startDate: startDate,
+            recurrenceRule: rule
+        )
+
+        // ACT
+        // We need to call generateExpensesFromRecurringIfNeeded with the simulated current date
+        // before adding the recurring expense, to ensure the store's internal state is ready.
+        // Then, add the recurring expense.
+        store.generateExpensesFromRecurringIfNeeded(currentDate: currentDate)
+        store.addRecurringExpense(newRecurring)
+
+        // ASSERT
+        // Expect expenses for July 1, 2, 3, 4
+        #expect(store.expenses.count == 4)
+        
+        let generatedDates = store.expenses.map { Calendar.current.startOfDay(for: $0.date) }.sorted()
+        #expect(generatedDates.contains(dateFrom("2025-07-01")))
+        #expect(generatedDates.contains(dateFrom("2025-07-02")))
+        #expect(generatedDates.contains(dateFrom("2025-07-03")))
+        #expect(generatedDates.contains(dateFrom("2025-07-04")))
+        
+        // Also check that the recurring expense itself was added and its lastGeneratedDate is updated
+        #expect(store.recurringExpenses.count == 1)
+        #expect(store.recurringExpenses.first?.lastGeneratedDate == currentDate)
+    }
 }
