@@ -1,12 +1,21 @@
 import SwiftUI
 
-enum Period: String, CaseIterable, Identifiable, Codable {
+enum Period: String, CaseIterable, Identifiable, Codable, LocalizedCaseIterable {
 	case never = "Never"
 	case daily = "Daily"
 	case weekly = "Weekly"
 	case monthly = "Monthly"
 	
 	var id: String { self.rawValue }
+	
+	var localizedStringKey: LocalizedStringKey {
+		switch self {
+		case .never: return "Never"
+		case .daily: return "Daily"
+		case .weekly: return "Weekly"
+		case .monthly: return "Monthly"
+		}
+	}
 }
 
 struct RecurrenceDraft {
@@ -168,7 +177,7 @@ struct AddExpenseView: View {
 		return String(format: "\(currencySymbol)%.2f", doubleValue)
 	}
 	
-	private var repeatDescription: String {
+	private var repeatDescription: LocalizedStringKey {
 		let rule = recurrenceDraft
 		switch rule.selectedPeriod {
 		case .never:
@@ -196,17 +205,17 @@ struct AddExpenseView: View {
 					let last = symbols[group.last! - 1]
 					return group.count == 1 ? first : "\(first) - \(last)"
 				}
-				return weekdayRanges.joined(separator: ", ")
+				return LocalizedStringKey(weekdayRanges.joined(separator: ", "))
 			case .monthlySelectedDays:
 				let sortedDays = rule.selectedMonthDays.sorted()
-				return "days \(sortedDays.map(String.init).joined(separator: ", "))"
+				return LocalizedStringKey("days \(sortedDays.map(String.init).joined(separator: ", "))")
 			case .everyN:
-				return "Every \(rule.dayInterval) days"
+				return LocalizedStringKey("Every \(rule.dayInterval) days")
 			}
 		case .weekly:
-			return "Every \(rule.dayInterval) weeks"
+			return LocalizedStringKey("Every \(rule.dayInterval) weeks")
 		case .monthly:
-			return "Every \(rule.dayInterval) months"
+			return LocalizedStringKey("Every \(rule.dayInterval) months")
 		}
 	}
 	

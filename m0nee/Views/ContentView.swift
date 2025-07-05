@@ -27,6 +27,7 @@ struct ContentView: View {
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = false
 	@AppStorage("groupByDay") private var groupByDay: Bool = false
+	@AppStorage("showRating") private var showRating: Bool = true
 	
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
@@ -259,7 +260,7 @@ struct ContentView: View {
 							Spacer()
 							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 								.font(.system(size: 17, weight: .medium))
-								.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+								.foregroundColor(.primary)
 								.layoutPriority(1)
 							Image(systemName: "chevron.right")
 								.font(.caption)
@@ -343,7 +344,7 @@ struct ContentView: View {
 							VStack(alignment: .trailing, spacing: 2) {
 								Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 									.font(.system(size: 17, weight: .medium))
-									.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+									.foregroundColor(.primary)
 
 								Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
 									.font(.caption2)
@@ -407,7 +408,7 @@ struct ContentView: View {
 									Spacer()
 									Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
 										.font(.system(size: 17, weight: .medium))
-										.foregroundColor(expense.wrappedValue.amount > 100 ? .red : .primary)
+										.foregroundColor(.primary)
 								}
 								HStack {
 									if let details = expense.wrappedValue.details, !details.isEmpty {
@@ -419,7 +420,7 @@ struct ContentView: View {
 											.font(.subheadline)
 									}
 									Spacer()
-									if let rating = expense.wrappedValue.rating {
+									if showRating, let rating = expense.wrappedValue.rating {
 										HStack(spacing: 2) {
 											ForEach(1...5, id: \.self) { star in
 												Image(systemName: star <= rating ? "star.fill" : "star")

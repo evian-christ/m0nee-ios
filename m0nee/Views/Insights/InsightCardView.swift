@@ -19,14 +19,14 @@ enum InsightCardType: String, Identifiable, Codable {
 			let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
 			return period == "Weekly" ? "This Week's Total Spending" : "This Month's Total Spending"
 		case .spendingTrend:
-			return "Spending Trend"
+			return NSLocalizedString("Spending Trend", comment: "Title for the Spending Trend insight card")
 		case .categoryRating:
-			return "Category Satisfaction"
+			return NSLocalizedString("Category Satisfaction", comment: "Title for the Category Satisfaction insight card")
 		case .budgetProgress:
 			let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
 			return period == "Weekly" ? "Week's Progress" : "Month's Progress"
 		case .categoryBudgetProgress:
-			return "Category Budget Progress"
+			return NSLocalizedString("Category Budget Progress", comment: "Title for the Category Budget Progress insight card")
 		}
 	}
 	
@@ -152,9 +152,9 @@ struct InsightCardView: View {
 			
 			
 			let restrictionMessages: [InsightCardType: (Bool, String)] = [
-				.categoryBudgetProgress: (enableBudgetTracking && budgetByCategory, "Enable Budget by Category in Settings to see this card."),
-				.categoryRating: (showRating, "Enable Ratings in Settings to see this card."),
-				.budgetProgress: (enableBudgetTracking, "Enable Budget Tracking in Settings to see this card.")
+				.categoryBudgetProgress: (enableBudgetTracking && budgetByCategory, NSLocalizedString("Enable Budget by Category in Settings to see this card.", comment: "Message when category budget is disabled")),
+				.categoryRating: (showRating, NSLocalizedString("Enable Ratings in Settings to see this card.", comment: "Message when ratings are disabled")),
+				.budgetProgress: (enableBudgetTracking, NSLocalizedString("Enable Budget Tracking in Settings to see this card.", comment: "Message when budget tracking is disabled"))
 			]
 
 			if let restriction = restrictionMessages[type], restriction.0 == false {

@@ -8,7 +8,7 @@ struct BudgetFrequencyView: View {
 		Form {
 			Picker("Select Period", selection: $budgetPeriod) {
 				ForEach(frequencies, id: \.self) { frequency in
-					Text(frequency).tag(frequency)
+					Text(LocalizedStringKey(frequency)).tag(frequency)
 				}
 			}
 			.pickerStyle(.inline)

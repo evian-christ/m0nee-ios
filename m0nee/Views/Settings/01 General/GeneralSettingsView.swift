@@ -32,7 +32,7 @@ struct GeneralSettingsView: View {
 						HStack {
 							Text("Display Mode")
 							Spacer()
-							Text(displayMode.capitalized)
+							Text(NSLocalizedString(displayMode.capitalized, comment: "Display mode name"))
 								.foregroundColor(.secondary)
 						}
 					}

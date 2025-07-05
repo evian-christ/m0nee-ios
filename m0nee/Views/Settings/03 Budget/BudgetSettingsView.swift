@@ -26,14 +26,18 @@ struct BudgetSettingsView: View {
 						HStack {
 							Text("Budget Period")
 							Spacer()
-							Text(budgetPeriod)
+							Text(LocalizedStringKey(budgetPeriod))
 								.foregroundColor(.gray)
 						}
 					}
 					
 					NavigationLink(destination: MonthlyBudgetView(store: store)) {
 						HStack {
-							Text("\(budgetPeriod) Budget")
+							if budgetPeriod == "Monthly" {
+								Text(LocalizedStringKey("Monthly Budget"))
+							} else {
+								Text(LocalizedStringKey("Weekly Budget"))
+							}
 							Spacer()
 							Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
 								.foregroundColor(.gray)

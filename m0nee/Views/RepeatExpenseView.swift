@@ -8,7 +8,7 @@ struct RepeatExpenseView: View {
 			Section(header: Text("Period")) {
 				Picker(selection: $draft.selectedPeriod, label: EmptyView()) {
 					ForEach(Period.allCases) { period in
-						Text(period.rawValue).tag(period)
+						Text(period.localizedStringKey).tag(period)
 					}
 				}
 				.pickerStyle(.inline)

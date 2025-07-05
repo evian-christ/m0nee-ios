@@ -28,7 +28,14 @@
       }
     },
     "%@ Budget" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 예산"
+          }
+        }
+      }
     },
     "%@%.0f" : {
       "localizations" : {
@@ -68,7 +75,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⭐️ 지출 만족도 설정"
+            "value" : "⭐️ 지출 만족도"
           }
         }
       }
@@ -78,7 +85,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⭐️ 지출 만족도 설정"
+            "value" : "⭐️ 지출 만족도"
           }
         }
       }
@@ -88,7 +95,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "💰  예산 설정"
+            "value" : "💰  예산 금액"
           }
         }
       }
@@ -98,7 +105,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "💰  예산 설정"
+            "value" : "💰  예산 금액"
           }
         }
       }
@@ -108,7 +115,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📊  예산 사용 여부"
+            "value" : "📊  예산 관리"
           }
         }
       }
@@ -118,7 +125,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📊  예산 사용 여부"
+            "value" : "📊  예산 추적 활성화"
           }
         }
       }
@@ -128,7 +135,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "🗓️  예산 기간 설정"
+            "value" : "🗓️  예산 주기 설정"
           }
         }
       }
@@ -138,7 +145,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "🗓️  예산 기간 설정"
+            "value" : "🗓️  예산 주기 설정"
           }
         }
       }
@@ -154,7 +161,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "빠르게 지출을 기록하세요."
+            "value" : "빠르고 간편하게 지출을 추가하세요."
           }
         }
       }
@@ -170,7 +177,14 @@
       }
     },
     "Access Code" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인증 코드"
+          }
+        }
+      }
     },
     "Add" : {
       "localizations" : {
@@ -293,7 +307,14 @@
       }
     },
     "Apply" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "적용"
+          }
+        }
+      }
     },
     "Are you sure you want to delete this category?" : {
       "localizations" : {
@@ -415,6 +436,17 @@
         }
       }
     },
+    "Category Budget Progress" : {
+      "comment" : "Title for the Category Budget Progress insight card",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카테고리별 예산 현황"
+          }
+        }
+      }
+    },
     "Category Budgets" : {
       "localizations" : {
         "ko" : {
@@ -431,6 +463,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "카테고리 이름"
+          }
+        }
+      }
+    },
+    "Category Satisfaction" : {
+      "comment" : "Title for the Category Satisfaction insight card",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카테고리별 만족도"
           }
         }
       }
@@ -516,14 +559,21 @@
       }
     },
     "Code" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인증 코드"
+          }
+        }
+      }
     },
     "Compact" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "간단"
+            "value" : "간단히"
           }
         }
       }
@@ -533,13 +583,20 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "먼저 예산을 설정해 주세요."
+            "value" : "기본적인 설정을 진행합니다."
           }
         }
       }
     },
     "Contact Us" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "문의하기"
+          }
+        }
+      }
     },
     "Currency" : {
       "localizations" : {
@@ -581,6 +638,16 @@
         }
       }
     },
+    "Daily" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일 단위"
+          }
+        }
+      }
+    },
     "Danger Zone" : {
       "localizations" : {
         "ko" : {
@@ -596,7 +663,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "다크"
+            "value" : "다크 모드"
           }
         }
       }
@@ -620,6 +687,9 @@
           }
         }
       }
+    },
+    "days %@" : {
+
     },
     "Delete" : {
       "localizations" : {
@@ -716,7 +786,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "세부"
+            "value" : "상세히"
           }
         }
       }
@@ -736,16 +806,30 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지출 표시 모드"
+            "value" : "표시 모드"
           }
         }
       }
     },
     "Don't Use Budget Tracking" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예산 관리 비활성화"
+          }
+        }
+      }
     },
     "Don't Use Ratings" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용 안 함"
+          }
+        }
+      }
     },
     "Done" : {
       "localizations" : {
@@ -780,6 +864,17 @@
     "Edit %@" : {
 
     },
+    "Enable Budget by Category in Settings to see this card." : {
+      "comment" : "Message when category budget is disabled",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 카드를 보려면 설정에서 카테고리별 예산 기능을 켜세요."
+          }
+        }
+      }
+    },
     "Enable Budget Tracking" : {
       "localizations" : {
         "ko" : {
@@ -790,13 +885,13 @@
         }
       }
     },
-    "Enable Budget Tracking in Settings to unlock this insight." : {
-      "extractionState" : "stale",
+    "Enable Budget Tracking in Settings to see this card." : {
+      "comment" : "Message when budget tracking is disabled",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 정보를 확인하려면 예산 추적 기능을 켜주세요."
+            "value" : "이 카드를 보려면 설정에서 예산 관리를 켜세요."
           }
         }
       }
@@ -806,16 +901,41 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "만족도 기능 켜기"
+            "value" : "만족도 활성화"
+          }
+        }
+      }
+    },
+    "Enable Ratings in Settings to see this card." : {
+      "comment" : "Message when ratings are disabled",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 카드를 보려면 설정에서 만족도 기능을 켜세요."
           }
         }
       }
     },
     "Enter a valid access code." : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "유효한 인증 코드를 입력하세요."
+          }
+        }
+      }
     },
     "Enter Access Code" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인증 코드 입력"
+          }
+        }
+      }
     },
     "Enter amount" : {
       "localizations" : {
@@ -878,6 +998,22 @@
       }
     },
     "Every" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매"
+          }
+        }
+      }
+    },
+    "Every %lld days" : {
+
+    },
+    "Every %lld months" : {
+
+    },
+    "Every %lld weeks" : {
 
     },
     "Every N days" : {
@@ -931,7 +1067,14 @@
       }
     },
     "Explore insights" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인사이트 탐색하기"
+          }
+        }
+      }
     },
     "Export & Import" : {
       "localizations" : {
@@ -1051,7 +1194,14 @@
       }
     },
     "Help & Support" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "고객 지원"
+          }
+        }
+      }
     },
     "iCloud" : {
 
@@ -1121,7 +1271,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "라이트"
+            "value" : "라이트 모드"
           }
         }
       }
@@ -1204,7 +1354,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "월간 예산 혹은 카테고리별 예산으로 지출을 관리하세요."
+            "value" : "월/주간 및 카테고리별 예산을 설정하세요."
           }
         }
       }
@@ -1223,7 +1373,17 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "월별"
+            "value" : "매월"
+          }
+        }
+      }
+    },
+    "Monthly Budget" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "월간 예산"
           }
         }
       }
@@ -1233,7 +1393,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "월별 날짜 지정"
+            "value" : "선택한 날짜마다 매월 반복"
           }
         }
       }
@@ -1254,6 +1414,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이름"
+          }
+        }
+      }
+    },
+    "Never" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "반복 없음"
           }
         }
       }
@@ -1371,22 +1541,25 @@
         }
       }
     },
-    "Plan auto-renews for %@/month until cancelled." : {
-      "extractionState" : "stale",
+    "Privacy Policy" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 요금제는 매월 %@으로 자동 갱신되며, 사용자가 취소할 때까지 지속됩니다."
+            "value" : "개인정보 처리방침"
           }
         }
       }
     },
-    "Privacy Policy" : {
-
-    },
     "Q&A" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자주 묻는 질문"
+          }
+        }
+      }
     },
     "Rating" : {
       "localizations" : {
@@ -1403,7 +1576,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지출을 기록하세요"
+            "value" : "지출 기록하기"
           }
         }
       }
@@ -1413,7 +1586,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "반복 세부 사항"
+            "value" : "세부 사항"
           }
         }
       }
@@ -1493,7 +1666,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "복원"
+            "value" : "초기화"
           }
         }
       }
@@ -1645,6 +1818,17 @@
         }
       }
     },
+    "Spending Trend" : {
+      "comment" : "Title for the Spending Trend insight card",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지출 추이"
+          }
+        }
+      }
+    },
     "Spending vs. Time" : {
       "localizations" : {
         "ko" : {
@@ -1660,7 +1844,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "일반"
+            "value" : "기본"
           }
         }
       }
@@ -1696,7 +1880,14 @@
       }
     },
     "Starts on" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작일"
+          }
+        }
+      }
     },
     "Storage" : {
       "localizations" : {
@@ -1739,7 +1930,14 @@
       }
     },
     "Terms of Use" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이용 약관"
+          }
+        }
+      }
     },
     "The entered amount exceeds the maximum allowed. Please double-check the amount." : {
       "localizations" : {
@@ -1762,7 +1960,14 @@
       }
     },
     "This is a 1-month auto-renewed subscription for %@/month until cancelled." : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 구독은 매월 %@에 자동 갱신되며, 언제든지 취소할 수 있습니다."
+          }
+        }
+      }
     },
     "This will also delete %lld expense(s) under this category." : {
       "localizations" : {
@@ -1842,7 +2047,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "예산 추적 사용하기"
+            "value" : "예산 관리 활성화"
           }
         }
       }
@@ -1862,7 +2067,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "만족도 평가"
+            "value" : "사용"
           }
         }
       }
@@ -1882,7 +2087,17 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "주별"
+            "value" : "매주"
+          }
+        }
+      }
+    },
+    "Weekly Budget" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주간 예산"
           }
         }
       }
@@ -1892,7 +2107,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "주간 일 지정"
+            "value" : "선택한 요일마다 매주 반복"
           }
         }
       }
