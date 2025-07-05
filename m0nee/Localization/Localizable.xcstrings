@@ -169,6 +169,9 @@
         }
       }
     },
+    "Access Code" : {
+
+    },
     "Add" : {
       "localizations" : {
         "ko" : {
@@ -512,6 +515,9 @@
         }
       }
     },
+    "Code" : {
+
+    },
     "Compact" : {
       "localizations" : {
         "ko" : {
@@ -805,6 +811,12 @@
         }
       }
     },
+    "Enter a valid access code." : {
+
+    },
+    "Enter Access Code" : {
+
+    },
     "Enter amount" : {
       "localizations" : {
         "ko" : {
@@ -824,9 +836,6 @@
           }
         }
       }
-    },
-    "Enter promo code" : {
-
     },
     "Erase" : {
       "localizations" : {
@@ -1374,9 +1383,6 @@
       }
     },
     "Privacy Policy" : {
-
-    },
-    "Promo Code" : {
 
     },
     "Q&A" : {

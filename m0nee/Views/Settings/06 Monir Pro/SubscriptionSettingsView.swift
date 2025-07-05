@@ -5,11 +5,11 @@ import StoreKit
 struct SubscriptionSettingsView: View {
 		@EnvironmentObject var expenseStore: ExpenseStore
 		@State private var showUpgradeModal = false
+		@State private var showPromoCodeAlert = false
 		@State private var promoCodeInput: String = ""
-		@State private var promoCodeMessage: String = ""
 
 		private var subscriptionLabel: String {
-			if expenseStore.isPromoProUser {
+				if expenseStore.isPromoProUser {
 						return "Monir Pro (Promo)"
 				}
 				switch expenseStore.productID {
@@ -60,29 +60,13 @@ struct SubscriptionSettingsView: View {
 								}
 						}
 						
-						Section(header: Text("Promo Code")) {
-    HStack {
-        TextField("Enter promo code", text: $promoCodeInput)
-            .autocapitalization(.none)
-            .disableAutocorrection(true)
-        Button("Apply") {
-            if promoCodeInput == "m0nee" { // New promo code
-                expenseStore.isPromoProUser = true
-                promoCodeMessage = "Promo code applied! You now have Monir Pro features."
-            } else if promoCodeInput == "fika" { // Revoke promo code
-                expenseStore.isPromoProUser = false
-                promoCodeMessage = "Promo mode revoked. You are no longer a Pro user via promo code."
-            } else {
-                promoCodeMessage = "Invalid promo code."
-            }
-        }
-        .buttonStyle(.borderedProminent) // Add some styling
-        .disabled(promoCodeInput.isEmpty || expenseStore.productID == "com.chan.monir.pro.lifetime") // Disable if text field is empty or if lifetime pro
-    }
-    Text(promoCodeMessage)
-        .font(.footnote)
-        .foregroundColor(expenseStore.isPromoProUser ? .green : .red)
-}
+						Section(header: Text("Access Code")) {
+								Button("Enter Access Code") {
+										promoCodeInput = ""
+										showPromoCodeAlert = true
+								}
+								.disabled(expenseStore.productID == "com.chan.monir.pro.lifetime")
+						}
 				}
 				.navigationBarTitleDisplayMode(.inline)
 				.navigationTitle("Monir Pro")
@@ -100,6 +84,22 @@ struct SubscriptionSettingsView: View {
 						Task {
 								await checkSubscriptionStatus()
 						}
+				}
+				.alert("Enter Access Code", isPresented: $showPromoCodeAlert) {
+						TextField("Code", text: $promoCodeInput)
+								.autocapitalization(.none)
+								.disableAutocorrection(true)
+						Button("Apply") {
+								if promoCodeInput == "m0nee" {
+										expenseStore.isPromoProUser = true
+								} else if promoCodeInput == "fika" {
+										expenseStore.isPromoProUser = false
+								}
+								// The view will update automatically, no need for a message.
+						}
+						Button("Cancel", role: .cancel) { }
+				} message: {
+						Text("Enter a valid access code.")
 				}
 		}
 		
