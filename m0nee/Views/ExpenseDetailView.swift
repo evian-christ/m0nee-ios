@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ExpenseDetailView: View {
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("showRating") private var showRating: Bool = true
 	@Environment(\.colorScheme) private var colorScheme
 

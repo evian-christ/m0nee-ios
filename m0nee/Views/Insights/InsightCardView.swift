@@ -61,7 +61,7 @@ struct InsightCardView: View {
 	let startDate: Date
 	let endDate: Date
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("enableBudgetTracking") private var enableBudgetTracking: Bool = true
 	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
 	@AppStorage("showRating") private var showRating: Bool = true

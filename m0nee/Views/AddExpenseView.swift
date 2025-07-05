@@ -39,7 +39,7 @@ struct AddExpenseView: View {
 	@State private var showFieldValidation = false
 	@State private var isRecurring: Bool = false
 	@State private var repeatSummary: String = "Never"
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@FocusState private var isAmountFocused: Bool
 	@State private var rawAmount: String = ""
 	@State private var showingCategorySelection = false

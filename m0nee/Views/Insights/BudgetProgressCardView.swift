@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BudgetProgressCardView: View {
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("enableBudgetTracking") private var budgetTrackingEnabled: Bool = true
 
 	private var currencySymbol: String {

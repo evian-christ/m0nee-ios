@@ -4,7 +4,7 @@ struct BudgetSettingsView: View {
 	@AppStorage("enableBudgetTracking") private var budgetEnabled: Bool = true
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@ObservedObject var store: ExpenseStore
 	
 	private var currencySymbol: String {

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppearanceSettingsView: View {
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 
 	var body: some View {
 		Form {

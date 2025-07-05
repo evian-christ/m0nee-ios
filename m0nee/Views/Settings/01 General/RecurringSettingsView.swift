@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RecurringSettingsView: View {
 	@EnvironmentObject var store: ExpenseStore
-	@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
 	}
@@ -114,7 +114,7 @@ extension RecurringSettingsView {
 	struct RecurringDetailView: View {
 		let recurring: RecurringExpense
 		@EnvironmentObject var store: ExpenseStore
-		@AppStorage("currencyCode") private var currencyCode: String = "GBP"
+		@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 		@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.dismiss) private var dismiss
 	@State private var showingDeleteDialog = false
