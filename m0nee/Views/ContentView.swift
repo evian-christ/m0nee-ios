@@ -25,8 +25,8 @@ struct ContentView: View {
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = false
-	@AppStorage("groupByDay") private var groupByDay: Bool = false
+	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
+@AppStorage("groupByDay") private var groupByDay: Bool = true
 	@AppStorage("showRating") private var showRating: Bool = true
 	
 	@State private var showingAddExpense = false

@@ -52,6 +52,9 @@ struct BudgetSetupView: View {
 			}
 		}
 		.navigationTitle("Initial settings")
+		.onDisappear {
+			onComplete?(useBudgetFeature)
+		}
 	}
 }
 
@@ -155,6 +158,9 @@ struct BudgetPeriodSetupView: View {
 			}
 		}
 		.navigationTitle("Initial settings")
+		.onDisappear {
+			onComplete?()
+		}
 	}
 }
 
@@ -214,6 +220,9 @@ struct RatingToggleSetupView: View {
 			}
 		}
 		.navigationTitle("Initial settings")
+		.onDisappear {
+			onComplete?()
+		}
 	}
 }
 
