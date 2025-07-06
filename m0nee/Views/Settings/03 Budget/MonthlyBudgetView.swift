@@ -2,17 +2,17 @@ import SwiftUI
 import Foundation
 
 struct MonthlyBudgetView: View {
-	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
-	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
-	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	    @State private var monthlyBudget: Double = UserDefaults(suiteName: "group.com.chankim.Monir")?.double(forKey: "monthlyBudget") ?? 0
+	@AppStorage("budgetPeriod", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetPeriod: String = "Monthly"
+	@AppStorage("budgetByCategory", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetByCategory: Bool = false
+	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@ObservedObject var store: ExpenseStore
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
 	}
 	
-	@AppStorage("categoryBudgets") private var categoryBudgetsData: Data = Data()
+	@AppStorage("categoryBudgets", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var categoryBudgetsData: Data = Data()
 
 	var totalCategoryBudget: Double {
 		if let decoded = try? JSONDecoder().decode([String: String].self, from: categoryBudgetsData) {
@@ -46,6 +46,7 @@ struct MonthlyBudgetView: View {
 								if monthlyBudget != rounded {
 									monthlyBudget = rounded
 								}
+								UserDefaults(suiteName: "group.com.chankim.Monir")?.set(monthlyBudget, forKey: "monthlyBudget")
 							}
 					}
 					.font(.title2)

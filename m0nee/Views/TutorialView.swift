@@ -56,7 +56,7 @@ struct BudgetSetupView: View {
 }
 
 struct BudgetAmountSetupView: View {
-	@AppStorage("monthlyBudget") private var budgetAmount: Int = 0
+	@AppStorage("monthlyBudget", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetAmount: Int = 0
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.colorScheme) var scheme
 	var onComplete: (() -> Void)? = nil
@@ -219,7 +219,7 @@ struct RatingToggleSetupView: View {
 
 struct TutorialView: View {
 	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false
-	@AppStorage("enableBudgetTracking") private var budgetEnabled: Bool = true
+	@AppStorage("enableBudgetTracking", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetEnabled: Bool = true
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
 	@State private var page: Int = 0
 	@State private var imageOffset: CGFloat = 0

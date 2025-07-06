@@ -60,11 +60,11 @@ struct InsightCardView: View {
 	let expenses: [Expense]
 	let startDate: Date
 	let endDate: Date
-	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("enableBudgetTracking") private var enableBudgetTracking: Bool = true
-	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
-	@AppStorage("showRating") private var showRating: Bool = true
+	@AppStorage("monthlyBudget", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var monthlyBudget: Double = 0
+	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	@AppStorage("enableBudgetTracking", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var enableBudgetTracking: Bool = true
+	@AppStorage("budgetByCategory", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetByCategory: Bool = false
+	@AppStorage("showRating", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var showRating: Bool = true
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)

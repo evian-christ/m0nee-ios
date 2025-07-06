@@ -54,6 +54,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		640202922E19F6640010400F /* Exceptions for "m0nee" folder in "MonirInsightsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Extensions/CurrencyManager.swift,
+			);
+			target = 646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */;
+		};
 		645612912D9D49ED00B42A73 /* Exceptions for "m0nee" folder in "m0nee" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -75,6 +82,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				645612912D9D49ED00B42A73 /* Exceptions for "m0nee" folder in "m0nee" target */,
+				640202922E19F6640010400F /* Exceptions for "m0nee" folder in "MonirInsightsWidgetExtension" target */,
 			);
 			path = m0nee;
 			sourceTree = "<group>";

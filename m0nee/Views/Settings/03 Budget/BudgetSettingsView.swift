@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct BudgetSettingsView: View {
-	@AppStorage("enableBudgetTracking") private var budgetEnabled: Bool = true
-	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
-	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	@AppStorage("enableBudgetTracking", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetEnabled: Bool = true
+	@AppStorage("budgetPeriod", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetPeriod: String = "Monthly"
+	@AppStorage("monthlyBudget", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var monthlyBudget: Double = 0
+	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@ObservedObject var store: ExpenseStore
 	
 	private var currencySymbol: String {

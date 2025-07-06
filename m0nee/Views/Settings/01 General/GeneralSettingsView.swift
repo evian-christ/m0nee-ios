@@ -2,7 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-	@AppStorage("currencyCode") private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
 	@AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
 	@AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1

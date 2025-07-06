@@ -14,5 +14,6 @@ struct MonirInsightsWidgetBundle: WidgetBundle {
 				MonirInsightsWidgetControl()
 				MonirInsightsWidgetLiveActivity()
 				TotalSpendingWidget()
+				SpendingTrendWidget()
 		}
 }

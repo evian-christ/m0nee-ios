@@ -30,22 +30,22 @@ struct TotalSpendingProvider: TimelineProvider {
 		}
 
 		func fetchWidgetData() -> (Double, Double, String, Bool) {
-				let defaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-				// Read the shared AppStorage key "enableBudgetTracking", defaulting to true if missing
-				let budgetTrackingEnabled = (defaults?.object(forKey: "budgetTrackingEnabled") as? Bool) ?? true
-				guard let data = defaults?.data(forKey: "totalSpendingWidgetData") else { return (0.0, 0.0, "$", budgetTrackingEnabled) }
+            let defaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+            let budgetTrackingEnabled = (defaults?.object(forKey: "enableBudgetTracking") as? Bool) ?? true
+            let monthlyBudget = defaults?.double(forKey: "monthlyBudget") ?? 0.0
+            let currencyCode = defaults?.string(forKey: "currencyCode") ?? Locale.current.currency?.identifier ?? "USD"
+            let currencySymbol = CurrencyManager.symbol(for: currencyCode)
 
-				struct WidgetSpendingData: Codable {
-						let amountSpent: Double
-						let monthlyBudget: Double
-						let currencySymbol: String
-				}
+            var expenses: [Expense] = []
+            if let savedExpensesData = defaults?.data(forKey: "shared_expenses"),
+               let decodedExpenses = try? JSONDecoder().decode([Expense].self, from: savedExpensesData) {
+                expenses = decodedExpenses
+            }
 
-				if let decoded = try? JSONDecoder().decode(WidgetSpendingData.self, from: data) {
-						return (decoded.amountSpent, decoded.monthlyBudget, decoded.currencySymbol, budgetTrackingEnabled)
-				}
-				return (0.0, 0.0, "$", budgetTrackingEnabled)
-		}
+            let totalAmount = expenses.reduce(0) { $0 + $1.amount }
+
+            return (totalAmount, monthlyBudget, currencySymbol, budgetTrackingEnabled)
+        }
 }
 
 struct TotalSpendingWidgetEntryView: View {
@@ -66,8 +66,8 @@ struct TotalSpendingWidgetEntryView: View {
 
 		var smallView: some View {
 				VStack(alignment: .leading, spacing: 8) {
-						Text("Spent so far")
-								.font(.system(size: 12, weight: .medium))
+						Text("Total Spending")
+								.font(.subheadline.bold())
 								.foregroundColor(.primary)
 
 						Text("\(entry.currencySymbol)\(String(format: "%.2f", entry.total))")
@@ -79,7 +79,8 @@ struct TotalSpendingWidgetEntryView: View {
 										.progressViewStyle(LinearProgressViewStyle(tint: .blue))
 						}
 				}
-				.padding()
+				.padding(.horizontal, 8)
+				.padding(.vertical)
 				.frame(maxWidth: .infinity, alignment: .leading)
 				.background(Color.clear)
 				.containerBackground(.clear, for: .widget)
@@ -87,8 +88,8 @@ struct TotalSpendingWidgetEntryView: View {
 
 		var mediumView: some View {
 				VStack(alignment: .leading, spacing: 8) {
-						Text("Spent so far")
-								.font(.system(size: 14, weight: .semibold))
+						Text("Total Spending")
+								.font(.subheadline.bold())
 								.foregroundColor(.primary)
 
 						if entry.isBudgetTrackingEnabled {
@@ -108,7 +109,8 @@ struct TotalSpendingWidgetEntryView: View {
 										.foregroundColor(.primary)
 						}
 				}
-				.padding()
+				.padding(.horizontal, 8)
+				.padding(.vertical)
 				.frame(maxWidth: .infinity, alignment: .leading)
 				.background(Color.clear)
 				.containerBackground(.clear, for: .widget)
