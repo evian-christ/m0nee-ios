@@ -68,11 +68,13 @@ struct MonthlyBudgetView: View {
 		.onChange(of: budgetByCategory) { newValue in
 			if newValue {
 				monthlyBudget = totalCategoryBudget
+				UserDefaults(suiteName: "group.com.chankim.Monir")?.set(monthlyBudget, forKey: "monthlyBudget")
 			}
 		}
 		.onChange(of: categoryBudgetsData) { _ in
 			if budgetByCategory {
 				monthlyBudget = totalCategoryBudget
+				UserDefaults(suiteName: "group.com.chankim.Monir")?.set(monthlyBudget, forKey: "monthlyBudget")
 			}
 		}
 	}

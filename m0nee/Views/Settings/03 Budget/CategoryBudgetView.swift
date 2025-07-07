@@ -44,7 +44,8 @@ struct CategoryBudgetView: View {
 			}
 		}
 		.onAppear {
-			if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+			let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+			if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
 				 let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
 				budgetInputs = decoded
 			}
@@ -61,14 +62,7 @@ struct CategoryBudgetView: View {
 					let cleanValue = String(roundedValue)
 					budgetInputs[selected.name] = cleanValue
 					if let encoded = try? JSONEncoder().encode(budgetInputs) {
-						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
-						let totalBudget = budgetInputs.values
-							.compactMap { Int($0) }
-							.reduce(0, +)
-						let useCategoryBudget = UserDefaults.standard.bool(forKey: "useCategoryBudget")
-						if useCategoryBudget {
-							UserDefaults.standard.set(totalBudget, forKey: "monthlyBudget")
-						}
+						UserDefaults(suiteName: "group.com.chankim.Monir")?.set(encoded, forKey: "categoryBudgets")
 					}
 				}
 			}
