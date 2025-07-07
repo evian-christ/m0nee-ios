@@ -6,6 +6,11 @@ struct CategoryBudgetView: View {
 	@State private var selectedCategory: CategoryItem?
 	@State private var showAlert: Bool = false
 	@State private var alertInput: String = ""
+	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+
+	private var currencySymbol: String {
+		CurrencyManager.symbol(for: currencyCode)
+	}
 	
 	var body: some View {
 		List {
@@ -32,7 +37,7 @@ struct CategoryBudgetView: View {
 						Spacer()
 						
 						HStack(spacing: 4) {
-							Text("£\(budgetInputs[category.name, default: "0"])")
+							Text("\(currencySymbol)\(budgetInputs[category.name, default: "0"])")
 								.foregroundColor(.secondary)
 							Image(systemName: "chevron.right")
 								.font(.system(size: 12, weight: .semibold))
