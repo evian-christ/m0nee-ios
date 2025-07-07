@@ -10,6 +10,13 @@ private struct StoreData: Codable {
 
 import StoreKit
 
+struct TotalSpendingWidgetData: Codable {
+    let amountSpent: Double
+    let monthlyBudget: Double
+    let currencySymbol: String
+    let budgetTrackingEnabled: Bool
+}
+
 class ExpenseStore: ObservableObject {
 		@Published var expenses: [Expense] = []
 		@Published var productID: String? // Track the product ID for pro status
@@ -267,19 +274,71 @@ extension ExpenseStore {
 						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
 						sharedDefaults?.set(encodedExpenses, forKey: "shared_expenses")
 						//print("[✅ WidgetSync] Saved \(expenses.count) expenses to shared_expenses.")
-						// Refresh the widget timeline
-						WidgetCenter.shared.reloadAllTimelines()
-												// Read back the saved data to verify
-												if let readData = UserDefaults(suiteName: "group.com.chankim.Monir")?.data(forKey: "shared_expenses"),
-													 let decodedExpenses = try? JSONDecoder().decode([Expense].self, from: readData) {
-														//print("[📦 App] Verified read back: \(decodedExpenses.count) expenses from shared_expenses")
-												} else {
-														//print("[⚠️ App] Failed to read shared_expenses from shared container")
-												}
 				} else {
 						print("[❌ WidgetSync] Failed to encode expenses for widget.")
 				}
+            updateTotalSpendingWidgetData()
 		}
+
+    func updateTotalSpendingWidgetData() {
+        let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+        let budgetTrackingEnabled = sharedDefaults?.bool(forKey: "enableBudgetTracking") ?? true
+        let budgetPeriod = sharedDefaults?.string(forKey: "budgetPeriod") ?? "Monthly"
+        let monthlyBudget = sharedDefaults?.double(forKey: "monthlyBudget") ?? 0.0
+        let budgetByCategory = sharedDefaults?.bool(forKey: "budgetByCategory") ?? false
+        let categoryBudgetsData = sharedDefaults?.data(forKey: "categoryBudgets")
+        let currencyCode = sharedDefaults?.string(forKey: "currencyCode") ?? Locale.current.currency?.identifier ?? "USD"
+        let currencySymbol = CurrencyManager.symbol(for: currencyCode)
+
+        let calendar = Calendar.current
+        let today = Date()
+
+        var startDate: Date
+        var endDate: Date
+
+        if budgetPeriod == "Weekly" {
+            let weeklyStartDay = sharedDefaults?.integer(forKey: "weeklyStartDay") ?? 1
+            let weekdayToday = calendar.component(.weekday, from: today)
+            let delta = (weekdayToday - weeklyStartDay + 7) % 7
+            startDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: -delta, to: today) ?? today)
+            endDate = calendar.date(byAdding: .day, value: 6, to: startDate) ?? startDate
+        } else { // Monthly
+            let monthlyStartDay = sharedDefaults?.integer(forKey: "monthlyStartDay") ?? 1
+            let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+            startDate = calendar.date(byAdding: .day, value: monthlyStartDay - 1, to: currentMonth) ?? currentMonth
+            if calendar.component(.day, from: today) < monthlyStartDay {
+                startDate = calendar.date(byAdding: .month, value: -1, to: startDate) ?? startDate
+            }
+            let nextMonth = calendar.date(byAdding: .month, value: 1, to: startDate) ?? startDate
+            endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth) ?? nextMonth
+        }
+
+        let filteredExpenses = expenses.filter { expense in
+            let expenseDate = calendar.startOfDay(for: expense.date)
+            return expenseDate >= startDate && expenseDate <= endDate
+        }
+
+        let totalAmountSpent = filteredExpenses.reduce(0) { $0 + $1.amount }
+
+        var currentBudget = monthlyBudget
+        if budgetByCategory {
+            if let decodedCategoryBudgets = try? JSONDecoder().decode([String: String].self, from: categoryBudgetsData ?? Data()) {
+                currentBudget = decodedCategoryBudgets.values.compactMap { Double($0) }.reduce(0, +)
+            }
+        }
+
+        let widgetData = TotalSpendingWidgetData(
+            amountSpent: totalAmountSpent,
+            monthlyBudget: currentBudget,
+            currencySymbol: currencySymbol,
+            budgetTrackingEnabled: budgetTrackingEnabled
+        )
+
+        if let encoded = try? JSONEncoder().encode(widgetData) {
+            sharedDefaults?.set(encoded, forKey: "totalSpendingWidgetData")
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
 		
 		private func load() {
 				guard FileManager.default.fileExists(atPath: saveURL.path) else { return }

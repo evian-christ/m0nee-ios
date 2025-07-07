@@ -2,6 +2,13 @@ import WidgetKit
 import SwiftUI
 import Intents
 
+struct TotalSpendingWidgetData: Codable {
+	let amountSpent: Double
+	let monthlyBudget: Double
+	let currencySymbol: String
+	let budgetTrackingEnabled: Bool
+}
+
 struct TotalSpendingEntry: TimelineEntry {
 		let date: Date
 		let total: Double
@@ -30,21 +37,16 @@ struct TotalSpendingProvider: TimelineProvider {
 		}
 
 		func fetchWidgetData() -> (Double, Double, String, Bool) {
-            let defaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-            let budgetTrackingEnabled = (defaults?.object(forKey: "enableBudgetTracking") as? Bool) ?? true
-            let monthlyBudget = defaults?.double(forKey: "monthlyBudget") ?? 0.0
-            let currencyCode = defaults?.string(forKey: "currencyCode") ?? Locale.current.currency?.identifier ?? "USD"
-            let currencySymbol = CurrencyManager.symbol(for: currencyCode)
-
-            var expenses: [Expense] = []
-            if let savedExpensesData = defaults?.data(forKey: "shared_expenses"),
-               let decodedExpenses = try? JSONDecoder().decode([Expense].self, from: savedExpensesData) {
-                expenses = decodedExpenses
+            if let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir"),
+               let data = sharedDefaults.data(forKey: "totalSpendingWidgetData"),
+               let decodedData = try? JSONDecoder().decode(TotalSpendingWidgetData.self, from: data) {
+                return (decodedData.amountSpent, decodedData.monthlyBudget, decodedData.currencySymbol, decodedData.budgetTrackingEnabled)
+            } else {
+                // Return a default/empty state if data isn't available
+                let currencyCode = UserDefaults(suiteName: "group.com.chankim.Monir")?.string(forKey: "currencyCode") ?? "USD"
+                let currencySymbol = CurrencyManager.symbol(for: currencyCode)
+                return (0, 0, currencySymbol, false)
             }
-
-            let totalAmount = expenses.reduce(0) { $0 + $1.amount }
-
-            return (totalAmount, monthlyBudget, currencySymbol, budgetTrackingEnabled)
         }
 }
 
@@ -76,7 +78,7 @@ struct TotalSpendingWidgetEntryView: View {
 
 						if entry.isBudgetTrackingEnabled {
 								ProgressView(value: min(entry.total / max(entry.budget, 1), 1))
-										.progressViewStyle(LinearProgressViewStyle(tint: .blue))
+										.progressViewStyle(LinearProgressViewStyle(tint: entry.total > entry.budget ? .red : .blue))
 						}
 				}
 				.padding(.horizontal, 8)
@@ -98,7 +100,7 @@ struct TotalSpendingWidgetEntryView: View {
 										.foregroundColor(.primary)
 
 								ProgressView(value: min(entry.total / max(entry.budget, 1), 1))
-										.progressViewStyle(LinearProgressViewStyle(tint: .blue))
+										.progressViewStyle(LinearProgressViewStyle(tint: entry.total > entry.budget ? .red : .blue))
 
 								Text("\(Int(entry.budget > 0 ? (entry.total / entry.budget * 100) : 0))% used")
 										.font(.system(size: 12, weight: .medium))

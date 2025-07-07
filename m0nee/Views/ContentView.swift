@@ -623,9 +623,23 @@ struct ContentView: View {
 					if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
 						selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
 					}
+					store.updateTotalSpendingWidgetData()
 				}
 				.onChange(of: monthlyStartDay) { _ in
 					selectedMonth = selectedMonth + ""
+					store.updateTotalSpendingWidgetData()
+				}
+				.onChange(of: budgetPeriod) { _ in
+					store.updateTotalSpendingWidgetData()
+				}
+				.onChange(of: budgetByCategory) { _ in
+					store.updateTotalSpendingWidgetData()
+				}
+				.onChange(of: monthlyBudget) { _ in
+					store.updateTotalSpendingWidgetData()
+				}
+				.onChange(of: categoryBudgets) { _ in
+					store.updateTotalSpendingWidgetData()
 				}
 				if useFixedInsightCards {
 					insightCardsView
@@ -635,6 +649,7 @@ struct ContentView: View {
 		}
 		.environmentObject(store)
 		.onAppear {
+			store.updateTotalSpendingWidgetData()
 			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
 				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
 				favouriteCards = decoded
