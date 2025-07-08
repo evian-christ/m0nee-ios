@@ -32,6 +32,18 @@ struct ExpenseStoreTests {
 
         // Clear UserDefaults for category budgets to ensure a clean state for tests
         UserDefaults.standard.removeObject(forKey: "categoryBudgets")
+
+        // Clear shared UserDefaults for app group settings
+        let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+        sharedDefaults?.removeObject(forKey: "categoryBudgets")
+        sharedDefaults?.removeObject(forKey: "monthlyBudget")
+        sharedDefaults?.removeObject(forKey: "enableBudgetTracking")
+        sharedDefaults?.removeObject(forKey: "budgetPeriod")
+        sharedDefaults?.removeObject(forKey: "weeklyStartDay")
+        sharedDefaults?.removeObject(forKey: "monthlyStartDay")
+        sharedDefaults?.removeObject(forKey: "currencyCode")
+        sharedDefaults?.removeObject(forKey: "totalSpendingWidgetData")
+        sharedDefaults?.synchronize() // Force synchronization for test reliability
     }
 
     // A helper function to make creating dates easier in our tests.
@@ -394,7 +406,7 @@ struct ExpenseStoreTests {
         // before adding the recurring expense, to ensure the store's internal state is ready.
         // Then, add the recurring expense.
         store.generateExpensesFromRecurringIfNeeded(currentDate: currentDate)
-        store.addRecurringExpense(newRecurring)
+        store.addRecurringExpense(newRecurring, currentDate: currentDate)
 
         // ASSERT
         // Expect expenses for July 1, 2, 3, 4
@@ -598,24 +610,25 @@ struct ExpenseStoreTests {
         let testBudgetAmount = "100.00"
         let expectedBudgets: [String: String] = [testCategoryName: testBudgetAmount]
 
-        // Manually save the budget to UserDefaults, simulating ExpenseStore's save
+        // Manually save the budget to shared UserDefaults, simulating ExpenseStore's save
+        let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
         guard let encoded = try? JSONEncoder().encode(expectedBudgets) else {
             #expect(Bool(false), "Failed to encode initial budgets.")
             return
         }
-        UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
-        UserDefaults.standard.synchronize() // Force synchronization for test reliability
+        sharedDefaults?.set(encoded, forKey: "categoryBudgets")
+        sharedDefaults?.synchronize() // Force synchronization for test reliability
 
         // ACT
-        // Retrieve the budget directly from UserDefaults to verify persistence
+        // Retrieve the budget directly from shared UserDefaults to verify persistence
         var loadedBudgets: [String: String]?
-        if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+        if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
            let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
             loadedBudgets = decoded
         }
 
         // ASSERT
-        #expect(loadedBudgets != nil, "Failed to load budgets from UserDefaults.")
+        #expect(loadedBudgets != nil, "Failed to load budgets from shared UserDefaults.")
         #expect(loadedBudgets == expectedBudgets, "Loaded budgets do not match expected budgets.")
     }
 
@@ -661,8 +674,9 @@ struct ExpenseStoreTests {
 
         // Set some budget data in UserDefaults
         let initialBudgets: [String: String] = ["Food": "500", "Transport": "200", "Custom 1": "100"]
+        let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
         if let encoded = try? JSONEncoder().encode(initialBudgets) {
-            UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+            sharedDefaults?.set(encoded, forKey: "categoryBudgets")
         }
 
         // ACT: Erase all data
@@ -688,7 +702,7 @@ struct ExpenseStoreTests {
         }
 
         // Verify budgets are reset to "0" for default categories
-        if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+        if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
            let decodedBudgets = try? JSONDecoder().decode([String: String].self, from: data) {
             #expect(decodedBudgets.count == defaultCategories.count)
             for defaultCat in defaultCategories {

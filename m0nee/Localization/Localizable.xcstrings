@@ -675,6 +675,16 @@
         }
       }
     },
+    "day" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일"
+          }
+        }
+      }
+    },
     "days" : {
       "localizations" : {
         "ko" : {
@@ -686,7 +696,14 @@
       }
     },
     "days %@" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@일"
+          }
+        }
+      }
     },
     "Delete" : {
       "localizations" : {
@@ -1005,20 +1022,31 @@
       }
     },
     "Every %lld days" : {
-
-    },
-    "Every %lld months" : {
-
-    },
-    "Every %lld weeks" : {
-
-    },
-    "Every N days" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "매 N 일"
+            "value" : "매 %lld 일마다"
+          }
+        }
+      }
+    },
+    "Every %lld months" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매 %lld 개월마다"
+          }
+        }
+      }
+    },
+    "Every %lld weeks" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매 %lld 주마다"
           }
         }
       }
@@ -1028,7 +1056,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "매 N 월"
+            "value" : "매 N 개월마다"
           }
         }
       }
@@ -1038,7 +1066,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "매 N 주"
+            "value" : "매 N 주마다"
           }
         }
       }
@@ -1365,6 +1393,16 @@
     "Monir v1.3.1" : {
 
     },
+    "month" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개월"
+          }
+        }
+      }
+    },
     "Monthly" : {
       "localizations" : {
         "ko" : {
@@ -1381,16 +1419,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "월간 예산"
-          }
-        }
-      }
-    },
-    "Monthly on selected days" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택한 날짜마다 매월 반복"
           }
         }
       }
@@ -1487,6 +1515,16 @@
     },
     "OK" : {
 
+    },
+    "On specific days" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 날짜에"
+          }
+        }
+      }
     },
     "Open App Store" : {
       "localizations" : {
@@ -2069,6 +2107,16 @@
         }
       }
     },
+    "week" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주"
+          }
+        }
+      }
+    },
     "Week of %@" : {
       "localizations" : {
         "ko" : {
@@ -2095,16 +2143,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "주간 예산"
-          }
-        }
-      }
-    },
-    "Weekly on selected days" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택한 요일마다 매주 반복"
           }
         }
       }

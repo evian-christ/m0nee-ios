@@ -383,7 +383,7 @@ extension ExpenseStore {
 				}
 		}
 
-		func addRecurringExpense(_ recurring: RecurringExpense) {
+		func addRecurringExpense(_ recurring: RecurringExpense, currentDate: Date = Date()) {
 			var mutableRecurring = recurring
 
 			// ✅ 규칙에 따라 오늘 생성 여부 판단
@@ -418,7 +418,7 @@ extension ExpenseStore {
 			}
 
 			recurringExpenses.append(mutableRecurring)
-			generateExpensesFromSingleRecurringIfNeeded(&recurringExpenses[recurringExpenses.count - 1], upTo: Date())
+			generateExpensesFromSingleRecurringIfNeeded(&recurringExpenses[recurringExpenses.count - 1], upTo: currentDate)
 			save()
 		}
 		
@@ -507,7 +507,7 @@ extension ExpenseStore {
 				budgets[category.name] = "0"
 			}
 			if let encoded = try? JSONEncoder().encode(budgets) {
-				UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+				UserDefaults(suiteName: "group.com.chankim.Monir")?.set(encoded, forKey: "categoryBudgets")
 			}
 		}
 		
