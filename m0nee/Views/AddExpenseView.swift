@@ -37,6 +37,11 @@ struct AddExpenseView: View {
 	@Environment(\.dismiss) private var dismiss
 	@State private var recurrenceDraft = RecurrenceDraft()
 	
+	enum Field {
+		case amount, name, details, memo
+	}
+	@FocusState private var focusedField: Field?
+	
 	@State private var expenseID: UUID?
 	@State private var date: Date
 	@State private var name: String
@@ -49,9 +54,10 @@ struct AddExpenseView: View {
 	@State private var isRecurring: Bool = false
 	@State private var repeatSummary: String = "Never"
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@FocusState private var isAmountFocused: Bool
 	@State private var rawAmount: String = ""
 	@State private var showingCategorySelection = false
+	@State private var showingRepeatSelection = false
+	@State private var showingProUpgrade = false
 	@EnvironmentObject var store: ExpenseStore
 	
 	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
@@ -63,73 +69,73 @@ struct AddExpenseView: View {
 	
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
-			if let id = expenseID, let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID {
+		if let id = expenseID, let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID {
 					Button("Delete only this expense", role: .destructive) {
-							let expense = Expense(
-									id: id,
-									date: date,
-									name: name,
-									amount: -1,
-									category: category,
-									details: details,
-									rating: rating,
-									memo: memo,
-									isRecurring: isRecurring,
-									parentRecurringID: parentID
-							)
-							onSave(expense)
-							dismiss()
+						let expense = Expense(
+							id: id,
+							date: date,
+							name: name,
+							amount: -1,
+							category: category,
+							details: details,
+							rating: rating,
+							memo: memo,
+							isRecurring: isRecurring,
+							parentRecurringID: parentID
+						)
+						onSave(expense)
+						dismiss()
 					}
 					Button("Delete this and recurring rule", role: .destructive) {
-							store.removeRecurringExpense(id: parentID)
-							let expense = Expense(
-									id: id,
-									date: date,
-									name: name,
-									amount: -1,
-									category: category,
-									details: details,
-									rating: rating,
-									memo: memo,
-									isRecurring: isRecurring,
-									parentRecurringID: parentID
-							)
-							onSave(expense)
-							dismiss()
+						store.removeRecurringExpense(id: parentID)
+						let expense = Expense(
+							id: id,
+							date: date,
+							name: name,
+							amount: -1,
+							category: category,
+							details: details,
+							rating: rating,
+							memo: memo,
+							isRecurring: isRecurring,
+							parentRecurringID: parentID
+						)
+						onSave(expense)
+						dismiss()
 					}
 					Button("Delete rule and all related expenses", role: .destructive) {
-							store.removeAllExpenses(withParentID: parentID)
-							store.removeRecurringExpense(id: parentID)
-							let expense = Expense(
-									id: id,
-									date: date,
-									name: name,
-									amount: -1,
-									category: category,
-									details: details,
-									rating: rating,
-									memo: memo,
-									isRecurring: isRecurring,
-									parentRecurringID: parentID
-							)
-							onSave(expense)
-							dismiss()
+						store.removeAllExpenses(withParentID: parentID)
+						store.removeRecurringExpense(id: parentID)
+						let expense = Expense(
+							id: id,
+							date: date,
+							name: name,
+							amount: -1,
+							category: category,
+							details: details,
+							rating: rating,
+							memo: memo,
+							isRecurring: isRecurring,
+							parentRecurringID: parentID
+						)
+						onSave(expense)
+						dismiss()
 					}
 			} else if let id = expenseID {
 					Button("Delete", role: .destructive) {
-							let expense = Expense(
-									id: id,
-									date: date,
-									name: name,
-									amount: -1,
-									category: category,
-									details: details,
-									rating: rating,
-									memo: memo,
-									isRecurring: isRecurring
-							)
-							onSave(expense)
-							dismiss()
+						let expense = Expense(
+							id: id,
+							date: date,
+							name: name,
+							amount: -1,
+							category: category,
+							details: details,
+							rating: rating,
+							memo: memo,
+							isRecurring: isRecurring
+						)
+						onSave(expense)
+						dismiss()
 					}
 			}
 			Button("Cancel", role: .cancel) {}
@@ -219,7 +225,7 @@ struct AddExpenseView: View {
 		}
 	}
 	
-var body: some View {
+	var body: some View {
 		Form {
 			Section(header: Text("Amount").font(.caption)) {
 				VStack(spacing: 8) {
@@ -229,7 +235,7 @@ var body: some View {
 						TextField("0.00", text: $rawAmount)
 							.keyboardType(.decimalPad)
 							.font(.system(size: 20, weight: .bold))
-							.focused($isAmountFocused)
+							.focused($focusedField, equals: .amount)
 					}
 					.listRowSeparator(.hidden)
 				}
@@ -238,6 +244,7 @@ var body: some View {
 			Section(header: Text("Required").font(.caption)) {
 				ZStack(alignment: .trailing) {
 					TextField("Name", text: $name)
+						.focused($focusedField, equals: .name)
 						.padding(.trailing, 28)
 						.onChange(of: name) { newValue in
 							if newValue.count > 30 {
@@ -281,8 +288,8 @@ var body: some View {
 						}
 					}
 				}
-					.navigationTitle("Select Category")
-											 , isActive: $showingCategorySelection) {
+				.navigationTitle("Select Category")
+, isActive: $showingCategorySelection) {
 					HStack {
 						Text("Category")
 						Spacer()
@@ -351,12 +358,14 @@ var body: some View {
 			
 			Section(header: Text("Optional").font(.caption)) {
 				TextField("Details", text: $details)
+					.focused($focusedField, equals: .details)
 					.onChange(of: details) { newValue in
 						if newValue.count > 100 {
 							details = String(newValue.prefix(100))
 						}
 					}
 				TextField("Note", text: $memo)
+					.focused($focusedField, equals: .memo)
 					.onChange(of: memo) { newValue in
 						if newValue.count > 500 {
 							memo = String(newValue.prefix(500))
@@ -364,30 +373,30 @@ var body: some View {
 					}
 			}
 			
-						if expenseID == nil {
-								Section {
-										if store.isProUser {
-												NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft)) {
-														HStack {
-																Text("Repeat")
-																Spacer()
-																Text(repeatDescription)
-																		.foregroundColor(.secondary)
-														}
-												}
-										} else {
-												NavigationLink(destination: ProUpgradeModalView(isPresented: .constant(true))) {
-														HStack {
-																Text("Repeat")
-																Spacer()
-																Text(repeatDescription)
-																		.foregroundColor(.secondary)
-														}
-												}
-										}
-								}
+			if expenseID == nil {
+				Section {
+					if store.isProUser {
+						NavigationLink(destination: RepeatExpenseView(draft: $recurrenceDraft), isActive: $showingRepeatSelection) {
+							HStack {
+								Text("Repeat")
+								Spacer()
+								Text(repeatDescription)
+									.foregroundColor(.secondary)
+							}
 						}
-			
+					} else {
+						NavigationLink(destination: ProUpgradeModalView(isPresented: .constant(true)), isActive: $showingProUpgrade) {
+							HStack {
+								Text("Repeat")
+								Spacer()
+								Text(repeatDescription)
+									.foregroundColor(.secondary)
+							}
+						}
+					}
+				}
+			}
+	
 			if let id = expenseID {
 				let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID
 				Section(header: Text("Danger Zone").font(.caption)) {
@@ -438,6 +447,21 @@ var body: some View {
 		}
 		.navigationTitle(name.isEmpty ? "Add Expense" : "Edit \(name)")
 		.navigationBarTitleDisplayMode(.inline)
+		.onChange(of: showingRepeatSelection) { newValue in
+			if newValue {
+				focusedField = nil
+			}
+		}
+		.onChange(of: showingProUpgrade) { newValue in
+			if newValue {
+				focusedField = nil
+			}
+		}
+		.onChange(of: showingCategorySelection) { newValue in
+			if newValue {
+				focusedField = nil
+			}
+		}
 		.toolbar {
 			ToolbarItem(placement: .cancellationAction) {
 				Button("Cancel") {
@@ -453,9 +477,9 @@ var body: some View {
 						return
 					}
 					if expenseID == nil {
-							isRecurring = recurrenceDraft.selectedPeriod != .never
+						isRecurring = recurrenceDraft.selectedPeriod != .never
 					} else {
-							isRecurring = store.expenses.first(where: { $0.id == expenseID })?.isRecurring ?? false
+						isRecurring = store.expenses.first(where: { $0.id == expenseID })?.isRecurring ?? false
 					}
 					// Removed old rawDouble declaration
 					let rawDouble = Double(rawAmount) ?? 0
