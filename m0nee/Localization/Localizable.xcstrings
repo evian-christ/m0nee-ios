@@ -878,6 +878,9 @@
     "Edit %@" : {
 
     },
+    "Edit Recurring Expense" : {
+
+    },
     "Enable Budget by Category in Settings to see this card." : {
       "comment" : "Message when category budget is disabled",
       "localizations" : {
@@ -1626,6 +1629,9 @@
         }
       }
     },
+    "Recurrence Details (Not Editable)" : {
+
+    },
     "Recurring expense feature" : {
       "localizations" : {
         "ko" : {
@@ -2023,6 +2029,9 @@
           }
         }
       }
+    },
+    "To change the start date or recurrence rule, please delete this recurring expense and create a new one." : {
+
     },
     "Total" : {
       "localizations" : {

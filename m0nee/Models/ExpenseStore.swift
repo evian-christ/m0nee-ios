@@ -216,34 +216,61 @@ class ExpenseStore: ObservableObject {
 			}
 		}
 
+		func updateRecurringExpenseMetadata(_ updatedExpense: RecurringExpense) {
+			// 1. Find the index of the recurring expense to update.
+			guard let index = recurringExpenses.firstIndex(where: { $0.id == updatedExpense.id }) else {
+				return
+			}
+
+			// 2. Update the main recurring expense object.
+			recurringExpenses[index].name = updatedExpense.name
+			recurringExpenses[index].amount = updatedExpense.amount
+			recurringExpenses[index].category = updatedExpense.category
+			recurringExpenses[index].memo = updatedExpense.memo
+			recurringExpenses[index].details = updatedExpense.details
+
+			// 3. Update all associated individual expenses that were already generated.
+			for i in expenses.indices {
+				if expenses[i].parentRecurringID == updatedExpense.id {
+					expenses[i].name = updatedExpense.name
+					expenses[i].amount = updatedExpense.amount
+					expenses[i].category = updatedExpense.category
+					expenses[i].memo = updatedExpense.memo
+					expenses[i].details = updatedExpense.details
+				}
+			}
+			
+			save()
+		}
+
 		func removeAllExpenses(withParentID parentID: UUID) {
 			expenses.removeAll { $0.parentRecurringID == parentID }
 			save()
 		}
 
 		/// Returns the next occurrence date after today (or the next after lastGeneratedDate) for the given recurring expense.
-	func nextOccurrence(for recurring: RecurringExpense) -> Date? {
-			         let rule = recurring.recurrenceRule
-			         let calendar = Calendar.current
+		func nextOccurrence(for recurring: RecurringExpense) -> Date? {
+			let rule = recurring.recurrenceRule
+			let calendar = Calendar.current
 			
-			         // Start searching from the day after the last generated date, or the rule's start date if none.
-			         var candidate: Date
-			         if let lastGen = recurring.lastGeneratedDate {
-			             candidate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
-			         } else {
-		              candidate = rule.startDate
-		          }
-		 
-		          // Loop indefinitely until a valid next occurrence is found.
-		          // The loop should continue as long as the candidate date does NOT satisfy the rule.
-		          while !shouldGenerateToday(for: rule, on: candidate) {
-		              // Always advance by one day to ensure progress and eventually hit a valid date.
-		              candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
-		          }
-		 
-		          // If we reach here, candidate is the first date after lastGeneratedDate (or startDate) that satisfies the rule.
-		          return candidate
-		      }
+			// Start searching from the day after the last generated date, or the rule's start date if none.
+			var candidate: Date
+			if let lastGen = recurring.lastGeneratedDate {
+				candidate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
+			} else {
+				candidate = rule.startDate
+			}
+	
+			// Loop up to a reasonable limit to prevent infinite loops
+			for _ in 0..<365*5 { // Look ahead up to 5 years
+				if shouldGenerateToday(for: rule, on: candidate) {
+					return candidate // Found the next valid date
+				}
+				candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
+			}
+	
+			return nil // Return nil if no occurrence is found within the look-ahead period
+		}
 }
 
 extension ExpenseStore {
@@ -348,9 +375,37 @@ extension ExpenseStore {
 						self.expenses = storeData.expenses
 						self.categories = storeData.categories
 						self.recurringExpenses = storeData.recurringExpenses
+						
+						// Perform migration after loading the data
+						migrateRecurringRules()
+						
 				} catch {
 						print("Failed to load: \(error)")
 				}
+		}
+		
+		func migrateRecurringRules() {
+			for i in recurringExpenses.indices {
+				let oldRule = recurringExpenses[i].recurrenceRule
+
+				// Migrate old rules that incorrectly used .daily period with selected days
+				if let selectedWeekdays = oldRule.selectedWeekdays, !selectedWeekdays.isEmpty {
+					var newRule = oldRule
+					newRule.period = .weekly
+					newRule.frequencyType = .weeklySelectedDays
+					newRule.interval = 0
+					newRule.selectedMonthDays = nil
+					recurringExpenses[i].recurrenceRule = newRule // Assign the modified struct back
+
+				} else if let selectedMonthDays = oldRule.selectedMonthDays, !selectedMonthDays.isEmpty {
+					var newRule = oldRule
+					newRule.period = .monthly
+					newRule.frequencyType = .monthlySelectedDays
+					newRule.interval = 0
+					newRule.selectedWeekdays = nil
+					recurringExpenses[i].recurrenceRule = newRule // Assign the modified struct back
+				}
+			}
 		}
 		
 		func totalSpent(forMonth month: String) -> Double {

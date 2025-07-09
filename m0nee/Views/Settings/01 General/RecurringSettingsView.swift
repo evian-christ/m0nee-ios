@@ -34,11 +34,11 @@ struct RecurringSettingsView: View {
 							}
 							
 							// Title and rule
-							VStack(alignment: .leading, spacing: 2) {
+																					VStack(alignment: .leading, spacing: 2) {
 								Text(expense.name)
 									.font(.headline)
 									.foregroundColor(.primary)
-								Text(RecurringSettingsView.ruleDescription(expense.recurrenceRule))
+								Text(RecurringSettingsView.ruleDescription(recurrenceRule: expense.recurrenceRule))
 									.font(.caption2)
 									.foregroundColor(.secondary)
 							}
@@ -58,59 +58,49 @@ struct RecurringSettingsView: View {
 		.navigationTitle("Recurring Expenses")
 	}
 	
-	private static func ruleDescription(_ rule: RecurrenceRule) -> String {
-		var components: [String] = []
-		
-		switch rule.frequencyType {
-		case .everyN:
-			switch rule.period {
-			case .daily:
-				components.append("Every \(rule.interval) day\(rule.interval > 1 ? "s" : "")")
-			case .weekly:
-				components.append("Every \(rule.interval) week\(rule.interval > 1 ? "s" : "")")
-			case .monthly:
-				components.append("Every \(rule.interval) month\(rule.interval > 1 ? "s" : "")")
-			}
-		case .weeklySelectedDays:
-			if let weekdays = rule.selectedWeekdays {
-				let symbols = Calendar.current.shortWeekdaySymbols
-				let ranges = formatWeekdayRanges(weekdays, symbols: symbols)
-				components.append(contentsOf: ranges)
-			}
-		case .monthlySelectedDays:
-			if let monthDays = rule.selectedMonthDays {
-				let days = monthDays.sorted().map(String.init).joined(separator: ", ")
-				components.append("days \(days)")
-			}
-		}
-		return components.joined(separator: ", ")
-	}
 	
-	private static func formatWeekdayRanges(_ days: [Int], symbols: [String]) -> [String] {
-		let sortedDays = days.sorted()
-		var grouped: [[Int]] = []
-		var current: [Int] = []
-		for day in sortedDays {
-			if current.isEmpty || day == current.last! + 1 {
-				current.append(day)
-			} else {
-				grouped.append(current)
-				current = [day]
-			}
-		}
-		if !current.isEmpty { grouped.append(current) }
-		
-		return grouped.compactMap { group in
-			guard let first = group.first, let last = group.last,
-						first >= 1, last <= symbols.count else { return nil }
-			let firstName = symbols[first - 1]
-			let lastName = symbols[last - 1]
-			return group.count == 1 ? firstName : "\(firstName) - \(lastName)"
-		}
-	}
 }
 
 extension RecurringSettingsView {
+	public static func ruleDescription(recurrenceRule: RecurrenceRule) -> String {
+		switch recurrenceRule.period {
+				case .daily:
+			let interval = recurrenceRule.interval > 0 ? recurrenceRule.interval : 1
+			let dayString = interval == 1 ? "day" : "days"
+			return "Every \(interval) \(dayString)"
+		case .weekly:
+			if recurrenceRule.frequencyType == .everyN {
+				return "Every \(recurrenceRule.interval) week(s)"
+			} else if recurrenceRule.frequencyType == .weeklySelectedDays, let weekdays = recurrenceRule.selectedWeekdays, !weekdays.isEmpty {
+				let sortedWeekdays = weekdays.sorted()
+				let dayNames = sortedWeekdays.map { dayIndex -> String in
+					switch dayIndex {
+					case 1: return "Sun"
+					case 2: return "Mon"
+					case 3: return "Tue"
+					case 4: return "Wed"
+					case 5: return "Thu"
+					case 6: return "Fri"
+					case 7: return "Sat"
+					default: return ""
+					}
+				}.joined(separator: ", ")
+				return "Weekly on \(dayNames)"
+			} else {
+				return "Weekly"
+			}
+		case .monthly:
+			if recurrenceRule.frequencyType == .everyN {
+				return "Every \(recurrenceRule.interval) month(s)"
+			} else if recurrenceRule.frequencyType == .monthlySelectedDays, let monthDays = recurrenceRule.selectedMonthDays, !monthDays.isEmpty {
+				let dayStrings = monthDays.sorted().map { String($0) }.joined(separator: ", ")
+				return "Monthly on day(s) \(dayStrings)"
+			} else {
+				return "Monthly"
+			}
+		}
+	}
+
 	struct RecurringDetailView: View {
 		let recurring: RecurringExpense
 		@EnvironmentObject var store: ExpenseStore
@@ -118,6 +108,7 @@ extension RecurringSettingsView {
 		@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.dismiss) private var dismiss
 	@State private var showingDeleteDialog = false
+	@State private var showingEditSheet = false
 		
 		private var categoryItem: CategoryItem? {
 			store.categories.first { $0.name == recurring.category }
@@ -175,7 +166,7 @@ extension RecurringSettingsView {
 						HStack {
 							Label("Frequency", systemImage: "repeat")
 							Spacer()
-							Text(RecurringSettingsView.ruleDescription(recurring.recurrenceRule))
+							Text(RecurringSettingsView.ruleDescription(recurrenceRule: recurring.recurrenceRule))
 						}
 						
 						if let nextDate = store.nextOccurrence(for: recurring) {
@@ -226,6 +217,17 @@ extension RecurringSettingsView {
 			}
 			.navigationTitle("Details")
 			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button("Edit") {
+						showingEditSheet = true
+					}
+				}
+			}
+			.sheet(isPresented: $showingEditSheet) {
+				EditRecurringExpenseView(recurringExpense: recurring)
+					.environmentObject(store)
+			}
 		}
 	}
 }

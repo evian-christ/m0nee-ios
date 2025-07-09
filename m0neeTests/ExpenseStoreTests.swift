@@ -777,4 +777,98 @@ struct ExpenseStoreTests {
         #expect(nextDate != nil)
         #expect(Calendar.current.isDate(nextDate!, inSameDayAs: dateFrom("2025-07-09"))) // Expect next Wednesday
     }
+
+    // MARK: - Data Migration Tests
+
+    @Test func testMigrationOfOldWeeklyRule() {
+        // ARRANGE
+        // 1. Create an "old" recurrence rule: period is .daily but selectedWeekdays has values.
+        let oldRule = RecurrenceRule(
+            period: .daily, // This was the incorrect setting in the old version
+            frequencyType: .everyN, // This might have been the default
+            interval: 1,
+            selectedWeekdays: [2, 4], // Monday, Wednesday
+            selectedMonthDays: nil,
+            startDate: dateFrom("2025-07-01")
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Old Weekly Expense",
+            amount: 50.0,
+            category: "Migration Test",
+            details: nil, rating: nil, memo: nil,
+            startDate: dateFrom("2025-07-01"),
+            recurrenceRule: oldRule
+        )
+
+        // 2. Initialize the store with this old data structure
+        let store = ExpenseStore(forTesting: true)
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        // 3. Trigger the migration logic directly for the test.
+        store.migrateRecurringRules()
+
+        // ASSERT
+        // 4. Retrieve the updated expense and check its rule.
+        guard let migratedExpense = store.recurringExpenses.first(where: { $0.id == recurringExpense.id }) else {
+            #expect(false, "Migrated expense not found in store.")
+            return
+        }
+        
+        let migratedRule = migratedExpense.recurrenceRule
+        
+        #expect(migratedRule.frequencyType == .weeklySelectedDays, "FrequencyType should be migrated to .weeklySelectedDays")
+        #expect(migratedRule.period == .weekly, "Period should be migrated to .weekly")
+        #expect(migratedRule.interval == 0, "Interval should be reset to 0")
+        #expect(migratedRule.selectedWeekdays == [2, 4], "Selected weekdays should be preserved")
+        #expect(migratedRule.selectedMonthDays == nil, "Selected month days should be cleared")
+    }
+
+    @Test func testMigrationOfOldMonthlyRule() {
+        // ARRANGE
+        // 1. Create an "old" recurrence rule: period is .daily but selectedMonthDays has values.
+        let oldRule = RecurrenceRule(
+            period: .daily, // This was the incorrect setting
+            frequencyType: .everyN,
+            interval: 1,
+            selectedWeekdays: nil,
+            selectedMonthDays: [10, 25], // 10th and 25th of the month
+            startDate: dateFrom("2025-07-01")
+        )
+        
+        let recurringExpense = RecurringExpense(
+            id: UUID(),
+            name: "Old Monthly Expense",
+            amount: 200.0,
+            category: "Migration Test",
+            details: nil, rating: nil, memo: nil,
+            startDate: dateFrom("2025-07-01"),
+            recurrenceRule: oldRule
+        )
+
+        // 2. Initialize the store with this old data
+        let store = ExpenseStore(forTesting: true)
+        store.recurringExpenses = [recurringExpense]
+
+        // ACT
+        // 3. Trigger the migration logic directly for the test.
+        store.migrateRecurringRules()
+
+        // ASSERT
+        // 4. Check the migrated rule
+        guard let migratedExpense = store.recurringExpenses.first(where: { $0.id == recurringExpense.id }) else {
+            #expect(false, "Migrated expense not found.")
+            return
+        }
+        
+        let migratedRule = migratedExpense.recurrenceRule
+        
+        #expect(migratedRule.frequencyType == .monthlySelectedDays, "FrequencyType should be migrated to .monthlySelectedDays")
+        #expect(migratedRule.period == .monthly, "Period should be migrated to .monthly")
+        #expect(migratedRule.interval == 0, "Interval should be reset to 0")
+        #expect(migratedRule.selectedMonthDays == [10, 25], "Selected month days should be preserved")
+        #expect(migratedRule.selectedWeekdays == nil, "Selected weekdays should be cleared")
+    }
 }

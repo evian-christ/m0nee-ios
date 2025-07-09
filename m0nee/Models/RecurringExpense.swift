@@ -2,12 +2,12 @@ import Foundation
 
 struct RecurringExpense: Identifiable, Codable, Hashable {
 	let id: UUID
-	let name: String
-	let amount: Double
-	let category: String
-	let details: String?
-	let rating: Int?
-	let memo: String?
+	var name: String
+	var amount: Double
+	var category: String
+	var details: String?
+	var rating: Int?
+	var memo: String?
 	let startDate: Date
 	var recurrenceRule: RecurrenceRule
 	var lastGeneratedDate: Date?
