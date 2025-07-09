@@ -159,8 +159,10 @@ struct ExpenseDetailView: View {
 			}
 			.toolbar {
 				ToolbarItem(placement: .navigationBarTrailing) {
-					Button("Edit") {
-						isEditing = true
+					if !expense.isRecurring { // Only show Edit button if not recurring
+						Button("Edit") {
+							isEditing = true
+						}
 					}
 				}
 			}

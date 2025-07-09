@@ -261,7 +261,7 @@ struct AddExpenseView: View {
 					}
 				}
 				
-				DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
+								DatePicker("Date", selection: $date, displayedComponents: [.date, .hourAndMinute])
 				
 				NavigationLink(destination: List {
 					ForEach(store.categories) { item in

@@ -189,7 +189,7 @@ class ExpenseStore: ObservableObject {
 							amount: recurring.amount,
 							category: recurring.category,
 							details: recurring.details,
-							rating: recurring.rating,
+							rating: nil,
 							memo: recurring.memo,
 							isRecurring: true,
 							parentRecurringID: recurring.id
@@ -378,6 +378,7 @@ extension ExpenseStore {
 						
 						// Perform migration after loading the data
 						migrateRecurringRules()
+						migrateRecurringExpenseRatings()
 						
 				} catch {
 						print("Failed to load: \(error)")
@@ -405,6 +406,19 @@ extension ExpenseStore {
 					newRule.selectedWeekdays = nil
 					recurringExpenses[i].recurrenceRule = newRule // Assign the modified struct back
 				}
+			}
+		}
+		
+		func migrateRecurringExpenseRatings() {
+			var changed = false
+			for i in expenses.indices {
+				if expenses[i].isRecurring && expenses[i].rating != nil {
+					expenses[i].rating = nil
+					changed = true
+				}
+			}
+			if changed {
+				save()
 			}
 		}
 		
@@ -450,7 +464,7 @@ extension ExpenseStore {
 					amount: recurring.amount,
 					category: recurring.category,
 					details: recurring.details,
-					rating: recurring.rating,
+												rating: nil,
 					memo: recurring.memo,
 					isRecurring: true,
 					parentRecurringID: recurring.id
@@ -626,8 +640,8 @@ extension ExpenseStore {
 						name: recurring.name,
 						amount: recurring.amount,
 						category: recurring.category,
-						details: recurring.details,
-							rating: recurring.rating,
+													details: recurring.details,
+								rating: nil,
 							memo: recurring.memo,
 							isRecurring: true,
 							parentRecurringID: recurring.id
