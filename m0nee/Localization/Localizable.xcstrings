@@ -734,6 +734,9 @@
         }
       }
     },
+    "Delete \"%@\"" : {
+
+    },
     "Delete \"%@\"?" : {
       "localizations" : {
         "ko" : {
@@ -743,6 +746,9 @@
           }
         }
       }
+    },
+    "Delete Category" : {
+
     },
     "Delete Expense" : {
       "localizations" : {
@@ -895,6 +901,9 @@
       }
     },
     "Edit %@" : {
+
+    },
+    "Edit Category" : {
 
     },
     "Edit Recurring Expense" : {

@@ -131,6 +131,28 @@ class ExpenseStore: ObservableObject {
 				save()
 		}
 
+		func updateCategory(_ category: CategoryItem) {
+			guard let index = categories.firstIndex(where: { $0.id == category.id }) else {
+				return
+			}
+			let oldCategoryName = categories[index].name
+			categories[index] = category
+			
+			for i in expenses.indices {
+				if expenses[i].category == oldCategoryName {
+					expenses[i].category = category.name
+				}
+			}
+			
+			for i in recurringExpenses.indices {
+				if recurringExpenses[i].category == oldCategoryName {
+					recurringExpenses[i].category = category.name
+				}
+			}
+			
+			save()
+		}
+
 		private func ensureCategoryBudgetEntry(for name: String) {
 				var budgets = loadBudgets()
 				if budgets[name] == nil {

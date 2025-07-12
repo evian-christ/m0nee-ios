@@ -16,32 +16,43 @@ struct CategorySettingsView: View {
 			List {
 				Section {
 					ForEach(store.categories) { category in
-						HStack(spacing: 12) {
-							ZStack {
-								Circle()
-									.fill(category.color.color)
-									.frame(width: 36, height: 36)
-								Image(systemName: category.symbol)
-									.font(.system(size: 18))
-									.foregroundColor(.white)
-							}
-							
-							Text(category.name)
-								.font(.body)
-							
-							Spacer()
-							
-							if isEditing {
-								Button(role: .destructive) {
-									categoryToDelete = category
-								} label: {
-									Image(systemName: "trash")
-										.foregroundColor(.red)
-										.frame(maxWidth: .infinity, alignment: .trailing)
+						if isEditing {
+							NavigationLink(destination: EditCategoryView(store: store, category: category)) {
+								HStack(spacing: 12) {
+									ZStack {
+										Circle()
+											.fill(category.color.color)
+											.frame(width: 36, height: 36)
+										Image(systemName: category.symbol)
+											.font(.system(size: 18))
+											.foregroundColor(.white)
+									}
+									
+									Text(category.name)
+										.font(.body)
+									
+									Spacer()
 								}
+								.padding(.vertical, 6)
 							}
+						} else {
+							HStack(spacing: 12) {
+								ZStack {
+									Circle()
+										.fill(category.color.color)
+										.frame(width: 36, height: 36)
+									Image(systemName: category.symbol)
+										.font(.system(size: 18))
+										.foregroundColor(.white)
+								}
+								
+								Text(category.name)
+									.font(.body)
+								
+								Spacer()
+							}
+							.padding(.vertical, 6)
 						}
-						.padding(.vertical, 6)
 					}
 				}
 				Section {
