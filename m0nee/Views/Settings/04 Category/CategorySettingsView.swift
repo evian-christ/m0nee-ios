@@ -223,29 +223,61 @@ struct IconPickerView: View {
 	@Environment(\.dismiss) var dismiss
 	
 	let symbols = [
-		// Most used first: food, rent, transport
-		"fork.knife", "takeoutbag.and.cup.and.straw", "cup.and.saucer", "cart", "bag", "gift",
-		"house", "house.fill", "building.2", "bed.double", "lamp.desk",
-		"car", "car.fill", "fuelpump", "bicycle", "bus", "airplane",
-		
-		// Finance / payments
-		"creditcard", "dollarsign.circle", "bitcoinsign.circle", "wallet.pass", "banknote",
-		
-		// Entertainment & leisure
-		"gamecontroller", "gamecontroller.fill", "puzzlepiece", "music.note", "paintpalette", "film", "video",
-		
-		// Communication
-		"phone", "message", "envelope", "bell", "megaphone",
-		
-		// People & tools
-		"person", "person.crop.circle", "person.badge.plus", "wrench", "hammer", "gear",
-		
-		// Essentials (health & personal items)
-		"pills", "bandage", "cross.case", "cross",
-		
-		// Other
-		"heart", "globe", "leaf", "camera", "photo", "book", "calendar", "doc",
-		"pawprint", "tortoise", "hare", "ant", "ladybug", "bird", "fish", "dog", "cat"
+		// Default Category Icons
+		"tray", // No Category
+		"fork.knife", // Food
+		"car.fill", // Transport
+		"gamecontroller.fill", // Entertainment
+		"house.fill", // Rent
+		"bag.fill", // Shopping
+
+		// Food & Drink
+		"cup.and.saucer.fill", "takeoutbag.and.cup.and.straw.fill", "mug.fill", "wineglass.fill", "carrot.fill", "apple.wholefill", "birthday.cake.fill", "leaf.fill",
+
+		// Transportation
+		"car", "bus.fill", "tram.fill", "bicycle", "scooter", "airplane.departure", "sailboat.fill", "fuelpump.fill",
+
+		// Home & Utilities
+		"house", "lightbulb.fill", "drop.fill", "bolt.fill", "thermometer.sun.fill", "wrench.and.screwdriver.fill", "hammer.fill", "paintpalette.fill", "trash.fill", "washer.fill", "dryer.fill",
+
+		// Shopping
+		"bag", "cart.fill", "creditcard.fill", "tag.fill", "gift.fill", "tshirt.fill", "shoe.fill", "watch.fill", "diamond.fill",
+
+		// Entertainment & Hobbies
+		"gamecontroller", "film.fill", "tv.fill", "music.note", "mic.fill", "book.closed.fill", "paintpalette", "camera.fill", "photo.fill", "ticket.fill", "theatermasks.fill",
+
+		// Health & Fitness
+		"heart.fill", "figure.walk", "figure.run", "figure.strengthtraining.traditional", "cross.case.fill", "pills.fill", "bandage.fill", "waveform.path.ecg",
+
+		// Finance
+		"dollarsign.circle.fill", "banknote.fill", "chart.pie.fill", "arrow.up.right.and.arrow.down.left.rectangle.fill", "bitcoinsign.circle.fill",
+
+		// Communication & Tech
+		"phone.fill", "message.fill", "envelope.fill", "laptopcomputer", "desktopcomputer", "printer.fill", "headphones", "airpodspro", "wifi", "antenna.radiowaves.left.and.right",
+
+		// People & Social
+		"person.fill", "person.2.fill", "person.3.fill", "hand.thumbsup.fill", "hand.thumbsdown.fill", "face.smiling.fill", "heart.text.square.fill",
+
+		// Travel
+		"globe.americas.fill", "map.fill", "bed.double.fill", "tent.fill", "beach.umbrella.fill",
+
+		// Education
+		"book.fill", "graduationcap.fill", "pencil.and.outline", "paperclip",
+
+		// Weather
+		"cloud.fill", "sun.max.fill", "moon.fill", "snowflake", "cloud.bolt.rain.fill",
+
+		// Nature
+		"leaf.arrow.circlepath", "tree.fill", "pawprint.fill", "ant.fill", "ladybug.fill", "fish.fill", "bird.fill", "tortoise.fill", "hare.fill",
+
+		// Objects & Tools
+		"folder.fill", "doc.fill", "paperplane.fill", "bell.fill", "bookmark.fill", "calendar", "pin.fill", "scissors", "ruler", "key.fill", "lock.fill", "gearshape.fill",
+
+		// Arrows & Directions
+		"arrow.up.circle.fill", "arrow.down.circle.fill", "arrow.left.circle.fill", "arrow.right.circle.fill", "arrow.uturn.left.circle.fill", "arrow.uturn.right.circle.fill",
+
+		// Miscellaneous
+		"star.fill", "circle.fill", "square.fill", "triangle.fill", "diamond.fill", "flag.fill", "exclamationmark.triangle.fill", "questionmark.circle.fill", "info.circle.fill", "plus.circle.fill", "minus.circle.fill", "xmark.circle.fill", "checkmark.circle.fill", "ellipsis.circle.fill"
 	]
 	
 	var body: some View {

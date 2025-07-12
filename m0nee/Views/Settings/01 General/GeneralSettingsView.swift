@@ -43,18 +43,6 @@ struct GeneralSettingsView: View {
 				
 				Section(header: Text("Expense")) {
 					Toggle("Enable Ratings", isOn: $showRating)
-					if store.isProUser {
-						NavigationLink("Recurring Expenses") {
-							RecurringSettingsView()
-						}
-					} else {
-						NavigationLink(destination: ProUpgradeModalView(isPresented: $showProUpgradeSheet)) {
-							HStack {
-								Text("Recurring Expenses")
-								Spacer()
-							}
-						}
-					}
 				}
 				
 				Section(header: Text("Reset")) {
