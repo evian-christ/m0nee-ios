@@ -315,7 +315,7 @@ struct AddExpenseView: View {
 				}
 			}
 			
-			if showRating {
+			if showRating && !isRecurring {
 				Section(header: Text("Rating").font(.caption)) {
 					HStack {
 						Text("Rating")
@@ -442,6 +442,11 @@ struct AddExpenseView: View {
 				Text("The entered amount exceeds the maximum allowed. Please double-check the amount.")
 		}
 		.onAppear {
+			if let expenseID = expenseID {
+				if let expense = store.expenses.first(where: { $0.id == expenseID }) {
+					self.isRecurring = expense.isRecurring
+				}
+			}
 			if category.isEmpty, let firstCategory = store.categories.first?.name {
 				category = firstCategory
 			}
@@ -523,7 +528,7 @@ struct AddExpenseView: View {
 							amount: parsedAmount,
 							category: category,
 							details: details.isEmpty ? nil : details,
-							rating: showRating ? rating : nil,
+							rating: nil,
 							memo: memo.isEmpty ? nil : memo,
 							startDate: date,
 							recurrenceRule: rule,
@@ -541,7 +546,7 @@ struct AddExpenseView: View {
 						amount: parsedAmount,
 						category: category,
 						details: details.isEmpty ? nil : details,
-						rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
+						rating: isRecurring ? nil : (showRating ? rating : 5),
 						memo: memo.isEmpty ? nil : memo,
 						isRecurring: isRecurring,
 						parentRecurringID: recurringID
