@@ -69,7 +69,8 @@ struct AddExpenseView: View {
 	
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
-		if let id = expenseID, let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID {
+		let parentExists = store.recurringExpenses.first { $0.id == store.expenses.first(where: { $0.id == expenseID })?.parentRecurringID } != nil
+		if let id = expenseID, let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID, parentExists {
 					Button("Delete only this expense", role: .destructive) {
 						let expense = Expense(
 							id: id,

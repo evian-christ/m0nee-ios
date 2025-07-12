@@ -159,7 +159,8 @@ struct ExpenseDetailView: View {
 			}
 			.toolbar {
 				ToolbarItem(placement: .navigationBarTrailing) {
-					if !expense.isRecurring { // Only show Edit button if not recurring
+					let isOrphan = expense.isRecurring && store.recurringExpenses.first { $0.id == expense.parentRecurringID } == nil
+					if !expense.isRecurring || isOrphan { // Only show Edit button if not recurring
 						Button("Edit") {
 							isEditing = true
 						}

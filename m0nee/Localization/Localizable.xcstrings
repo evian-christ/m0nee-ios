@@ -67,7 +67,20 @@
         }
       }
     },
+    "%@%@ / %@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@ / %3$@%4$@"
+          }
+        }
+      }
+    },
     "%lld" : {
+
+    },
+    "%lld%% used" : {
 
     },
     "⭐️  Enable Rating" : {
@@ -151,6 +164,9 @@
       }
     },
     "0.00" : {
+
+    },
+    "A an example control that runs a timer." : {
 
     },
     "A few taps are all it takes to log your spending." : {
@@ -342,6 +358,9 @@
           }
         }
       }
+    },
+    "Bottom %@" : {
+
     },
     "Budget" : {
       "localizations" : {
@@ -879,7 +898,14 @@
 
     },
     "Edit Recurring Expense" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "반복 지출 편집"
+          }
+        }
+      }
     },
     "Enable Budget by Category in Settings to see this card." : {
       "comment" : "Message when category budget is disabled",
@@ -1221,6 +1247,9 @@
         }
       }
     },
+    "Hello %@" : {
+
+    },
     "Help & Support" : {
       "localizations" : {
         "ko" : {
@@ -1274,6 +1303,9 @@
         }
       }
     },
+    "L" : {
+
+    },
     "Language" : {
       "localizations" : {
         "ko" : {
@@ -1283,6 +1315,9 @@
           }
         }
       }
+    },
+    "Leading" : {
+
     },
     "Let’s set you up" : {
       "localizations" : {
@@ -1393,7 +1428,7 @@
     "Monir Pro" : {
 
     },
-    "Monir v1.3.1" : {
+    "Monir v1.3.3" : {
 
     },
     "month" : {
@@ -1516,7 +1551,13 @@
         }
       }
     },
+    "Off" : {
+
+    },
     "OK" : {
+
+    },
+    "On" : {
 
     },
     "On specific days" : {
@@ -1630,7 +1671,14 @@
       }
     },
     "Recurrence Details (Not Editable)" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "반복 내용 (편집 불가)"
+          }
+        }
+      }
     },
     "Recurring expense feature" : {
       "localizations" : {
@@ -1849,6 +1897,26 @@
         }
       }
     },
+    "Shows your spending trend over time." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지출 추이를 그래프로 표시합니다."
+          }
+        }
+      }
+    },
+    "Shows your total expenses." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "총 지출을 표시합니다."
+          }
+        }
+      }
+    },
     "Skip" : {
       "localizations" : {
         "ko" : {
@@ -1890,6 +1958,9 @@
         }
       }
     },
+    "Start a timer" : {
+
+    },
     "Start day of month" : {
       "localizations" : {
         "ko" : {
@@ -1909,6 +1980,9 @@
           }
         }
       }
+    },
+    "Start Timer" : {
+
     },
     "Start using Monir" : {
       "localizations" : {
@@ -1959,6 +2033,9 @@
           }
         }
       }
+    },
+    "T %@" : {
+
     },
     "Tap the ➕ up there and record your first glorious impulse buy." : {
       "localizations" : {
@@ -2030,8 +2107,21 @@
         }
       }
     },
-    "To change the start date or recurrence rule, please delete this recurring expense and create a new one." : {
+    "Timer" : {
 
+    },
+    "Timer is running" : {
+
+    },
+    "To change the start date or recurrence rule, please delete this recurring expense and create a new one." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작일이나 반복 규칙을 변경하려면, 이 반복 지출을 삭제한 후 새로 생성해 주세요."
+          }
+        }
+      }
     },
     "Total" : {
       "localizations" : {
@@ -2052,6 +2142,9 @@
           }
         }
       }
+    },
+    "Trailing" : {
+
     },
     "Unlock powerful features to manage your money better." : {
       "localizations" : {
@@ -2084,7 +2177,14 @@
       }
     },
     "Usability" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용성"
+          }
+        }
+      }
     },
     "Use Budget Tracking" : {
       "localizations" : {
