@@ -715,7 +715,47 @@
       }
     },
     "Decimal Places" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소수점"
+          }
+        }
+      }
+    },
+    "DecimalDisplayMode.Automatic" : {
+      "comment" : "Automatic decimal display mode",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동"
+          }
+        }
+      }
+    },
+    "DecimalDisplayMode.None" : {
+      "comment" : "No decimals",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "표시 안 함"
+          }
+        }
+      }
+    },
+    "DecimalDisplayMode.TwoPlaces" : {
+      "comment" : "Two decimal places",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘째 자리까지"
+          }
+        }
+      }
     },
     "Delete" : {
       "localizations" : {
