@@ -193,7 +193,9 @@ struct ContentView: View {
 								type: type,
 								expenses: filteredExpenses.map(\.wrappedValue),
 								startDate: budgetDates.startDate,
-								endDate: budgetDates.endDate
+								endDate: budgetDates.endDate,
+								categories: store.categories,
+								isProUser: store.productID != "free"
 							)
 							.padding(.horizontal, 16)
 							Spacer()

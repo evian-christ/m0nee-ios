@@ -11,7 +11,7 @@ struct GeneralSettingsView: View {
 	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
 	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
 	@AppStorage("groupByDay") private var groupByDay: Bool = true
-	@AppStorage("showRating") private var showRating: Bool = true
+	@AppStorage("showRating", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var showRating: Bool = true
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
 	@AppStorage("displayMode") private var displayMode: String = "Standard"
 	

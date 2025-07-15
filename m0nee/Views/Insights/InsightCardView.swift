@@ -6,9 +6,10 @@ enum InsightCardType: String, Identifiable, Codable {
 	case categoryRating
 	case budgetProgress
 	case categoryBudgetProgress
+	case lowestRatedSpending
 	
 	static var allCases: [InsightCardType] {
-		return [.totalSpending, .spendingTrend, .categoryRating, .budgetProgress, .categoryBudgetProgress]
+		return [.totalSpending, .spendingTrend, .categoryRating, .budgetProgress, .categoryBudgetProgress, .lowestRatedSpending]
 	}
 	
 	var id: String { self.rawValue }
@@ -27,6 +28,8 @@ enum InsightCardType: String, Identifiable, Codable {
 			return period == "Weekly" ? "Week's Progress" : "Month's Progress"
 		case .categoryBudgetProgress:
 			return NSLocalizedString("Category Budget Progress", comment: "Title for the Category Budget Progress insight card")
+		case .lowestRatedSpending:
+			return NSLocalizedString("Lowest Rated Spending", comment: "Title for the Lowest Rated Spending insight card")
 		}
 	}
 	
@@ -42,12 +45,14 @@ enum InsightCardType: String, Identifiable, Codable {
 			return "gauge.with.needle"
 		case .categoryBudgetProgress:
 			return "chart.pie"
+		case .lowestRatedSpending:
+			return "hand.thumbsdown.fill"
 		}
 	}
 	
 	var isProOnly: Bool {
 			switch self {
-			case .categoryBudgetProgress, .categoryRating, .budgetProgress:
+			case .categoryBudgetProgress, .categoryRating, .budgetProgress, .lowestRatedSpending:
 					return true
 			default:
 					return false
@@ -60,14 +65,49 @@ struct InsightCardView: View {
 	let expenses: [Expense]
 	let startDate: Date
 	let endDate: Date
+	let categories: [CategoryItem]
+	let isProUser: Bool
 	@AppStorage("monthlyBudget", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var monthlyBudget: Double = 0
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("enableBudgetTracking", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var enableBudgetTracking: Bool = true
 	@AppStorage("budgetByCategory", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetByCategory: Bool = false
 	@AppStorage("showRating", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var showRating: Bool = true
+	
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
+	}
+	
+	private var shouldBlur: Bool {
+			if type.isProOnly && !isProUser {
+				return true
+			}
+			switch type {
+			case .categoryRating, .lowestRatedSpending:
+				return !showRating
+			case .budgetProgress:
+				return !enableBudgetTracking
+			case .categoryBudgetProgress:
+				return !budgetByCategory || !enableBudgetTracking
+			default:
+				return false
+			}
+	}
+	
+	private var blurMessage: String {
+			if type.isProOnly && !isProUser {
+				return "Upgrade to Monir Pro to unlock this feature."
+			}
+			switch type {
+			case .categoryRating, .lowestRatedSpending:
+				return "Enable 'Show Rating' in General Settings to view this insight."
+			case .budgetProgress:
+				return "Enable 'Budget Tracking' in Budget Settings to view this insight."
+			case .categoryBudgetProgress:
+				return "Enable 'Budget Tracking' and 'Budget by Category' in Budget Settings to view this insight."
+			default:
+				return ""
+			}
 	}
 	
 	var body: some View {
@@ -75,7 +115,7 @@ struct InsightCardView: View {
 			RoundedRectangle(cornerRadius: 16).fill(Color(.systemGray5))
 			
 			VStack(alignment: .leading, spacing: 12) {
-				if type != .budgetProgress && type != .categoryBudgetProgress && type != .totalSpending {
+				if type != .budgetProgress && type != .categoryBudgetProgress && type != .totalSpending && type != .lowestRatedSpending {
 					HStack {
 						Label(type.title, systemImage: type.icon)
 							.font(.headline)
@@ -83,7 +123,7 @@ struct InsightCardView: View {
 					}
 				}
 				
-				Group {
+				VStack {
 					switch type {
 					case .totalSpending:
 						TotalSpendingCardView(
@@ -135,6 +175,8 @@ struct InsightCardView: View {
 								categoryBudgets: categoryBudgetDict
 							)
 						}
+					case .lowestRatedSpending:
+						LowestRatedSpendingCardView(expenses: expenses)
 					}
 				}
 			}
@@ -142,33 +184,19 @@ struct InsightCardView: View {
 			.frame(height: 225, alignment: .topLeading)
 			.clipped()
 			.padding()
-			.blur(
-				radius:
-					(type == .categoryBudgetProgress && !(enableBudgetTracking && budgetByCategory)) ||
-					(type == .categoryRating && !showRating) ||
-					(type == .budgetProgress && !enableBudgetTracking)
-					? 6 : 0
-			)
+			.blur(radius: shouldBlur ? 6 : 0)
 			
-			
-			let restrictionMessages: [InsightCardType: (Bool, String)] = [
-				.categoryBudgetProgress: (enableBudgetTracking && budgetByCategory, NSLocalizedString("Enable Budget by Category in Settings to see this card.", comment: "Message when category budget is disabled")),
-				.categoryRating: (showRating, NSLocalizedString("Enable Ratings in Settings to see this card.", comment: "Message when ratings are disabled")),
-				.budgetProgress: (enableBudgetTracking, NSLocalizedString("Enable Budget Tracking in Settings to see this card.", comment: "Message when budget tracking is disabled"))
-			]
-
-			if let restriction = restrictionMessages[type], restriction.0 == false {
+			if shouldBlur {
 				ZStack {
 					RoundedRectangle(cornerRadius: 16)
 						.fill(Color(.systemGray6).opacity(0.3))
-					Text(restriction.1)
+					Text(blurMessage)
 						.font(.headline)
 						.multilineTextAlignment(.center)
 						.padding()
 				}
 				.frame(maxHeight: .infinity, alignment: .center)
 			}
-			
 		}
 		.padding(.top, 5)
 		.frame(maxWidth: .infinity)

@@ -7,6 +7,7 @@ struct InsightsView: View {
 		@State private var deleteTrigger = UUID()
 		@State private var showHelpTooltip = false
 		@State private var showProUpgradeModal = false
+		@AppStorage("showRating", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var showRating: Bool = true
 	
 	private var currentBudgetDates: (startDate: Date, endDate: Date) {
 		let calendar = Calendar.current
@@ -133,10 +134,12 @@ struct InsightsView: View {
 							type: type,
 							expenses: currentExpenses,
 							startDate: currentBudgetDates.startDate,
-							endDate: currentBudgetDates.endDate
+							endDate: currentBudgetDates.endDate,
+							categories: store.categories,
+							isProUser: store.isProUser
 					)
 					.frame(height: 260)
-					.opacity(type.isProOnly && !store.isProUser ? 0.35 : 1.0)
+					
 					.id(type)
 					.transition(.asymmetric(insertion: .identity, removal: .move(edge: .top)))
 					.animation(.interpolatingSpring(stiffness: 300, damping: 20), value: deleteTrigger)
