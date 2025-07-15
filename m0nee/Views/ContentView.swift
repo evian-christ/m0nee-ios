@@ -28,6 +28,7 @@ struct ContentView: View {
 	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
 @AppStorage("groupByDay") private var groupByDay: Bool = true
 	@AppStorage("showRating") private var showRating: Bool = true
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 	
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
@@ -258,7 +259,7 @@ struct ContentView: View {
 							}
 							.layoutPriority(0.5)
 							Spacer()
-							Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+														Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.wrappedValue.amount)) ?? "")
 								.font(.system(size: 17, weight: .medium))
 								.foregroundColor(.primary)
 								.layoutPriority(1)
@@ -342,7 +343,7 @@ struct ContentView: View {
 							Spacer()
 
 							VStack(alignment: .trailing, spacing: 2) {
-								Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+															Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.wrappedValue.amount)) ?? "")
 									.font(.system(size: 17, weight: .medium))
 									.foregroundColor(.primary)
 
@@ -406,7 +407,7 @@ struct ContentView: View {
 									.fontWeight(.semibold)
 									.foregroundColor(.primary)
 									Spacer()
-									Text("\(currencySymbol)\(expense.wrappedValue.amount, specifier: "%.2f")")
+																Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.wrappedValue.amount)) ?? "")
 										.font(.system(size: 17, weight: .medium))
 										.foregroundColor(.primary)
 								}

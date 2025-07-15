@@ -62,6 +62,7 @@ struct AddExpenseView: View {
 	
 	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
 	@AppStorage("showRating") private var showRating: Bool = true
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 	@State private var showingDeleteAlert = false
 	@State private var showingDuplicateAlert = false
 	@State private var showAmountTooLargeAlert = false
@@ -181,7 +182,7 @@ struct AddExpenseView: View {
 	private var formattedAmount: String {
 		let digits = rawAmount.filter { $0.isWholeNumber }
 		let doubleValue = (Double(digits) ?? 0) / 100
-		return String(format: "\(currencySymbol)%.2f", doubleValue)
+		return NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: doubleValue)) ?? ""
 	}
 	
 	private var repeatDescription: LocalizedStringKey {

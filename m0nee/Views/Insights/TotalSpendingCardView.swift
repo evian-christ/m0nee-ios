@@ -4,8 +4,13 @@ import WidgetKit
 struct TotalSpendingCardView: View {
 	let expenses: [Expense]
 	let monthlyBudget: Double
-	let currencySymbol: String
+	let currencyCode: String
 	let budgetTrackingEnabled: Bool
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+
+	private var currencySymbol: String {
+		CurrencyManager.symbol(for: currencyCode)
+	}
 
 	var body: some View {
 		let amountSpent = expenses.reduce(0) { $0 + $1.amount }
@@ -18,12 +23,12 @@ struct TotalSpendingCardView: View {
 					.padding(.bottom, 4)
 				
 				if !budgetTrackingEnabled {
-					Text("\(currencySymbol)\(String(format: "%.2f", amountSpent))")
+										Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: amountSpent)) ?? "")
 						.font(.largeTitle)
 						.bold()
 						.padding(.top, -8)
 				} else {
-					Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", amountSpent, monthlyBudget))
+										Text("\(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: amountSpent)) ?? "") / \(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: monthlyBudget)) ?? "")")
 						.font(.title2)
 						.bold()
 					if monthlyBudget == 0 && amountSpent == 0 {

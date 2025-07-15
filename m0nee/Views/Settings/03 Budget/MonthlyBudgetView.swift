@@ -6,6 +6,7 @@ struct MonthlyBudgetView: View {
 	@AppStorage("budgetPeriod", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetPeriod: String = "Monthly"
 	@AppStorage("budgetByCategory", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetByCategory: Bool = false
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 	@ObservedObject var store: ExpenseStore
 
 	private var currencySymbol: String {
@@ -21,8 +22,8 @@ struct MonthlyBudgetView: View {
 		return 0
 	}
 	
-	var formattedBudget: String {
-		String(format: "\(currencySymbol)%.2f", monthlyBudget)
+		var formattedBudget: String {
+		NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: monthlyBudget)) ?? ""
 	}
 	
 	var body: some View {

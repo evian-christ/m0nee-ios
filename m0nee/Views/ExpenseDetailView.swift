@@ -3,6 +3,7 @@ import SwiftUI
 struct ExpenseDetailView: View {
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("showRating") private var showRating: Bool = true
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 	@Environment(\.colorScheme) private var colorScheme
 
 	private var currencySymbol: String {
@@ -69,7 +70,7 @@ struct ExpenseDetailView: View {
 
 							Spacer()
 
-							Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+														Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencySymbol).string(from: NSNumber(value: expense.amount)) ?? "")
 								.font(.title3.bold())
 							
 						}

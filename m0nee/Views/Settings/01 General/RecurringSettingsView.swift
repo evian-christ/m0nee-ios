@@ -3,6 +3,7 @@ import SwiftUI
 struct RecurringSettingsView: View {
 	@EnvironmentObject var store: ExpenseStore
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
 	}
@@ -34,7 +35,7 @@ struct RecurringSettingsView: View {
 							}
 							
 							// Title and rule
-																					VStack(alignment: .leading, spacing: 2) {
+															VStack(alignment: .leading, spacing: 2) {
 								Text(expense.name)
 									.font(.headline)
 									.foregroundColor(.primary)
@@ -46,7 +47,7 @@ struct RecurringSettingsView: View {
 							Spacer()
 							
 							// Amount and chevron
-							Text("\(currencySymbol)\(expense.amount, specifier: "%.2f")")
+							Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.amount)) ?? "")
 								.font(.system(size: 17, weight: .bold))
 								.foregroundColor(.primary)
 						}
@@ -105,6 +106,7 @@ extension RecurringSettingsView {
 		let recurring: RecurringExpense
 		@EnvironmentObject var store: ExpenseStore
 		@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+		@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 		@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.dismiss) private var dismiss
 	@State private var showingDeleteDialog = false
@@ -144,7 +146,7 @@ extension RecurringSettingsView {
 						}
 						Spacer()
 						// Amount on the right
-						Text("\(currencySymbol)\(recurring.amount, specifier: "%.2f")")
+												Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: recurring.amount)) ?? "")
 							.font(.title3.bold())
 					}
 					.padding()
@@ -225,7 +227,7 @@ extension RecurringSettingsView {
 				}
 			}
 			.sheet(isPresented: $showingEditSheet) {
-				EditRecurringExpenseView(recurringExpense: recurring)
+				EditRecurringExpenseView(recurringExpense: recurring, decimalDisplayMode: decimalDisplayMode, currencyCode: currencyCode)
 					.environmentObject(store)
 			}
 		}

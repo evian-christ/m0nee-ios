@@ -89,7 +89,7 @@ struct InsightCardView: View {
 						TotalSpendingCardView(
 							expenses: expenses,
 							monthlyBudget: monthlyBudget,
-							currencySymbol: currencySymbol,
+							currencyCode: currencyCode,
 							budgetTrackingEnabled: enableBudgetTracking
 						)
 					case .spendingTrend:

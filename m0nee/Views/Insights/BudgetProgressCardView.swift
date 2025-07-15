@@ -3,6 +3,7 @@ import SwiftUI
 struct BudgetProgressCardView: View {
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@AppStorage("enableBudgetTracking") private var budgetTrackingEnabled: Bool = true
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
@@ -38,7 +39,7 @@ struct BudgetProgressCardView: View {
 					.font(.headline)
 					.padding(.bottom, 4)
 
-				Text(String(format: "\(currencySymbol)%.2f / \(currencySymbol)%.2f", totalSpent, monthlyBudget))
+								Text("\(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: totalSpent)) ?? "") / \(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: monthlyBudget)) ?? "")")
 					.font(.title3)
 					.bold()
 					.foregroundColor(spendingProgress > timeProgress ? .red : .primary)

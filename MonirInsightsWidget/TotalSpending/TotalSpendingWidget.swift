@@ -15,37 +15,40 @@ struct TotalSpendingEntry: TimelineEntry {
 		let budget: Double
 		let currencySymbol: String
 		let isBudgetTrackingEnabled: Bool
+		let decimalDisplayMode: DecimalDisplayMode
 }
 
 struct TotalSpendingProvider: TimelineProvider {
 		func placeholder(in context: Context) -> TotalSpendingEntry {
-				TotalSpendingEntry(date: Date(), total: 123.45, budget: 500.0, currencySymbol: "$", isBudgetTrackingEnabled: true)
+				TotalSpendingEntry(date: Date(), total: 123.45, budget: 500.0, currencySymbol: "$", isBudgetTrackingEnabled: true, decimalDisplayMode: .automatic)
 		}
 
 		func getSnapshot(in context: Context, completion: @escaping (TotalSpendingEntry) -> ()) {
-				let (amountSpent, monthlyBudget, currencySymbol, budgetTrackingEnabled) = fetchWidgetData()
-				let entry = TotalSpendingEntry(date: Date(), total: amountSpent, budget: monthlyBudget, currencySymbol: currencySymbol, isBudgetTrackingEnabled: budgetTrackingEnabled)
+				let (amountSpent, monthlyBudget, currencySymbol, budgetTrackingEnabled, decimalDisplayMode) = fetchWidgetData()
+				let entry = TotalSpendingEntry(date: Date(), total: amountSpent, budget: monthlyBudget, currencySymbol: currencySymbol, isBudgetTrackingEnabled: budgetTrackingEnabled, decimalDisplayMode: decimalDisplayMode)
 				completion(entry)
 		}
 
 		func getTimeline(in context: Context, completion: @escaping (Timeline<TotalSpendingEntry>) -> ()) {
-				let (amountSpent, monthlyBudget, currencySymbol, budgetTrackingEnabled) = fetchWidgetData()
-				let entry = TotalSpendingEntry(date: Date(), total: amountSpent, budget: monthlyBudget, currencySymbol: currencySymbol, isBudgetTrackingEnabled: budgetTrackingEnabled)
+				let (amountSpent, monthlyBudget, currencySymbol, budgetTrackingEnabled, decimalDisplayMode) = fetchWidgetData()
+				let entry = TotalSpendingEntry(date: Date(), total: amountSpent, budget: monthlyBudget, currencySymbol: currencySymbol, isBudgetTrackingEnabled: budgetTrackingEnabled, decimalDisplayMode: decimalDisplayMode)
 				let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
 				let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
 				completion(timeline)
 		}
 
-		func fetchWidgetData() -> (Double, Double, String, Bool) {
+		func fetchWidgetData() -> (Double, Double, String, Bool, DecimalDisplayMode) {
             if let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir"),
                let data = sharedDefaults.data(forKey: "totalSpendingWidgetData"),
                let decodedData = try? JSONDecoder().decode(TotalSpendingWidgetData.self, from: data) {
-                return (decodedData.amountSpent, decodedData.monthlyBudget, decodedData.currencySymbol, decodedData.budgetTrackingEnabled)
+				let decimalDisplayMode = sharedDefaults.string(forKey: "decimalDisplayMode").flatMap(DecimalDisplayMode.init) ?? .automatic
+                return (decodedData.amountSpent, decodedData.monthlyBudget, decodedData.currencySymbol, decodedData.budgetTrackingEnabled, decimalDisplayMode)
             } else {
                 // Return a default/empty state if data isn't available
                 let currencyCode = UserDefaults(suiteName: "group.com.chankim.Monir")?.string(forKey: "currencyCode") ?? "USD"
                 let currencySymbol = CurrencyManager.symbol(for: currencyCode)
-                return (0, 0, currencySymbol, false)
+				let decimalDisplayMode = UserDefaults(suiteName: "group.com.chankim.Monir")?.string(forKey: "decimalDisplayMode").flatMap(DecimalDisplayMode.init) ?? .automatic
+                return (0, 0, currencySymbol, false, decimalDisplayMode)
             }
         }
 }
@@ -72,7 +75,7 @@ struct TotalSpendingWidgetEntryView: View {
 								.font(.subheadline.bold())
 								.foregroundColor(.primary)
 
-						Text("\(entry.currencySymbol)\(String(format: "%.2f", entry.total))")
+						Text(NumberFormatter.currency(for: entry.decimalDisplayMode, currencyCode: entry.currencySymbol).string(from: NSNumber(value: entry.total)) ?? "")
 								.font(.system(size: 18, weight: .semibold))
 								.foregroundColor(.primary)
 
@@ -95,7 +98,7 @@ struct TotalSpendingWidgetEntryView: View {
 								.foregroundColor(.primary)
 
 						if entry.isBudgetTrackingEnabled {
-								Text("\(entry.currencySymbol)\(String(format: "%.2f", entry.total)) / \(entry.currencySymbol)\(String(format: "%.2f", entry.budget))")
+								Text("\(NumberFormatter.currency(for: entry.decimalDisplayMode, currencyCode: entry.currencySymbol).string(from: NSNumber(value: entry.total)) ?? "") / \(NumberFormatter.currency(for: entry.decimalDisplayMode, currencyCode: entry.currencySymbol).string(from: NSNumber(value: entry.budget)) ?? "")")
 										.font(.system(size: 18, weight: .semibold))
 										.foregroundColor(.primary)
 
@@ -106,7 +109,7 @@ struct TotalSpendingWidgetEntryView: View {
 										.font(.system(size: 12, weight: .medium))
 										.foregroundColor(.secondary)
 						} else {
-								Text("\(entry.currencySymbol)\(String(format: "%.2f", entry.total))")
+								Text(NumberFormatter.currency(for: entry.decimalDisplayMode, currencyCode: entry.currencySymbol).string(from: NSNumber(value: entry.total)) ?? "")
 										.font(.system(size: 18, weight: .semibold))
 										.foregroundColor(.primary)
 						}

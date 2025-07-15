@@ -58,7 +58,9 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Extensions/CurrencyManager.swift,
+				"Extensions/NumberFormatter+Extensions.swift",
 				Localization/Localizable.xcstrings,
+				Models/DecimalDisplayMode.swift,
 			);
 			target = 646CEEB12DECB62B00B3D14A /* MonirInsightsWidgetExtension */;
 		};

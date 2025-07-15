@@ -3,6 +3,7 @@ import SwiftUI
 struct AppearanceSettingsView: View {
 	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
 	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 
 	var body: some View {
 		Form {
@@ -20,6 +21,11 @@ struct AppearanceSettingsView: View {
 				Picker("Currency", selection: $currencyCode) {
 					ForEach(CurrencyManager.currencyOptions, id: \.code) { option in
 						Text("\(option.code) (\(option.symbol))").tag(option.code)
+					}
+				}
+				Picker("Decimal Places", selection: $decimalDisplayMode) {
+					ForEach(DecimalDisplayMode.allCases) { mode in
+						Text(mode.rawValue).tag(mode)
 					}
 				}
 			}

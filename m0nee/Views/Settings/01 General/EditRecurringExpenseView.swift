@@ -17,11 +17,12 @@ struct EditRecurringExpenseView: View {
     @State private var showFieldValidation = false
 
     @AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+    @AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
 
-    init(recurringExpense: RecurringExpense) {
+    init(recurringExpense: RecurringExpense, decimalDisplayMode: DecimalDisplayMode, currencyCode: String) {
         _recurringExpense = State(initialValue: recurringExpense)
         _name = State(initialValue: recurringExpense.name)
-        _rawAmount = State(initialValue: String(format: "%.2f", recurringExpense.amount))
+        _rawAmount = State(initialValue: NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: recurringExpense.amount)) ?? "")
         _category = State(initialValue: recurringExpense.category)
         _memo = State(initialValue: recurringExpense.memo ?? "")
         _details = State(initialValue: recurringExpense.details ?? "")
@@ -29,6 +30,10 @@ struct EditRecurringExpenseView: View {
 
     private var currencySymbol: String {
         CurrencyManager.symbol(for: currencyCode)
+    }
+
+    private var formattedAmount: String {
+        NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: Double(rawAmount) ?? 0)) ?? ""
     }
 
     var body: some View {
