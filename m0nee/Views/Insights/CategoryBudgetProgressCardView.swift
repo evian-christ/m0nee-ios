@@ -20,7 +20,7 @@ struct CategoryBudgetProgressCardView: View {
 		let grouped = Dictionary(grouping: expenses) { $0.category }
 		let spendingPerCategory = grouped.mapValues { $0.reduce(0) { $0 + $1.amount } }
 		
-		print("categoryBudgets:", categoryBudgets)
+		
 		
 		return ZStack {
 			ScrollView {

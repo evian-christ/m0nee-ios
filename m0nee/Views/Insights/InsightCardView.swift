@@ -110,7 +110,7 @@ struct InsightCardView: View {
 						)
 					case .categoryBudgetProgress:
 						let categoryBudgetDict: [String: Double] = {
-							guard let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+							guard let data = UserDefaults(suiteName: "group.com.chankim.Monir")?.data(forKey: "categoryBudgets"),
 										let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
 								return [:]
 							}

@@ -748,7 +748,14 @@
       }
     },
     "Delete Category" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카테고리 삭제"
+          }
+        }
+      }
     },
     "Delete Expense" : {
       "localizations" : {
@@ -904,7 +911,14 @@
 
     },
     "Edit Category" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카테고리 편집"
+          }
+        }
+      }
     },
     "Edit Recurring Expense" : {
       "localizations" : {
@@ -1432,12 +1446,19 @@
       }
     },
     "Misc" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기타"
+          }
+        }
+      }
     },
     "Monir Pro" : {
 
     },
-    "Monir v1.3.3" : {
+    "Monir v1.3.4" : {
 
     },
     "month" : {
