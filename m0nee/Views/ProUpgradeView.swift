@@ -11,6 +11,7 @@ struct ProUpgradeModalView: View {
 	@State private var products: [Product] = []
 	@State private var currentProductID: String?
 	@State private var showCancelSubscriptionAlert = false
+	@EnvironmentObject var expenseStore: ExpenseStore
 
 	var body: some View {
 			ScrollView {
@@ -63,8 +64,9 @@ struct ProUpgradeModalView: View {
 																			case .success(let verification):
 																					switch verification {
 																					case .verified(_):
+																							expenseStore.productID = monthly.id
 																							UserDefaults.standard.set(true, forKey: "isProUser")
-																										NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
+																							NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
 																							if currentProductID == "com.chan.monir.pro.monthly" {
 																								showCancelSubscriptionAlert = true
 																							} else {
@@ -112,24 +114,25 @@ struct ProUpgradeModalView: View {
 																			case .success(let verification):
 																					switch verification {
 																					case .verified(_):
+																							expenseStore.productID = lifetime.id
 																							UserDefaults.standard.set(true, forKey: "isProUser")
-																										NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
+																							NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
 
 																							// Re-check entitlements for a monthly subscription
 																							var hasMonthly = false
 																							for await result in Transaction.currentEntitlements {
-																									if case .verified(let transaction) = result,
-																										 transaction.productID == "com.chan.monir.pro.monthly" {
-																											hasMonthly = true
-																											break
-																									}
+																								if case .verified(let transaction) = result,
+																									 transaction.productID == "com.chan.monir.pro.monthly" {
+																										hasMonthly = true
+																										break
+																								}
 																							}
 
 																							if hasMonthly {
-																									showCancelSubscriptionAlert = true
+																								showCancelSubscriptionAlert = true
 																							} else {
-																									isPresented = false
-																									dismiss()
+																								isPresented = false
+																								dismiss()
 																							}
 																					case .unverified(_, _):
 																							print("🔒 Unverified purchase.")
@@ -203,4 +206,3 @@ struct ProUpgradeModalView: View {
 			}
 	}
 }
- 
