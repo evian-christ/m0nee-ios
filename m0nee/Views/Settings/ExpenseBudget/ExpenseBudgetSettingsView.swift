@@ -42,7 +42,7 @@ struct ExpenseBudgetSettingsView: View {
                 }
                 Picker("Decimal Places", selection: $decimalDisplayMode) {
                     ForEach(DecimalDisplayMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(mode.localizedTitle).tag(mode)
                     }
                 }
             }
