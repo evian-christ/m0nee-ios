@@ -342,12 +342,12 @@
         }
       }
     },
-    "Are you sure you want to restore all settings to default?" : {
+    "Are you sure you want to restore all settings to their default values?" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모든 설정을 초기화 하시겠습니까?"
+            "value" : "모든 설정을 초기값으로 되돌리시겠습니까?"
           }
         }
       }
@@ -358,6 +358,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "자동"
+          }
+        }
+      }
+    },
+    "Backup & Restore" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업 및 복원"
           }
         }
       }
@@ -517,12 +527,12 @@
         }
       }
     },
-    "Change Language in Settings" : {
+    "Change Language in System Settings" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "설정 앱에서 언어 변경"
+            "value" : "시스템 설정에서 언어 변경"
           }
         }
       }
@@ -597,6 +607,16 @@
         }
       }
     },
+    "Configuration" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "환경 설정"
+          }
+        }
+      }
+    },
     "Configure your budget to get started." : {
       "localizations" : {
         "ko" : {
@@ -627,12 +647,12 @@
         }
       }
     },
-    "Currency Symbol" : {
+    "Currency & Formatting" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "화폐 심볼"
+            "value" : "통화 및 형식"
           }
         }
       }
@@ -683,6 +703,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "다크 모드"
+          }
+        }
+      }
+    },
+    "Data & Sync" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터 및 동기화"
           }
         }
       }
@@ -781,7 +811,14 @@
       }
     },
     "Delete \"%@\"" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” 삭제"
+          }
+        }
+      }
     },
     "Delete \"%@\"?" : {
       "localizations" : {
@@ -954,7 +991,14 @@
       }
     },
     "Edit %@" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "편집"
+          }
+        }
+      }
     },
     "Edit Category" : {
       "localizations" : {
@@ -976,18 +1020,6 @@
         }
       }
     },
-    "Enable Budget by Category in Settings to see this card." : {
-      "comment" : "Message when category budget is disabled",
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 카드를 보려면 설정에서 카테고리별 예산 기능을 켜세요."
-          }
-        }
-      }
-    },
     "Enable Budget Tracking" : {
       "localizations" : {
         "ko" : {
@@ -998,36 +1030,12 @@
         }
       }
     },
-    "Enable Budget Tracking in Settings to see this card." : {
-      "comment" : "Message when budget tracking is disabled",
-      "extractionState" : "stale",
+    "Enable Expense Ratings" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 카드를 보려면 설정에서 예산 관리를 켜세요."
-          }
-        }
-      }
-    },
-    "Enable Ratings" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "만족도 활성화"
-          }
-        }
-      }
-    },
-    "Enable Ratings in Settings to see this card." : {
-      "comment" : "Message when ratings are disabled",
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 카드를 보려면 설정에서 만족도 기능을 켜세요."
+            "value" : "지출 만족도 활성화"
           }
         }
       }
@@ -1082,22 +1090,12 @@
         }
       }
     },
-    "Erase All Settings & Data" : {
+    "Erase All Data" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모든 설정 및 데이터 초기화"
-          }
-        }
-      }
-    },
-    "Erase Everything" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "모두 지우기"
+            "value" : "모든 설정 및 데이터 삭제"
           }
         }
       }
@@ -1172,12 +1170,12 @@
         }
       }
     },
-    "Expense" : {
+    "Expense & Budget" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지출"
+            "value" : "지출 및 예산"
           }
         }
       }
@@ -1202,12 +1200,12 @@
         }
       }
     },
-    "Export & Import" : {
+    "Export & Import Data" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "내보내기 및 가져오기"
+            "value" : "데이터 내보내기 및 가져오기"
           }
         }
       }
@@ -1262,16 +1260,6 @@
         }
       }
     },
-    "General" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "일반"
-          }
-        }
-      }
-    },
     "general_settings_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1309,12 +1297,12 @@
         }
       }
     },
-    "Group expenses by day" : {
+    "Group Expenses by Day" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지출을 일별로 그룹화"
+            "value" : "날짜별 지출 그룹화"
           }
         }
       }
@@ -1331,9 +1319,6 @@
           }
         }
       }
-    },
-    "iCloud" : {
-
     },
     "Import Data" : {
       "localizations" : {
@@ -1452,17 +1437,25 @@
       }
     },
     "Lowest Rated Spending" : {
-      "comment" : "Title for the Lowest Rated Spending insight card"
-    },
-    "Made with ❤️ in SwiftUI" : {
-
-    },
-    "Main screen" : {
+      "comment" : "Title for the Lowest Rated Spending insight card",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "메인 화면"
+            "value" : "최저 만족도 지출\t"
+          }
+        }
+      }
+    },
+    "Made with ❤️ in SwiftUI" : {
+
+    },
+    "Main Screen Layout" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메인 화면 레이아웃"
           }
         }
       }
@@ -1497,12 +1490,12 @@
         }
       }
     },
-    "Misc" : {
+    "Management" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "기타"
+            "value" : "관리"
           }
         }
       }
@@ -1604,7 +1597,14 @@
       }
     },
     "No expenses with 3 stars or lower found." : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "만족도 3점 이하 지출이 없습니다."
+          }
+        }
+      }
     },
     "No Insight Cards Added" : {
       "localizations" : {
@@ -1640,7 +1640,14 @@
 
     },
     "OK" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
+          }
+        }
+      }
     },
     "On" : {
 
@@ -1671,6 +1678,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "선택 사항"
+          }
+        }
+      }
+    },
+    "Options" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "맞춤 설정"
           }
         }
       }
@@ -1865,16 +1882,6 @@
         }
       }
     },
-    "Restore Settings" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "설정 초기화"
-          }
-        }
-      }
-    },
     "Save" : {
       "localizations" : {
         "ko" : {
@@ -1961,6 +1968,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "예산 설정하기"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정"
           }
         }
       }
@@ -2089,32 +2106,32 @@
         }
       }
     },
-    "Storage" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "데이터 관리"
-          }
-        }
-      }
-    },
-    "Storage & Export" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "데이터 저장 및 내보내기"
-          }
-        }
-      }
-    },
     "Subscribe – %@ / month" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "구독하기 - 월 %@"
+          }
+        }
+      }
+    },
+    "Support & Pro" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지원 및 Pro"
+          }
+        }
+      }
+    },
+    "Sync" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화"
           }
         }
       }
@@ -2182,12 +2199,12 @@
         }
       }
     },
-    "This will delete all expenses and reset all settings and categories to default. This action cannot be undone." : {
+    "This will permanently delete all of your expenses, categories, and recurring rules. This action cannot be undone." : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모든 지출 내역이 삭제되고, 설정과 카테고리가 초기 상태로 되돌아갑니다. 이 작업은 되돌릴 수 없습니다."
+            "value" : "모든 지출, 카테고리, 반복 규칙이 영구 삭제됩니다. 이 작업은 취소할 수 없습니다."
           }
         }
       }
@@ -2261,16 +2278,6 @@
         }
       }
     },
-    "Usability" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사용성"
-          }
-        }
-      }
-    },
     "Use Budget Tracking" : {
       "localizations" : {
         "ko" : {
@@ -2281,12 +2288,12 @@
         }
       }
     },
-    "Use iCloud for Data" : {
+    "Use iCloud" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iCloud에 저장"
+            "value" : "iCloud 사용"
           }
         }
       }
@@ -2300,6 +2307,9 @@
           }
         }
       }
+    },
+    "Visuals" : {
+
     },
     "week" : {
       "localizations" : {
