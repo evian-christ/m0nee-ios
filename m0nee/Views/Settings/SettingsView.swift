@@ -15,6 +15,9 @@ struct SettingsView: View {
                 NavigationLink(destination: DataSyncSettingsView(store: store)) {
                     Label("Data & Sync", systemImage: "arrow.2.squarepath")
                 }
+                NavigationLink(destination: NotificationSettingsView()) {
+                    Label("Notifications", systemImage: "bell.badge.fill")
+                }
             }
 
             Section(header: Text("Support & Pro")) {
