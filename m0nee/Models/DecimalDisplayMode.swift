@@ -10,11 +10,11 @@ enum DecimalDisplayMode: String, CaseIterable, Identifiable, Codable {
 	var localizedTitle: String {
 		switch self {
 		case .automatic:
-			return NSLocalizedString("DecimalDisplayMode.Automatic", comment: "Automatic decimal display mode")
+			return NSLocalizedString("Automatic", comment: "Automatic decimal display mode")
 		case .twoPlaces:
-			return NSLocalizedString("DecimalDisplayMode.TwoPlaces", comment: "Two decimal places")
+			return NSLocalizedString("Two Places", comment: "Two decimal places")
 		case .none:
-			return NSLocalizedString("DecimalDisplayMode.None", comment: "No decimals")
+			return NSLocalizedString("None", comment: "No decimals")
 		}
 	}
 }

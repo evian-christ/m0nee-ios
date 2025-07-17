@@ -353,6 +353,7 @@
       }
     },
     "Automatic" : {
+      "comment" : "Automatic decimal display mode",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -767,39 +768,6 @@
         }
       }
     },
-    "DecimalDisplayMode.Automatic" : {
-      "comment" : "Automatic decimal display mode",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "자동"
-          }
-        }
-      }
-    },
-    "DecimalDisplayMode.None" : {
-      "comment" : "No decimals",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "표시 안 함"
-          }
-        }
-      }
-    },
-    "DecimalDisplayMode.TwoPlaces" : {
-      "comment" : "Two decimal places",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "둘째 자리까지"
-          }
-        }
-      }
-    },
     "Delete" : {
       "localizations" : {
         "ko" : {
@@ -1016,6 +984,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "반복 지출 편집"
+          }
+        }
+      }
+    },
+    "Enable 'Budget Tracking' and 'Budget by Category' in Budget Settings to view this insight." : {
+      "comment" : "Message shown when 'Budget Tracking' or 'Budget by Category' is disabled",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘예산 관리’ 및 ‘카테고리별 예산’ 설정을 활성화 하십시오"
+          }
+        }
+      }
+    },
+    "Enable 'Budget Tracking' in Budget Settings to view this insight." : {
+      "comment" : "Message shown when 'Budget Tracking' is disabled",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘예산 관리’ 설정을 활성화 하십시오"
+          }
+        }
+      }
+    },
+    "Enable 'Show Rating' in General Settings to view this insight." : {
+      "comment" : "Message shown when 'Show Rating' is disabled",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘지출 만족도’ 설정을 활성화 하십시오"
           }
         }
       }
@@ -1622,6 +1623,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "반복 지출 없음"
+          }
+        }
+      }
+    },
+    "None" : {
+      "comment" : "No decimals",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "표시 안 함"
           }
         }
       }
@@ -2248,6 +2260,17 @@
     "Trailing" : {
 
     },
+    "Two Places" : {
+      "comment" : "Two decimal places",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘째자리 까지"
+          }
+        }
+      }
+    },
     "Unlock powerful features to manage your money better." : {
       "localizations" : {
         "ko" : {
@@ -2274,6 +2297,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Monir Pro로 업그레이드"
+          }
+        }
+      }
+    },
+    "Upgrade to Monir Pro to unlock this feature." : {
+      "comment" : "Message shown when a pro feature is locked",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monir Pro 이용자 전용입니다."
           }
         }
       }

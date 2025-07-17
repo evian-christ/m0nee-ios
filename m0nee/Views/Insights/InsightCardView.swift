@@ -96,15 +96,15 @@ struct InsightCardView: View {
 	
 	private var blurMessage: String {
 			if type.isProOnly && !isProUser {
-				return "Upgrade to Monir Pro to unlock this feature."
+				return NSLocalizedString("Upgrade to Monir Pro to unlock this feature.", comment: "Message shown when a pro feature is locked")
 			}
 			switch type {
 			case .categoryRating, .lowestRatedSpending:
-				return "Enable 'Show Rating' in General Settings to view this insight."
+				return NSLocalizedString("Enable 'Show Rating' in General Settings to view this insight.", comment: "Message shown when 'Show Rating' is disabled")
 			case .budgetProgress:
-				return "Enable 'Budget Tracking' in Budget Settings to view this insight."
+				return NSLocalizedString("Enable 'Budget Tracking' in Budget Settings to view this insight.", comment: "Message shown when 'Budget Tracking' is disabled")
 			case .categoryBudgetProgress:
-				return "Enable 'Budget Tracking' and 'Budget by Category' in Budget Settings to view this insight."
+				return NSLocalizedString("Enable 'Budget Tracking' and 'Budget by Category' in Budget Settings to view this insight.", comment: "Message shown when 'Budget Tracking' or 'Budget by Category' is disabled")
 			default:
 				return ""
 			}
