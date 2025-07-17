@@ -688,6 +688,9 @@
         }
       }
     },
+    "Daily check-in time" : {
+      "comment" : "Notification Title"
+    },
     "Danger Zone" : {
       "localizations" : {
         "ko" : {
@@ -1027,6 +1030,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "예산 관리 켜기"
+          }
+        }
+      }
+    },
+    "Enable Daily Reminders" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일일 리마인더 활성화"
           }
         }
       }
@@ -1417,6 +1430,9 @@
         }
       }
     },
+    "Log today’s spending before you forget." : {
+      "comment" : "Notification Body"
+    },
     "Long-press a card\nand select \"Add to Favourite\"\nto add it to the main screen." : {
       "localizations" : {
         "ko" : {
@@ -1648,11 +1664,51 @@
         }
       }
     },
-    "Notification Settings" : {
-
+    "notification_body" : {
+      "comment" : "Notification Body",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Don't forget to log your expenses for today."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금 간단히 입력해보세요."
+          }
+        }
+      }
+    },
+    "notification_title" : {
+      "comment" : "Notification Title",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Time to add expenses!"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 소비, 기록하셨나요?"
+          }
+        }
+      }
     },
     "Notifications" : {
-
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알림"
+          }
+        }
+      }
     },
     "Off" : {
 
@@ -1816,6 +1872,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "반복 지출"
+          }
+        }
+      }
+    },
+    "Reminder Time" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "리마인더 시간"
           }
         }
       }
