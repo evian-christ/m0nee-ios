@@ -92,7 +92,10 @@ class ExpenseStore: ObservableObject {
 				}
 
 				print("💾 Using saveURL: \(saveURL.path)")
-				if !forTesting { load() }
+				if !forTesting {
+						load()
+						cleanupOrphanedCategoryBudgets()
+				}
 				if categories.isEmpty && !forTesting {
 					categories = [
 						CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
@@ -135,22 +138,57 @@ class ExpenseStore: ObservableObject {
 			guard let index = categories.firstIndex(where: { $0.id == category.id }) else {
 				return
 			}
+			
 			let oldCategoryName = categories[index].name
+			let newCategoryName = category.name
+			
+			// Update the category itself
 			categories[index] = category
 			
-			for i in expenses.indices {
-				if expenses[i].category == oldCategoryName {
-					expenses[i].category = category.name
+			// If the name changed, migrate the budget and update expenses
+			if oldCategoryName != newCategoryName {
+				// Migrate budget
+				var budgets = loadBudgets()
+				if let budgetValue = budgets.removeValue(forKey: oldCategoryName) {
+					budgets[newCategoryName] = budgetValue
+					saveBudgets(budgets)
 				}
-			}
-			
-			for i in recurringExpenses.indices {
-				if recurringExpenses[i].category == oldCategoryName {
-					recurringExpenses[i].category = category.name
+				
+				// Update expenses
+				for i in expenses.indices {
+					if expenses[i].category == oldCategoryName {
+						expenses[i].category = newCategoryName
+					}
+				}
+				
+				// Update recurring expenses
+				for i in recurringExpenses.indices {
+					if recurringExpenses[i].category == oldCategoryName {
+						recurringExpenses[i].category = newCategoryName
+					}
 				}
 			}
 			
 			save()
+		}
+
+		private func cleanupOrphanedCategoryBudgets() {
+			let validCategoryNames = Set(categories.map { $0.name })
+			var budgets = loadBudgets()
+			let originalBudgetCount = budgets.count
+			
+			budgets = budgets.filter { validCategoryNames.contains($0.key) }
+			
+			if budgets.count < originalBudgetCount {
+				saveBudgets(budgets)
+				
+				// Recalculate and update the main monthly budget
+				let totalBudgetFromCategories = budgets.values.compactMap { Double($0) }.reduce(0, +)
+				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+				sharedDefaults?.set(totalBudgetFromCategories, forKey: "monthlyBudget")
+				
+				print("🧹 Cleaned up \(originalBudgetCount - budgets.count) orphaned category budget(s) and updated monthly budget.")
+			}
 		}
 
 		private func ensureCategoryBudgetEntry(for name: String) {
@@ -168,7 +206,8 @@ class ExpenseStore: ObservableObject {
 		}
 
 		private func loadBudgets() -> [String: String] {
-				if let data = UserDefaults.standard.data(forKey: "categoryBudgets"),
+				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+				if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
 						let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
 						return decoded
 				}
@@ -177,7 +216,9 @@ class ExpenseStore: ObservableObject {
 
 		private func saveBudgets(_ budgets: [String: String]) {
 				if let encoded = try? JSONEncoder().encode(budgets) {
-						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
+						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
+						sharedDefaults?.set(encoded, forKey: "categoryBudgets")
+						updateTotalSpendingWidgetData()
 				}
 		}
 
