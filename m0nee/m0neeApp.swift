@@ -3,7 +3,6 @@ import StoreKit
 
 @main
 struct m0neeApp: App {
-		let persistenceController = PersistenceController.shared
 		let store = ExpenseStore()
 
 		init() {
@@ -31,7 +30,6 @@ struct m0neeApp: App {
 		var body: some Scene {
 				WindowGroup {
 						RootView()
-								.environment(\.managedObjectContext, persistenceController.container.viewContext)
 								.environmentObject(store)
 				}
 		}
