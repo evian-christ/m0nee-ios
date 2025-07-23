@@ -664,8 +664,7 @@ struct ContentView: View {
 					var foundEntitlement = false
 					for await result in Transaction.currentEntitlements {
 						if case .verified(let transaction) = result {
-							if transaction.productID == "com.chan.monir.pro.monthly" ||
-								transaction.productID == "com.chan.monir.pro.lifetime" {
+							if transaction.productID == "com.chan.monir.pro.lifetime" {
 								store.productID = transaction.productID
 								foundEntitlement = true
 								break

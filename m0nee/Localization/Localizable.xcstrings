@@ -273,6 +273,7 @@
       }
     },
     "Already Subscribed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -437,6 +438,7 @@
       }
     },
     "Cancel your monthly subscription" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -579,6 +581,7 @@
       }
     },
     "Close" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1421,6 +1424,7 @@
       }
     },
     "Loading subscription..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1488,6 +1492,7 @@
       }
     },
     "Manage Subscription" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1520,7 +1525,7 @@
     "Monir Pro" : {
 
     },
-    "Monir v1.4.0" : {
+    "Monir v1.4.1" : {
 
     },
     "month" : {
@@ -1737,6 +1742,7 @@
       }
     },
     "Open App Store" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2191,6 +2197,7 @@
       }
     },
     "Subscribe – %@ / month" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2264,6 +2271,7 @@
       }
     },
     "This is a 1-month auto-renewed subscription for %@/month until cancelled." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2478,6 +2486,7 @@
       }
     },
     "You’ve purchased a lifetime plan. Please cancel your monthly subscription in the App Store to avoid being charged again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {

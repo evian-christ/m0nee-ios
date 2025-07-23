@@ -27,7 +27,7 @@ class ExpenseStore: ObservableObject {
 		} // Track promo code activation
 
 		var isProUser: Bool {
-			return productID == "com.chan.monir.pro.monthly" || productID == "com.chan.monir.pro.lifetime" || isPromoProUser
+			return productID == "com.chan.monir.pro.lifetime" || isPromoProUser
 		}
 		@Published var categories: [CategoryItem] = []
 		@Published var recurringExpenses: [RecurringExpense] = []

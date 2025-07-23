@@ -31,7 +31,7 @@ struct SettingsView: View {
             
             Section {
                 VStack(alignment: .center) {
-                    Text("Monir v1.4.0")
+                    Text("Monir v1.4.1")
                         .font(.footnote)
                         .foregroundColor(.gray)
                     Text("Made with ❤️ in SwiftUI")

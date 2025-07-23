@@ -85,45 +85,6 @@
       }
     ]
   },
-  "subscriptionGroups" : [
-    {
-      "id" : "4B044373",
-      "localizations" : [
-
-      ],
-      "name" : "Monir Pro",
-      "subscriptions" : [
-        {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "1.99",
-          "familyShareable" : true,
-          "groupNumber" : 1,
-          "internalID" : "728EF78F",
-          "introductoryOffer" : null,
-          "localizations" : [
-            {
-              "description" : "",
-              "displayName" : "Monir Pro Monthly",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "com.chan.monir.pro.monthly",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "MonirProMonthly",
-          "subscriptionGroupID" : "4B044373",
-          "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
-        }
-      ]
-    }
-  ],
   "version" : {
     "major" : 4,
     "minor" : 0

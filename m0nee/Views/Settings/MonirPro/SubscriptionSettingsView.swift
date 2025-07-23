@@ -13,8 +13,6 @@ struct SubscriptionSettingsView: View {
 						return "Monir Pro (Promo)"
 				}
 				switch expenseStore.productID {
-				case "com.chan.monir.pro.monthly":
-						return "Monir Pro Monthly"
 				case "com.chan.monir.pro.lifetime":
 						return "Monir Pro Lifetime"
 				case "free":
@@ -41,13 +39,7 @@ struct SubscriptionSettingsView: View {
 												showUpgradeModal = true
 										}
 								}
-						}
-						if expenseStore.productID == "com.chan.monir.pro.monthly" {
-								Section {
-										Link("Manage Subscription", destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
-								}
-						}
-						Section {
+						
 								Button("Restore Purchase") {
 										Task {
 												do {
@@ -108,8 +100,7 @@ struct SubscriptionSettingsView: View {
 						var foundEntitlement = false
 						for await result in Transaction.currentEntitlements {
 								if case .verified(let transaction) = result {
-										if transaction.productID == "com.chan.monir.pro.monthly" ||
-											transaction.productID == "com.chan.monir.pro.lifetime" {
+										if transaction.productID == "com.chan.monir.pro.lifetime" {
 												expenseStore.productID = transaction.productID
 												foundEntitlement = true
 												break

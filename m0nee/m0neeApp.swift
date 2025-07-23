@@ -15,8 +15,7 @@ struct m0neeApp: App {
 								switch result {
 								case .verified(let transaction):
 										print("✅ Transaction update received: \(transaction.productID)")
-										if transaction.productID == "com.chan.monir.pro.monthly" ||
-											 transaction.productID == "com.chan.monir.pro.lifetime" {
+										if transaction.productID == "com.chan.monir.pro.lifetime" {
 												store.productID = transaction.productID
 										}
 										await transaction.finish()
