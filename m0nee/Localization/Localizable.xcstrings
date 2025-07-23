@@ -86,101 +86,11 @@
     "%lld%% used" : {
 
     },
-    "⭐️  Enable Rating" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⭐️ 지출 만족도"
-          }
-        }
-      }
-    },
-    "⭐️ Enable Rating" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⭐️ 지출 만족도"
-          }
-        }
-      }
-    },
-    "💰  Budget Amount" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "💰  예산 금액"
-          }
-        }
-      }
-    },
-    "💰 Budget Amount" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "💰  예산 금액"
-          }
-        }
-      }
-    },
-    "📊  Budget Tracking" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "📊  예산 관리"
-          }
-        }
-      }
-    },
-    "📊 Budget Tracking" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "📊  예산 추적 활성화"
-          }
-        }
-      }
-    },
-    "🗓️  Budget Period" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "🗓️  예산 주기 설정"
-          }
-        }
-      }
-    },
-    "🗓️ Budget Period" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "🗓️  예산 주기 설정"
-          }
-        }
-      }
-    },
     "0.00" : {
 
     },
     "A an example control that runs a timer." : {
 
-    },
-    "A few taps are all it takes to log your spending." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "빠르고 간편하게 지출을 추가하세요."
-          }
-        }
-      }
     },
     "A similar expense already exists. Are you sure you want to add this?" : {
       "localizations" : {
@@ -268,17 +178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "전체"
-          }
-        }
-      }
-    },
-    "Already Subscribed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이미 구독 중"
           }
         }
       }
@@ -437,17 +336,6 @@
         }
       }
     },
-    "Cancel your monthly subscription" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "월간 구독 해지"
-          }
-        }
-      }
-    },
     "Categories" : {
       "localizations" : {
         "ko" : {
@@ -550,43 +438,12 @@
         }
       }
     },
-    "Choose how often your budget resets." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예산 초기화 주기를 선택하세요."
-          }
-        }
-      }
-    },
     "Choose Icon" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "아이콘 선택"
-          }
-        }
-      }
-    },
-    "Choose whether to rate your expenses (1–5 stars) for later insights." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지출에 별점(1~5점)을 매겨 유용한 인사이트를 얻으세요."
-          }
-        }
-      }
-    },
-    "Close" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "닫기"
           }
         }
       }
@@ -617,16 +474,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "환경 설정"
-          }
-        }
-      }
-    },
-    "Configure your budget to get started." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기본적인 설정을 진행합니다."
           }
         }
       }
@@ -692,7 +539,15 @@
       }
     },
     "Daily check-in time" : {
-      "comment" : "Notification Title"
+      "comment" : "Notification Title",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지출을 기록해볼까요?"
+          }
+        }
+      }
     },
     "Danger Zone" : {
       "localizations" : {
@@ -914,26 +769,6 @@
         }
       }
     },
-    "Don't Use Budget Tracking" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예산 관리 비활성화"
-          }
-        }
-      }
-    },
-    "Don't Use Ratings" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사용 안 함"
-          }
-        }
-      }
-    },
     "Done" : {
       "localizations" : {
         "ko" : {
@@ -1077,16 +912,6 @@
         }
       }
     },
-    "Enter amount" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "액수를 입력하세요"
-          }
-        }
-      }
-    },
     "Enter budget for %@" : {
       "localizations" : {
         "ko" : {
@@ -1207,16 +1032,6 @@
         }
       }
     },
-    "Explore insights" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "인사이트 탐색하기"
-          }
-        }
-      }
-    },
     "Export & Import Data" : {
       "localizations" : {
         "ko" : {
@@ -1294,6 +1109,9 @@
         }
       }
     },
+    "Get Started" : {
+
+    },
     "Go to the Insights tab and long-press on cards to add them here." : {
       "localizations" : {
         "ko" : {
@@ -1357,16 +1175,6 @@
         }
       }
     },
-    "Initial settings" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "초기 설정"
-          }
-        }
-      }
-    },
     "Insights" : {
       "localizations" : {
         "ko" : {
@@ -1393,16 +1201,6 @@
     "Leading" : {
 
     },
-    "Let’s set you up" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시작해볼까요?"
-          }
-        }
-      }
-    },
     "Light" : {
       "localizations" : {
         "ko" : {
@@ -1423,19 +1221,16 @@
         }
       }
     },
-    "Loading subscription..." : {
-      "extractionState" : "stale",
+    "Log today’s spending before you forget." : {
+      "comment" : "Notification Body",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "로딩 중..."
+            "value" : "오늘 사용한 지출을 모두 기록하세요."
           }
         }
       }
-    },
-    "Log today’s spending before you forget." : {
-      "comment" : "Notification Body"
     },
     "Long-press a card\nand select \"Add to Favourite\"\nto add it to the main screen." : {
       "localizations" : {
@@ -1443,16 +1238,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "카드를 길게 눌러 ‘즐겨찾기에 추가’를 선택하면 메인 화면에 표시됩니다."
-          }
-        }
-      }
-    },
-    "Long-press a card to add it to your main screen." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "카드를 길게 눌러 메인 화면에 추가하세요."
           }
         }
       }
@@ -1487,27 +1272,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "카테고리 관리"
-          }
-        }
-      }
-    },
-    "Manage Subscription" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "구독 관리"
-          }
-        }
-      }
-    },
-    "Manage your money with monthly or category-specific budgets." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "월/주간 및 카테고리별 예산을 설정하세요."
           }
         }
       }
@@ -1669,42 +1433,6 @@
         }
       }
     },
-    "notification_body" : {
-      "comment" : "Notification Body",
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Don't forget to log your expenses for today."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지금 간단히 입력해보세요."
-          }
-        }
-      }
-    },
-    "notification_title" : {
-      "comment" : "Notification Title",
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Time to add expenses!"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘 소비, 기록하셨나요?"
-          }
-        }
-      }
-    },
     "Notifications" : {
       "localizations" : {
         "ko" : {
@@ -1737,17 +1465,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "선택한 날짜에"
-          }
-        }
-      }
-    },
-    "Open App Store" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱스토어 열기"
           }
         }
       }
@@ -1828,16 +1545,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "만족도"
-          }
-        }
-      }
-    },
-    "Record your expenses" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지출 기록하기"
           }
         }
       }
@@ -2022,37 +1729,7 @@
         }
       }
     },
-    "Set a spending limit to stay in control.\nYou can pick how often later." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "지출 한도를 설정해 소비를 효율적으로 관리하세요.\n주기는 나중에 선택할 수 있어요."
-          }
-        }
-      }
-    },
     "Set Budget" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예산 설정하기"
-          }
-        }
-      }
-    },
-    "Set how much you can spend during the selected period." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "선택한 기간 동안의 지출 한도를 설정하세요."
-          }
-        }
-      }
-    },
-    "Set your budgets" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2105,16 +1782,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "총 지출을 표시합니다."
-          }
-        }
-      }
-    },
-    "Skip" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "건너뛰기"
           }
         }
       }
@@ -2176,33 +1843,12 @@
     "Start Timer" : {
 
     },
-    "Start using Monir" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monir 사용 시작하기"
-          }
-        }
-      }
-    },
     "Starts on" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "시작일"
-          }
-        }
-      }
-    },
-    "Subscribe – %@ / month" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "구독하기 - 월 %@"
           }
         }
       }
@@ -2266,17 +1912,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "테마"
-          }
-        }
-      }
-    },
-    "This is a 1-month auto-renewed subscription for %@/month until cancelled." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 구독은 매월 %@에 자동 갱신되며, 언제든지 취소할 수 있습니다."
           }
         }
       }
@@ -2392,32 +2027,12 @@
         }
       }
     },
-    "Use Budget Tracking" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예산 관리 활성화"
-          }
-        }
-      }
-    },
     "Use iCloud" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "iCloud 사용"
-          }
-        }
-      }
-    },
-    "Use Ratings" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "사용"
           }
         }
       }
@@ -2481,17 +2096,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "가져오기 전에 기존 데이터를 초기화하시겠습니까, 아니면 기존 데이터에 추가하시겠습니까?"
-          }
-        }
-      }
-    },
-    "You’ve purchased a lifetime plan. Please cancel your monthly subscription in the App Store to avoid being charged again." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "평생 요금제를 구매하셨습니다. 중복 결제를 피하려면 App Store에서 월간 구독을 취소해 주세요."
           }
         }
       }

@@ -42,19 +42,18 @@ struct RootView: View {
 
 		var body: some View {
 				ZStack {
-						if showMain {
+						if showMain || hasSeenTutorial {
 								ContentView()
 										.transition(.opacity)
-						} else if hasSeenTutorial {
-								Color.primary
-										.ignoresSafeArea()
-										.transition(.opacity)
-										.onAppear {
-												showMain = true
-										}
 						} else {
 								TutorialView()
 										.transition(.opacity)
+						}
+				}
+				.animation(.easeInOut, value: showMain || hasSeenTutorial)
+				.onAppear {
+						if hasSeenTutorial {
+								showMain = true
 						}
 				}
 				.environmentObject(store)
