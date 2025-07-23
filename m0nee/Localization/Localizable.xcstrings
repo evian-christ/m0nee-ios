@@ -1109,8 +1109,21 @@
         }
       }
     },
-    "Get Started" : {
-
+    "get_started_button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started!"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "바로 시작하기"
+          }
+        }
+      }
     },
     "Go to the Insights tab and long-press on cards to add them here." : {
       "localizations" : {
@@ -1974,6 +1987,134 @@
     },
     "Trailing" : {
 
+    },
+    "tutorial_subtitle_1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log your spending easily with few taps."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "간편하게 일일 지출을 기록하세요."
+          }
+        }
+      }
+    },
+    "tutorial_subtitle_2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage your money with custom budgets."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "맞춤형 예산을 설정하세요."
+          }
+        }
+      }
+    },
+    "tutorial_subtitle_3" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-press a card to add it to your main screen."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드를 길게 눌러 메인 화면에 추가하세요."
+          }
+        }
+      }
+    },
+    "tutorial_subtitle_4" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start using Monir now!"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "바로 첫 지출을 기록해보세요!"
+          }
+        }
+      }
+    },
+    "tutorial_title_1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record your expenses"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지출 기록"
+          }
+        }
+      }
+    },
+    "tutorial_title_2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set your budgets"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예산 설정"
+          }
+        }
+      }
+    },
+    "tutorial_title_3" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explore insights"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인사이트"
+          }
+        }
+      }
+    },
+    "tutorial_title_4" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re all set"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비되셨나요?"
+          }
+        }
+      }
     },
     "Two Places" : {
       "comment" : "Two decimal places",

@@ -9,18 +9,18 @@ struct TutorialView: View {
 	// Simplified to one image per page
 	let images: [String] = ["expense_1", "budget_1", "insight_1"]
 
-	let titles: [String] = [
-		"Record your expenses",
-		"Set your budgets",
-		"Explore insights",
-		"You're all set",
+	let titles: [LocalizedStringKey] = [
+		"tutorial_title_1",
+		"tutorial_title_2",
+		"tutorial_title_3",
+		"tutorial_title_4",
 	]
 
-	let subtitles: [String] = [
-		"A few taps are all it takes to log your spending.",
-		"Manage your money with custom budgets.",
-		"Long-press a card to add it to your main screen.",
-		"Start using Monir now.",
+	let subtitles: [LocalizedStringKey] = [
+		"tutorial_subtitle_1",
+		"tutorial_subtitle_2",
+		"tutorial_subtitle_3",
+		"tutorial_subtitle_4",
 	]
 
 	var body: some View {
@@ -54,7 +54,7 @@ struct TutorialView: View {
 										dismiss()
 									}
 								}) {
-									Text("Get Started")
+																		Text(LocalizedStringKey("get_started_button"))
 										.font(.headline)
 										.fontWeight(.semibold)
 										.padding(.horizontal, 28)
