@@ -70,20 +70,17 @@ class ExpenseStore: ObservableObject {
 						if iCloudExists {
 								// ✅ iCloud 파일이 있으면 그걸 무조건 사용
 								self.saveURL = iCloudURL
-								print("☁️ Using existing iCloud data")
 						} else if localExists {
 								// ✅ iCloud엔 없지만 로컬엔 있으면 복사
 								do {
 										try fileManager.copyItem(at: localURL, to: iCloudURL)
-										print("☁️ Copied local data to iCloud")
 								} catch {
-										print("❌ Failed to copy local data to iCloud: \(error)")
+										// Silently handle copy failure
 								}
 								self.saveURL = iCloudURL
 						} else {
 								// ✅ 아무 것도 없으면 iCloud 경로를 그냥 사용
 								self.saveURL = iCloudURL
-								print("☁️ No data found, using fresh iCloud path")
 						}
 
 						if !forTesting { syncStorageIfNeeded() }
@@ -91,7 +88,6 @@ class ExpenseStore: ObservableObject {
 						self.saveURL = localURL
 				}
 
-				print("💾 Using saveURL: \(saveURL.path)")
 				if !forTesting {
 						load()
 						cleanupOrphanedCategoryBudgets()
@@ -187,7 +183,6 @@ class ExpenseStore: ObservableObject {
 				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
 				sharedDefaults?.set(totalBudgetFromCategories, forKey: "monthlyBudget")
 				
-				print("🧹 Cleaned up \(originalBudgetCount - budgets.count) orphaned category budget(s) and updated monthly budget.")
 			}
 		}
 
@@ -342,30 +337,25 @@ extension ExpenseStore {
 						let storeData = StoreData(expenses: expenses, categories: categories, recurringExpenses: recurringExpenses)
 						let data = try JSONEncoder().encode(storeData)
 						try data.write(to: saveURL)
-						//print("📁 Saved to: \(saveURL.path.contains("Mobile Documents") ? "iCloud" : "Local")")
-						// Also write local backup if using iCloud
+												// Also write local backup if using iCloud
 						if saveURL.path.contains("Mobile Documents") {
 								let backupURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 										.appendingPathComponent("expenses_backup_for_recovery.json")
 								do {
 										try data.write(to: backupURL)
-										//print("🛟 Local backup saved at \(backupURL.path)")
-								} catch {
-										//print("❌ Failed to save local backup: \(error)")
-								}
+																		} catch {
+																		}
 						}
 						let isICloud = saveURL.path.contains("Mobile Documents")
-						//print("\(isICloud ? "☁️" : "💾") Saved \(expenses.count) expenses")
-				} catch {
-						print("Failed to save: \(error)")
+										} catch {
+						// Silently handle save failures
 				}
 				// --- Widget/App Group Sync ---
 				if let encodedExpenses = try? JSONEncoder().encode(expenses) {
 						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
 						sharedDefaults?.set(encodedExpenses, forKey: "shared_expenses")
-						//print("[✅ WidgetSync] Saved \(expenses.count) expenses to shared_expenses.")
-				} else {
-						print("[❌ WidgetSync] Failed to encode expenses for widget.")
+										} else {
+						// Silently handle widget sync failure
 				}
             updateTotalSpendingWidgetData()
 		}
@@ -444,7 +434,7 @@ extension ExpenseStore {
 						migrateRecurringExpenseRatings()
 						
 				} catch {
-						print("Failed to load: \(error)")
+						// Silently handle load failures
 				}
 		}
 		
@@ -565,7 +555,7 @@ extension ExpenseStore {
 				let fileManager = FileManager.default
 				let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
 				guard let iCloudDocsURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/expenses.json") else {
-						print("❌ iCloud URL not found")
+						// iCloud URL not found
 						return
 				}
 				
@@ -584,9 +574,9 @@ extension ExpenseStore {
 								}
 								do {
 										try fileManager.copyItem(at: localURL, to: iCloudDocsURL)
-										print("☁️ Copied local to iCloud (sync)")
+										// Copied local to iCloud
 								} catch {
-										print("❌ Failed to copy local data to iCloud: \(error)")
+										// Silently handle copy failure
 								}
 						} else if iCloudDate > localDate {
 								do {
@@ -596,12 +586,12 @@ extension ExpenseStore {
 								}
 								do {
 										try fileManager.copyItem(at: iCloudDocsURL, to: localURL)
-										print("💾 Copied iCloud to local (sync)")
+										// Copied iCloud to local
 								} catch {
-										print("❌ Failed to copy iCloud data to local: \(error)")
+										// Silently handle copy failure
 								}
 						} else {
-								print("No sync needed — same or no changes.")
+								// No sync needed
 						}
 				} else if iCloudExists {
 						do {
@@ -611,12 +601,12 @@ extension ExpenseStore {
 						}
 						do {
 								try fileManager.copyItem(at: iCloudDocsURL, to: localURL)
-								print("💾 Restored local from iCloud (sync)")
+								// Restored local from iCloud
 						} catch {
-								print("❌ Failed to restore local from iCloud: \(error)")
+								// Silently handle restore failure
 						}
 				} else {
-						print("❌ Neither local nor iCloud has a file. No data to sync.")
+						// No data to sync
 				}
 				load()
 		}

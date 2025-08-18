@@ -77,13 +77,13 @@ struct ProUpgradeModalView: View {
 														isPresented = false
 														dismiss()
 													case .unverified(_, _):
-														print("🔒 Unverified purchase.")
+														// Unverified purchase
 													}
 												default:
 													break
 												}
 											} catch {
-												print("❌ Purchase error: \(error)")
+												// Purchase error occurred
 											}
 										}
 									}) {
@@ -128,10 +128,8 @@ struct ProUpgradeModalView: View {
 		.onAppear {
 			Task {
 				do {
-					print("🌐 Fetching products from App Store...")
-					products = try await Product.products(for: ["com.chan.monir.pro.lifetime"])
-					print("✅ Products loaded: \(products.map { $0.id })")
-
+								products = try await Product.products(for: ["com.chan.monir.pro.lifetime"])
+			
 					for await result in Transaction.currentEntitlements {
 						if case .verified(let transaction) = result {
 							if transaction.productID == "com.chan.monir.pro.lifetime" {
@@ -141,7 +139,7 @@ struct ProUpgradeModalView: View {
 						}
 					}
 				} catch {
-					print("❌ Failed to load products or entitlements: \(error.localizedDescription)")
+					// Failed to load products or entitlements
 				}
 			}
 		}

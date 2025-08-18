@@ -63,7 +63,7 @@ struct EditCategoryView: View {
 						initialized = true
 				}
 				.onChange(of: symbol) { newValue in
-						print("🛠 symbol changed to: \(newValue)")
+						// Symbol changed
 				}
 						.navigationTitle("Edit Category")
 						.navigationBarTitleDisplayMode(.inline)

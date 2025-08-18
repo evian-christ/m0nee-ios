@@ -51,9 +51,9 @@ struct NotificationSettingsView: View {
     private func requestNotificationAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
             if granted {
-                print("Notification authorization granted.")
+                // Notification authorization granted
             } else if let error = error {
-                print("Notification authorization error: \(error.localizedDescription)")
+                // Notification authorization error occurred
                 // Optionally, you might want to turn off the toggle if authorization is denied
                 // notificationsEnabled = false
             }
@@ -80,16 +80,16 @@ struct NotificationSettingsView: View {
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Error scheduling notification: \(error.localizedDescription)")
+                // Error scheduling notification
             } else {
-                print("Daily expense reminder scheduled for \(notificationHour):\(notificationMinute).")
+                // Daily expense reminder scheduled
             }
         }
     }
 
     private func cancelAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        print("All pending notifications cancelled.")
+        // All pending notifications cancelled
     }
 }
 

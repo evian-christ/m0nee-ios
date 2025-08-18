@@ -675,7 +675,7 @@ struct ContentView: View {
 						store.productID = "free"
 					}
 				} catch {
-					print("❌ Failed to check entitlements: \(error)")
+					// Failed to check entitlements
 					store.productID = "free"
 				}
 			}

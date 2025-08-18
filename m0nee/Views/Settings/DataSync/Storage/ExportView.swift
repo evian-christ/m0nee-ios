@@ -73,7 +73,7 @@ struct ExportView: View {
 			try csvText.write(to: path, atomically: true, encoding: .utf8)
 			return path
 		} catch {
-			print("❌ CSV 파일 쓰기 실패: \(error.localizedDescription)")
+			// CSV 파일 쓰기 실패
 			return nil
 		}
 	}

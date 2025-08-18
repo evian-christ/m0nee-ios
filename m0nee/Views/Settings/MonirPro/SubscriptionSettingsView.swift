@@ -44,9 +44,9 @@ struct SubscriptionSettingsView: View {
 										Task {
 												do {
 														try await AppStore.sync()
-														print("🔁 Purchase restored")
+														// Purchase restored
 												} catch {
-														print("❌ Restore failed: \(error)")
+														// Restore failed
 												}
 										}
 								}
@@ -111,7 +111,7 @@ struct SubscriptionSettingsView: View {
 								expenseStore.productID = "free"
 						}
 				} catch {
-						print("❌ Failed to check entitlements: \(error)")
+						// Failed to check entitlements
 						expenseStore.productID = "free"
 				}
 		}

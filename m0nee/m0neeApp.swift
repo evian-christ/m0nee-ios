@@ -14,13 +14,12 @@ struct m0neeApp: App {
 						for await result in Transaction.updates {
 								switch result {
 								case .verified(let transaction):
-										print("✅ Transaction update received: \(transaction.productID)")
 										if transaction.productID == "com.chan.monir.pro.lifetime" {
 												store.productID = transaction.productID
 										}
 										await transaction.finish()
-								case .unverified(let transaction, let error):
-										print("❌ Unverified transaction: \(transaction.productID), error: \(error.localizedDescription)")
+								case .unverified(_, _):
+										// Handle unverified transactions silently
 								}
 						}
 				}
