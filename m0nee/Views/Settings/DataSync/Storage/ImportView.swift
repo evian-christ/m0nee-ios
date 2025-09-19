@@ -199,6 +199,6 @@ struct ImportView: View {
 						}
 				}
 				// Persist all changes
-				store.save()
+				store.generateExpensesFromRecurringIfNeeded()
 		}
 }

@@ -1,711 +1,359 @@
 import Foundation
 import SwiftUI
-import WidgetKit
 
-private struct StoreData: Codable {
-		var expenses: [Expense]
-		var categories: [CategoryItem]
-		var recurringExpenses: [RecurringExpense]
-}
-
-import StoreKit
-
-struct TotalSpendingWidgetData: Codable {
-    let amountSpent: Double
-    let monthlyBudget: Double
-    let currencySymbol: String
-    let budgetTrackingEnabled: Bool
-}
-
+@MainActor
 class ExpenseStore: ObservableObject {
-		@Published var expenses: [Expense] = []
-		@Published var productID: String? // Track the product ID for pro status
-		@Published var isPromoProUser: Bool = false {
-			didSet {
-				UserDefaults.standard.set(isPromoProUser, forKey: "isPromoProUser")
-			}
-		} // Track promo code activation
-
-		var isProUser: Bool {
-			return productID == "com.chan.monir.pro.lifetime" || isPromoProUser
-		}
-		@Published var categories: [CategoryItem] = []
-		@Published var recurringExpenses: [RecurringExpense] = []
-		@Published var restoredFromBackup: Bool = false
-		@Published var failedToRestore: Bool = false
-		
-		private var saveURL: URL
-		
-		// 기존 init()을 새로운 init(forTesting:)으로 연결
-		convenience init() {
-			self.init(forTesting: false)
-		}
-
-		// 테스트를 위한 새로운 초기화 메서드
-		init(forTesting: Bool = false) {
-				let fileManager = FileManager.default
-				let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
-				let iCloudURL: URL
-				let defaults = UserDefaults.standard
-				let hasUseiCloudKey = defaults.object(forKey: "useiCloud") != nil
-
-				let useiCloud: Bool
-				if hasUseiCloudKey {
-						useiCloud = defaults.bool(forKey: "useiCloud")
-				} else {
-						useiCloud = true
-						defaults.set(useiCloud, forKey: "useiCloud")
-				}
-
-				// Load isPromoProUser from UserDefaults
-				self.isPromoProUser = defaults.bool(forKey: "isPromoProUser")
-
-				if useiCloud, let containerURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") {
-						try? fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
-						iCloudURL = containerURL.appendingPathComponent("expenses.json")
-
-						let localExists = fileManager.fileExists(atPath: localURL.path)
-						let iCloudExists = fileManager.fileExists(atPath: iCloudURL.path)
-
-						if iCloudExists {
-								// ✅ iCloud 파일이 있으면 그걸 무조건 사용
-								self.saveURL = iCloudURL
-						} else if localExists {
-								// ✅ iCloud엔 없지만 로컬엔 있으면 복사
-								do {
-										try fileManager.copyItem(at: localURL, to: iCloudURL)
-								} catch {
-										// Silently handle copy failure
-								}
-								self.saveURL = iCloudURL
-						} else {
-								// ✅ 아무 것도 없으면 iCloud 경로를 그냥 사용
-								self.saveURL = iCloudURL
-						}
-
-						if !forTesting { syncStorageIfNeeded() }
-				} else {
-						self.saveURL = localURL
-				}
-
-				if !forTesting {
-						load()
-						cleanupOrphanedCategoryBudgets()
-				}
-				if categories.isEmpty && !forTesting {
-					categories = [
-						CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
-						CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
-						CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
-						CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
-						CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
-						CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
-					]
-					
-					// 예산도 같이 초기화
-					var budgets: [String: String] = [:]
-					for category in categories {
-						budgets[category.name] = "0"
-					}
-					if let encoded = try? JSONEncoder().encode(budgets) {
-						UserDefaults.standard.set(encoded, forKey: "categoryBudgets")
-					}
-					
-					save()
-				}
-			//recurringExpenses.removeAll()
-			//save()
-				if !forTesting { generateExpensesFromRecurringIfNeeded() }
-		}
-		
-		func addCategory(_ category: CategoryItem) {
-				categories.append(category)
-				ensureCategoryBudgetEntry(for: category.name)
-				save()
-		}
-
-		func removeCategory(_ category: CategoryItem) {
-				categories.removeAll { $0.id == category.id }
-				removeCategoryBudgetEntry(for: category.name)
-				save()
-		}
-
-		func updateCategory(_ category: CategoryItem) {
-			guard let index = categories.firstIndex(where: { $0.id == category.id }) else {
-				return
-			}
-			
-			let oldCategoryName = categories[index].name
-			let newCategoryName = category.name
-			
-			// Update the category itself
-			categories[index] = category
-			
-			// If the name changed, migrate the budget and update expenses
-			if oldCategoryName != newCategoryName {
-				// Migrate budget
-				var budgets = loadBudgets()
-				if let budgetValue = budgets.removeValue(forKey: oldCategoryName) {
-					budgets[newCategoryName] = budgetValue
-					saveBudgets(budgets)
-				}
-				
-				// Update expenses
-				for i in expenses.indices {
-					if expenses[i].category == oldCategoryName {
-						expenses[i].category = newCategoryName
-					}
-				}
-				
-				// Update recurring expenses
-				for i in recurringExpenses.indices {
-					if recurringExpenses[i].category == oldCategoryName {
-						recurringExpenses[i].category = newCategoryName
-					}
-				}
-			}
-			
-			save()
-		}
-
-		private func cleanupOrphanedCategoryBudgets() {
-			let validCategoryNames = Set(categories.map { $0.name })
-			var budgets = loadBudgets()
-			let originalBudgetCount = budgets.count
-			
-			budgets = budgets.filter { validCategoryNames.contains($0.key) }
-			
-			if budgets.count < originalBudgetCount {
-				saveBudgets(budgets)
-				
-				// Recalculate and update the main monthly budget
-				let totalBudgetFromCategories = budgets.values.compactMap { Double($0) }.reduce(0, +)
-				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-				sharedDefaults?.set(totalBudgetFromCategories, forKey: "monthlyBudget")
-				
-			}
-		}
-
-		private func ensureCategoryBudgetEntry(for name: String) {
-				var budgets = loadBudgets()
-				if budgets[name] == nil {
-						budgets[name] = "0"
-						saveBudgets(budgets)
-				}
-		}
-
-		private func removeCategoryBudgetEntry(for name: String) {
-				var budgets = loadBudgets()
-				budgets.removeValue(forKey: name)
-				saveBudgets(budgets)
-		}
-
-		private func loadBudgets() -> [String: String] {
-				let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-				if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
-						let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
-						return decoded
-				}
-				return [:]
-		}
-
-		private func saveBudgets(_ budgets: [String: String]) {
-				if let encoded = try? JSONEncoder().encode(budgets) {
-						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-						sharedDefaults?.set(encoded, forKey: "categoryBudgets")
-						updateTotalSpendingWidgetData()
-				}
-		}
-
-	
-	func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
-			for index in recurringExpenses.indices {
-				var recurring = recurringExpenses[index]
-				let rule = recurring.recurrenceRule
-				let calendar = Calendar.current
-
-				// Capture the last generated date *before* this run starts
-				let initialLastGeneratedDate = recurring.lastGeneratedDate
-
-				// Determine the actual start date for this generation run
-				// Start from the day after the initialLastGeneratedDate, or from rule.startDate if no previous generation
-				var currentGenerationDate: Date
-				if let lastGen = initialLastGeneratedDate {
-					currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
-				} else {
-					currentGenerationDate = rule.startDate
-				}
-
-				let endDate = currentDate
-
-				while currentGenerationDate <= endDate {
-					if shouldGenerateToday(for: rule, on: currentGenerationDate) {
-						let newExpense = Expense(
-							id: UUID(),
-							date: currentGenerationDate,
-							name: recurring.name,
-							amount: recurring.amount,
-							category: recurring.category,
-							details: recurring.details,
-							rating: nil,
-							memo: recurring.memo,
-							isRecurring: true,
-							parentRecurringID: recurring.id
-						)
-						add(newExpense)
-						// Update lastGeneratedDate as we generate
-						recurring.lastGeneratedDate = currentGenerationDate
-					}
-
-					// Advance currentGenerationDate based on recurrence rule
-									currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
-				}
-
-				recurringExpenses[index] = recurring
-			}
-
-			save()
-		}
-
-		func removeRecurringExpense(id: UUID) {
-			if let index = recurringExpenses.firstIndex(where: { $0.id == id }) {
-				recurringExpenses.remove(at: index)
-				save()
-			}
-		}
-
-		func updateRecurringExpenseMetadata(_ updatedExpense: RecurringExpense) {
-			// 1. Find the index of the recurring expense to update.
-			guard let index = recurringExpenses.firstIndex(where: { $0.id == updatedExpense.id }) else {
-				return
-			}
-
-			// 2. Update the main recurring expense object.
-			recurringExpenses[index].name = updatedExpense.name
-			recurringExpenses[index].amount = updatedExpense.amount
-			recurringExpenses[index].category = updatedExpense.category
-			recurringExpenses[index].memo = updatedExpense.memo
-			recurringExpenses[index].details = updatedExpense.details
-
-			// 3. Update all associated individual expenses that were already generated.
-			for i in expenses.indices {
-				if expenses[i].parentRecurringID == updatedExpense.id {
-					expenses[i].name = updatedExpense.name
-					expenses[i].amount = updatedExpense.amount
-					expenses[i].category = updatedExpense.category
-					expenses[i].memo = updatedExpense.memo
-					expenses[i].details = updatedExpense.details
-				}
-			}
-			
-			save()
-		}
-
-		func removeAllExpenses(withParentID parentID: UUID) {
-			expenses.removeAll { $0.parentRecurringID == parentID }
-			save()
-		}
-
-		/// Returns the next occurrence date after today (or the next after lastGeneratedDate) for the given recurring expense.
-		func nextOccurrence(for recurring: RecurringExpense) -> Date? {
-			let rule = recurring.recurrenceRule
-			let calendar = Calendar.current
-			
-			// Start searching from the day after the last generated date, or the rule's start date if none.
-			var candidate: Date
-			if let lastGen = recurring.lastGeneratedDate {
-				candidate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
-			} else {
-				candidate = rule.startDate
-			}
-	
-			// Loop up to a reasonable limit to prevent infinite loops
-			for _ in 0..<365*5 { // Look ahead up to 5 years
-				if shouldGenerateToday(for: rule, on: candidate) {
-					return candidate // Found the next valid date
-				}
-				candidate = calendar.date(byAdding: .day, value: 1, to: candidate) ?? candidate
-			}
-	
-			return nil // Return nil if no occurrence is found within the look-ahead period
-		}
-}
-
-extension ExpenseStore {
-		func save() {
-				do {
-						let storeData = StoreData(expenses: expenses, categories: categories, recurringExpenses: recurringExpenses)
-						let data = try JSONEncoder().encode(storeData)
-						try data.write(to: saveURL)
-												// Also write local backup if using iCloud
-						if saveURL.path.contains("Mobile Documents") {
-								let backupURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-										.appendingPathComponent("expenses_backup_for_recovery.json")
-								do {
-										try data.write(to: backupURL)
-																		} catch {
-																		}
-						}
-						let isICloud = saveURL.path.contains("Mobile Documents")
-										} catch {
-						// Silently handle save failures
-				}
-				// --- Widget/App Group Sync ---
-				if let encodedExpenses = try? JSONEncoder().encode(expenses) {
-						let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-						sharedDefaults?.set(encodedExpenses, forKey: "shared_expenses")
-										} else {
-						// Silently handle widget sync failure
-				}
-            updateTotalSpendingWidgetData()
-		}
-
-    func updateTotalSpendingWidgetData() {
-        let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-        let budgetTrackingEnabled = sharedDefaults?.bool(forKey: "enableBudgetTracking") ?? true
-        let budgetPeriod = sharedDefaults?.string(forKey: "budgetPeriod") ?? "Monthly"
-        let monthlyBudget = sharedDefaults?.double(forKey: "monthlyBudget") ?? 0.0
-        let budgetByCategory = sharedDefaults?.bool(forKey: "budgetByCategory") ?? false
-        let categoryBudgetsData = sharedDefaults?.data(forKey: "categoryBudgets")
-        let currencyCode = sharedDefaults?.string(forKey: "currencyCode") ?? Locale.current.currency?.identifier ?? "USD"
-        let currencySymbol = CurrencyManager.symbol(for: currencyCode)
-
-        let calendar = Calendar.current
-        let today = Date()
-
-        var startDate: Date
-        var endDate: Date
-
-        if budgetPeriod == "Weekly" {
-            let weeklyStartDay = sharedDefaults?.integer(forKey: "weeklyStartDay") ?? 1
-            let weekdayToday = calendar.component(.weekday, from: today)
-            let delta = (weekdayToday - weeklyStartDay + 7) % 7
-            startDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: -delta, to: today) ?? today)
-            endDate = calendar.date(byAdding: .day, value: 6, to: startDate) ?? startDate
-        } else { // Monthly
-            let monthlyStartDay = sharedDefaults?.integer(forKey: "monthlyStartDay") ?? 1
-            let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
-            startDate = calendar.date(byAdding: .day, value: monthlyStartDay - 1, to: currentMonth) ?? currentMonth
-            if calendar.component(.day, from: today) < monthlyStartDay {
-                startDate = calendar.date(byAdding: .month, value: -1, to: startDate) ?? startDate
-            }
-            let nextMonth = calendar.date(byAdding: .month, value: 1, to: startDate) ?? startDate
-            endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth) ?? nextMonth
-        }
-
-        let filteredExpenses = expenses.filter { expense in
-            let expenseDate = calendar.startOfDay(for: expense.date)
-            return expenseDate >= startDate && expenseDate <= endDate
-        }
-
-        let totalAmountSpent = filteredExpenses.reduce(0) { $0 + $1.amount }
-
-        var currentBudget = monthlyBudget
-        if budgetByCategory {
-            if let decodedCategoryBudgets = try? JSONDecoder().decode([String: String].self, from: categoryBudgetsData ?? Data()) {
-                currentBudget = decodedCategoryBudgets.values.compactMap { Double($0) }.reduce(0, +)
-            }
-        }
-
-        let widgetData = TotalSpendingWidgetData(
-            amountSpent: totalAmountSpent,
-            monthlyBudget: currentBudget,
-            currencySymbol: currencySymbol,
-            budgetTrackingEnabled: budgetTrackingEnabled
-        )
-
-        if let encoded = try? JSONEncoder().encode(widgetData) {
-            sharedDefaults?.set(encoded, forKey: "totalSpendingWidgetData")
-            WidgetCenter.shared.reloadAllTimelines()
+    @Published var expenses: [Expense] = []
+    @Published var productID: String?
+    @Published var isPromoProUser: Bool {
+        didSet {
+            proAccessManager.setPromoStatus(isPromoProUser)
         }
     }
-		
-		private func load() {
-				guard FileManager.default.fileExists(atPath: saveURL.path) else { return }
-				do {
-						let data = try Data(contentsOf: saveURL)
-						let storeData = try JSONDecoder().decode(StoreData.self, from: data)
-						self.expenses = storeData.expenses
-						self.categories = storeData.categories
-						self.recurringExpenses = storeData.recurringExpenses
-						
-						// Perform migration after loading the data
-						migrateRecurringRules()
-						migrateRecurringExpenseRatings()
-						
-				} catch {
-						// Silently handle load failures
-				}
-		}
-		
-		func migrateRecurringRules() {
-			for i in recurringExpenses.indices {
-				let oldRule = recurringExpenses[i].recurrenceRule
+    var isProUser: Bool {
+        proAccessManager.isPro(productID: productID)
+    }
 
-				// Migrate old rules that incorrectly used .daily period with selected days
-				if let selectedWeekdays = oldRule.selectedWeekdays, !selectedWeekdays.isEmpty {
-					var newRule = oldRule
-					newRule.period = .weekly
-					newRule.frequencyType = .weeklySelectedDays
-					newRule.interval = 0
-					newRule.selectedMonthDays = nil
-					recurringExpenses[i].recurrenceRule = newRule // Assign the modified struct back
+    @Published var categories: [CategoryItem] = []
+    @Published var recurringExpenses: [RecurringExpense] = []
+    @Published var restoredFromBackup: Bool = false
+    @Published var failedToRestore: Bool = false
 
-				} else if let selectedMonthDays = oldRule.selectedMonthDays, !selectedMonthDays.isEmpty {
-					var newRule = oldRule
-					newRule.period = .monthly
-					newRule.frequencyType = .monthlySelectedDays
-					newRule.interval = 0
-					newRule.selectedWeekdays = nil
-					recurringExpenses[i].recurrenceRule = newRule // Assign the modified struct back
-				}
-			}
-		}
-		
-		func migrateRecurringExpenseRatings() {
-			var changed = false
-			for i in expenses.indices {
-				if expenses[i].isRecurring && expenses[i].rating != nil {
-					expenses[i].rating = nil
-					changed = true
-				}
-			}
-			if changed {
-				save()
-			}
-		}
-		
-		func totalSpent(forMonth month: String) -> Double {
-				let formatter = DateFormatter()
-				formatter.dateFormat = "yyyy-MM"
-				return expenses
-						.filter { formatter.string(from: $0.date) == month }
-						.reduce(0) { $0 + $1.amount }
-		}
-		
-		func add(_ expense: Expense) {
-				expenses.append(expense)
-				save()
-				NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
-		}
-		
-		func update(_ updated: Expense) {
-				if let index = expenses.firstIndex(where: { $0.id == updated.id }) {
-						expenses[index] = updated
-						save()
-						NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
-				}
-		}
-		
-		func delete(_ expense: Expense) {
-				if let index = expenses.firstIndex(where: { $0.id == expense.id }) {
-						expenses.remove(at: index)
-						save()
-						NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
-				}
-		}
+    private let repository: ExpenseRepository
+    private let budgetService: BudgetComputing
+    private let recurringService: RecurringExpenseScheduling
+    private let widgetService: WidgetSyncing
+    private let proAccessManager: ProAccessHandling
+    private let settings: AppSettings
+    private let forTesting: Bool
 
-		func addRecurringExpense(_ recurring: RecurringExpense, currentDate: Date = Date()) {
-			var mutableRecurring = recurring
+    init(
+        repository: ExpenseRepository,
+        budgetService: BudgetComputing,
+        recurringService: RecurringExpenseScheduling,
+        widgetService: WidgetSyncing,
+        proAccessManager: ProAccessHandling,
+        settings: AppSettings,
+        forTesting: Bool = false
+    ) {
+        self.repository = repository
+        self.budgetService = budgetService
+        self.recurringService = recurringService
+        self.widgetService = widgetService
+        self.proAccessManager = proAccessManager
+        self.settings = settings
+        self.forTesting = forTesting
+        self.productID = nil
+        self.isPromoProUser = proAccessManager.isPromoProUser
 
-			// ✅ 규칙에 따라 오늘 생성 여부 판단
-			if shouldGenerateToday(for: recurring.recurrenceRule, on: recurring.startDate) {
-				let expense = Expense(
-					id: UUID(),
-					date: recurring.startDate,
-					name: recurring.name,
-					amount: recurring.amount,
-					category: recurring.category,
-					details: recurring.details,
-												rating: nil,
-					memo: recurring.memo,
-					isRecurring: true,
-					parentRecurringID: recurring.id
-				)
-				add(expense)
-				mutableRecurring.lastGeneratedDate = recurring.startDate
-			}
+        Task {
+            await bootstrap()
+        }
+    }
 
-			// Clear unused fields depending on frequency type before saving
-			switch mutableRecurring.recurrenceRule.frequencyType {
-			case .weeklySelectedDays:
-				mutableRecurring.recurrenceRule.selectedMonthDays = nil
-				mutableRecurring.recurrenceRule.interval = 0
-			case .monthlySelectedDays:
-				mutableRecurring.recurrenceRule.selectedWeekdays = nil
-				mutableRecurring.recurrenceRule.interval = 0
-			case .everyN:
-				mutableRecurring.recurrenceRule.selectedWeekdays = nil
-				mutableRecurring.recurrenceRule.selectedMonthDays = nil
-			}
+    convenience init(forTesting: Bool = false) {
+        let settings: AppSettings = forTesting ? AppSettings.testingInstance() : AppSettings.shared
+        let repository: ExpenseRepository
+        let widgetService: WidgetSyncing
+        if forTesting {
+            repository = InMemoryExpenseRepository()
+            widgetService = WidgetSyncService(allowsWidgetReload: false)
+        } else {
+            repository = FileExpenseRepository(forTesting: false)
+            widgetService = WidgetSyncService()
+        }
 
-			recurringExpenses.append(mutableRecurring)
-			generateExpensesFromSingleRecurringIfNeeded(&recurringExpenses[recurringExpenses.count - 1], upTo: currentDate)
-			save()
-		}
-		
-		func totalSpentByMonth() -> [String: Double] {
-				let formatter = DateFormatter()
-				formatter.dateFormat = "yyyy-MM"
-				return Dictionary(grouping: expenses, by: { formatter.string(from: $0.date) })
-						.mapValues { $0.reduce(0) { $0 + $1.amount } }
-		}
-		
-		func syncStorageIfNeeded() {
-				let fileManager = FileManager.default
-				let localURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("expenses.json")
-				guard let iCloudDocsURL = fileManager.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/expenses.json") else {
-						// iCloud URL not found
-						return
-				}
-				
-				let localExists = fileManager.fileExists(atPath: localURL.path)
-				let iCloudExists = fileManager.fileExists(atPath: iCloudDocsURL.path)
-				
-				if localExists {
-						let localDate = (try? fileManager.attributesOfItem(atPath: localURL.path)[.modificationDate] as? Date) ?? Date.distantPast
-						let iCloudDate = (try? fileManager.attributesOfItem(atPath: iCloudDocsURL.path)[.modificationDate] as? Date) ?? Date.distantPast
-						
-						if localDate > iCloudDate {
-								do {
-										try fileManager.removeItem(at: iCloudDocsURL)
-								} catch {
-										// 제거 실패시 무시
-								}
-								do {
-										try fileManager.copyItem(at: localURL, to: iCloudDocsURL)
-										// Copied local to iCloud
-								} catch {
-										// Silently handle copy failure
-								}
-						} else if iCloudDate > localDate {
-								do {
-										try fileManager.removeItem(at: localURL)
-								} catch {
-										// 무시
-								}
-								do {
-										try fileManager.copyItem(at: iCloudDocsURL, to: localURL)
-										// Copied iCloud to local
-								} catch {
-										// Silently handle copy failure
-								}
-						} else {
-								// No sync needed
-						}
-				} else if iCloudExists {
-						do {
-								try fileManager.removeItem(at: localURL)
-						} catch {
-								// 무시
-						}
-						do {
-								try fileManager.copyItem(at: iCloudDocsURL, to: localURL)
-								// Restored local from iCloud
-						} catch {
-								// Silently handle restore failure
-						}
-				} else {
-						// No data to sync
-				}
-				load()
-		}
+        self.init(
+            repository: repository,
+            budgetService: AppBudgetService(settings: settings),
+            recurringService: RecurringExpenseService(),
+            widgetService: widgetService,
+            proAccessManager: UserDefaultsProAccessManager(),
+            settings: settings,
+            forTesting: forTesting
+        )
+    }
 
-		func eraseAllData() {
-			expenses.removeAll()
-			recurringExpenses.removeAll()
-			categories = [
-				CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
-				CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
-				CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
-				CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
-				CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
-				CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
-			]
-			save()
+    convenience init() {
+        self.init(forTesting: false)
+    }
 
-			var budgets: [String: String] = [:]
-			for category in categories {
-				budgets[category.name] = "0"
-			}
-			if let encoded = try? JSONEncoder().encode(budgets) {
-				UserDefaults(suiteName: "group.com.chankim.Monir")?.set(encoded, forKey: "categoryBudgets")
-			}
-		}
-		
-		private func shouldGenerateToday(for rule: RecurrenceRule, on date: Date) -> Bool {
-			let calendar = Calendar.current
-			switch rule.frequencyType {
-			case .everyN:
-				switch rule.period {
-				case .daily:
-					let daysBetween = calendar.dateComponents([.day], from: rule.startDate, to: date).day ?? 0
-					return daysBetween >= 0 && daysBetween % rule.interval == 0
+    private func bootstrap() async {
+        if !forTesting {
+            await repository.syncStorageIfNeeded()
+        }
 
-				case .weekly:
-					let startWeekday = calendar.component(.weekday, from: rule.startDate)
-					let currentWeekday = calendar.component(.weekday, from: date)
+        if let loaded = try? await repository.load() {
+            apply(storeData: loaded)
+            migrateRecurringRules()
+            migrateRecurringExpenseRatings()
+            budgetService.cleanupBudgets(using: categories)
+        } else {
+            categories = defaultCategories()
+            budgetService.seedBudgetsIfNeeded(with: categories)
+            persist()
+        }
 
-					guard startWeekday == currentWeekday else { return false }
+        if categories.isEmpty {
+            categories = defaultCategories()
+            budgetService.seedBudgetsIfNeeded(with: categories)
+            persist()
+        }
 
-					let weeksBetween = calendar.dateComponents([.weekOfYear], from: rule.startDate, to: date).weekOfYear ?? 0
-					return weeksBetween >= 0 && weeksBetween % rule.interval == 0
+        if !forTesting {
+            generateExpensesFromRecurringIfNeeded()
+        } else {
+            widgetService.syncExpenses(expenses)
+        }
+    }
 
-				case .monthly:
-					let startDay = calendar.component(.day, from: rule.startDate)
-					let currentDay = calendar.component(.day, from: date)
+    private func apply(storeData: StoreData) {
+        expenses = storeData.expenses
+        categories = storeData.categories
+        recurringExpenses = storeData.recurringExpenses
+    }
 
-					guard startDay == currentDay else { return false }
+    private func defaultCategories() -> [CategoryItem] {
+        [
+            CategoryItem(name: "No Category", symbol: "tray", color: CodableColor(.gray)),
+            CategoryItem(name: "Food", symbol: "fork.knife", color: CodableColor(.red)),
+            CategoryItem(name: "Transport", symbol: "car.fill", color: CodableColor(.blue)),
+            CategoryItem(name: "Entertainment", symbol: "gamecontroller.fill", color: CodableColor(.purple)),
+            CategoryItem(name: "Rent", symbol: "house.fill", color: CodableColor(.orange)),
+            CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
+        ]
+    }
 
-					let monthsBetween = calendar.dateComponents([.month], from: rule.startDate, to: date).month ?? 0
-					return monthsBetween >= 0 && monthsBetween % rule.interval == 0
+    private func persist() {
+        let snapshot = StoreData(
+            expenses: expenses,
+            categories: categories,
+            recurringExpenses: recurringExpenses
+        )
 
-				}
-			case .weeklySelectedDays:
-				let weekday = calendar.component(.weekday, from: date)
-				return rule.selectedWeekdays?.contains(weekday) ?? false
-			case .monthlySelectedDays:
-				let day = calendar.component(.day, from: date)
-				return rule.selectedMonthDays?.contains(day) ?? false
-			}
-		}
+        let repository = self.repository
+        Task.detached(priority: .utility) {
+            do {
+                try await repository.save(snapshot)
+            } catch {
+                // ignore persistence errors for now
+            }
+        }
 
-		private func generateExpensesFromSingleRecurringIfNeeded(_ recurring: inout RecurringExpense, upTo currentDate: Date) {
-			let rule = recurring.recurrenceRule
-			let calendar = Calendar.current
+        widgetService.syncExpenses(expenses)
+        widgetService.updateTotalSpending(using: expenses)
+    }
 
-			// Determine the actual start date for this generation run
-			// Start from the day after the initialLastGeneratedDate, or from rule.startDate if no previous generation
-			var currentGenerationDate: Date
-			if let lastGen = recurring.lastGeneratedDate {
-				currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: lastGen)!
-			} else {
-				currentGenerationDate = rule.startDate
-			}
+    // MARK: - Category Management
 
-			let endDate = currentDate
+    func addCategory(_ category: CategoryItem) {
+        categories.append(category)
+        budgetService.ensureCategoryBudgetEntry(for: category.name)
+        budgetService.cleanupBudgets(using: categories)
+        persist()
+    }
 
-			while currentGenerationDate <= endDate {
-				if shouldGenerateToday(for: rule, on: currentGenerationDate) {
-					let newExpense = Expense(
-						id: UUID(),
-						date: currentGenerationDate,
-						name: recurring.name,
-						amount: recurring.amount,
-						category: recurring.category,
-													details: recurring.details,
-								rating: nil,
-							memo: recurring.memo,
-							isRecurring: true,
-							parentRecurringID: recurring.id
-						)
-					add(newExpense)
-					// Update lastGeneratedDate as we generate
-					recurring.lastGeneratedDate = currentGenerationDate
-				}
+    func removeCategory(_ category: CategoryItem) {
+        categories.removeAll { $0.id == category.id }
+        budgetService.removeCategoryBudgetEntry(for: category.name)
+        budgetService.cleanupBudgets(using: categories)
+        persist()
+    }
 
-				// Advance currentGenerationDate based on recurrence rule
-				currentGenerationDate = calendar.date(byAdding: .day, value: 1, to: currentGenerationDate) ?? currentGenerationDate
-			}
-		}
+    func updateCategory(_ category: CategoryItem) {
+        guard let index = categories.firstIndex(where: { $0.id == category.id }) else { return }
+
+        let oldName = categories[index].name
+        categories[index] = category
+
+        if oldName != category.name {
+            var budgets = budgetService.loadBudgets()
+            if let value = budgets.removeValue(forKey: oldName) {
+                budgets[category.name] = value
+                budgetService.saveBudgets(budgets)
+            }
+
+            for i in expenses.indices where expenses[i].category == oldName {
+                expenses[i].category = category.name
+            }
+            for i in recurringExpenses.indices where recurringExpenses[i].category == oldName {
+                recurringExpenses[i].category = category.name
+            }
+        }
+
+        budgetService.cleanupBudgets(using: categories)
+        persist()
+    }
+
+    // MARK: - Budget Helpers
+
+    func updateTotalSpendingWidgetData() {
+        widgetService.updateTotalSpending(using: expenses)
+    }
+
+    // MARK: - Expense CRUD
+
+    func totalSpent(forMonth month: String) -> Double {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return expenses
+            .filter { formatter.string(from: $0.date) == month }
+            .reduce(0) { $0 + $1.amount }
+    }
+
+    func add(_ expense: Expense) {
+        expenses.append(expense)
+        persist()
+        NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
+    }
+
+    func update(_ updated: Expense) {
+        if let index = expenses.firstIndex(where: { $0.id == updated.id }) {
+            expenses[index] = updated
+            persist()
+            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
+        }
+    }
+
+    func delete(_ expense: Expense) {
+        if let index = expenses.firstIndex(where: { $0.id == expense.id }) {
+            expenses.remove(at: index)
+            persist()
+            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
+        }
+    }
+
+    func totalSpentByMonth() -> [String: Double] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return Dictionary(grouping: expenses, by: { formatter.string(from: $0.date) })
+            .mapValues { $0.reduce(0) { $0 + $1.amount } }
+    }
+
+    // MARK: - Recurring Expenses
+
+    func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
+        var generated = recurringService.generateExpenses(for: &recurringExpenses, currentDate: currentDate)
+        if !generated.isEmpty {
+            expenses.append(contentsOf: generated)
+            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
+        }
+        persist()
+    }
+
+    func addRecurringExpense(_ recurring: RecurringExpense, currentDate: Date = Date()) {
+        var (preparedRecurring, generated) = recurringService.prepareRecurringForAdd(recurring, currentDate: currentDate)
+
+        recurringExpenses.append(preparedRecurring)
+        if !generated.isEmpty {
+            expenses.append(contentsOf: generated)
+            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
+        }
+        persist()
+    }
+
+    func removeRecurringExpense(id: UUID) {
+        if let index = recurringExpenses.firstIndex(where: { $0.id == id }) {
+            recurringExpenses.remove(at: index)
+            persist()
+        }
+    }
+
+    func updateRecurringExpenseMetadata(_ updatedExpense: RecurringExpense) {
+        guard let index = recurringExpenses.firstIndex(where: { $0.id == updatedExpense.id }) else { return }
+
+        recurringExpenses[index].name = updatedExpense.name
+        recurringExpenses[index].amount = updatedExpense.amount
+        recurringExpenses[index].category = updatedExpense.category
+        recurringExpenses[index].memo = updatedExpense.memo
+        recurringExpenses[index].details = updatedExpense.details
+
+        for i in expenses.indices where expenses[i].parentRecurringID == updatedExpense.id {
+            expenses[i].name = updatedExpense.name
+            expenses[i].amount = updatedExpense.amount
+            expenses[i].category = updatedExpense.category
+            expenses[i].memo = updatedExpense.memo
+            expenses[i].details = updatedExpense.details
+        }
+
+        persist()
+    }
+
+    func removeAllExpenses(withParentID parentID: UUID) {
+        expenses.removeAll { $0.parentRecurringID == parentID }
+        persist()
+    }
+
+    func nextOccurrence(for recurring: RecurringExpense) -> Date? {
+        recurringService.nextOccurrence(for: recurring)
+    }
+
+    // MARK: - Data Sync
+
+    func syncStorageIfNeeded() {
+        Task {
+            await repository.syncStorageIfNeeded()
+            if let loaded = try? await repository.load() {
+                apply(storeData: loaded)
+            }
+        }
+    }
+
+    func eraseAllData() {
+        expenses.removeAll()
+        recurringExpenses.removeAll()
+        categories = defaultCategories()
+
+        var zeroBudgets: [String: String] = [:]
+        for category in categories {
+            zeroBudgets[category.name] = "0"
+        }
+        budgetService.saveBudgets(zeroBudgets)
+        budgetService.cleanupBudgets(using: categories)
+        persist()
+    }
+
+    // MARK: - Migration Helpers
+
+    func migrateRecurringRules() {
+        var changed = false
+        for i in recurringExpenses.indices {
+            let oldRule = recurringExpenses[i].recurrenceRule
+
+            if let selectedWeekdays = oldRule.selectedWeekdays, !selectedWeekdays.isEmpty {
+                var newRule = oldRule
+                newRule.period = .weekly
+                newRule.frequencyType = .weeklySelectedDays
+                newRule.interval = 0
+                newRule.selectedMonthDays = nil
+                recurringExpenses[i].recurrenceRule = newRule
+                changed = true
+            } else if let selectedMonthDays = oldRule.selectedMonthDays, !selectedMonthDays.isEmpty {
+                var newRule = oldRule
+                newRule.period = .monthly
+                newRule.frequencyType = .monthlySelectedDays
+                newRule.interval = 0
+                newRule.selectedWeekdays = nil
+                recurringExpenses[i].recurrenceRule = newRule
+                changed = true
+            }
+        }
+
+        if changed {
+            persist()
+        }
+    }
+
+    func migrateRecurringExpenseRatings() {
+        var changed = false
+        for index in expenses.indices {
+            if expenses[index].isRecurring && expenses[index].rating != nil {
+                expenses[index].rating = nil
+                changed = true
+            }
+        }
+        if changed {
+            persist()
+        }
+    }
 }
