@@ -3,7 +3,7 @@ import SwiftUI
 
 struct EditCategoryView: View {
 		@Environment(\.dismiss) private var dismiss
-		@ObservedObject var store: ExpenseStore
+		@EnvironmentObject var store: ExpenseStore
 		
 		let category: CategoryItem
 		

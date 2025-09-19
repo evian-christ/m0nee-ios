@@ -1,59 +1,53 @@
 import SwiftUI
 
 struct BudgetSettingsView: View {
-	@AppStorage("enableBudgetTracking", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetEnabled: Bool = true
-	@AppStorage("budgetPeriod", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetPeriod: String = "Monthly"
-	@AppStorage("monthlyBudget", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var monthlyBudget: Double = 0
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@ObservedObject var store: ExpenseStore
-	
+	@EnvironmentObject var store: ExpenseStore
+	@EnvironmentObject var settings: AppSettings
+
 	private var currencySymbol: String {
-		CurrencyManager.symbol(for: currencyCode)
+		CurrencyManager.symbol(for: settings.currencyCode)
 	}
-	
-	@AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
-	@AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
 	
 	var body: some View {
 		Form {
 			Section {
-				Toggle("Enable Budget Tracking", isOn: $budgetEnabled)
+				Toggle("Enable Budget Tracking", isOn: Binding(get: { settings.budgetTrackingEnabled }, set: { settings.budgetTrackingEnabled = $0 }))
 			}
 			
-			if budgetEnabled {
+			if settings.budgetTrackingEnabled {
 				Section {
 					NavigationLink(destination: BudgetFrequencyView()) {
 						HStack {
 							Text("Budget Period")
 							Spacer()
-							Text(LocalizedStringKey(budgetPeriod))
+							Text(LocalizedStringKey(settings.budgetPeriod))
 								.foregroundColor(.gray)
 						}
 					}
 					
-					NavigationLink(destination: MonthlyBudgetView(store: store)) {
+					NavigationLink(destination: MonthlyBudgetView()) {
 						HStack {
-							if budgetPeriod == "Monthly" {
+							if settings.budgetPeriod == "Monthly" {
 								Text(LocalizedStringKey("Monthly Budget"))
 							} else {
 								Text(LocalizedStringKey("Weekly Budget"))
 							}
 							Spacer()
-							Text("\(currencySymbol)\(monthlyBudget, specifier: "%.0f")")
+							Text("\(currencySymbol)\(settings.monthlyBudget, specifier: "%.0f")")
 								.foregroundColor(.gray)
 						}
 					}
 					
-					if budgetPeriod == "Monthly" {
-						Picker("Start day of month", selection: $monthlyStartDay) {
+					if settings.budgetPeriod == "Monthly" {
+						Picker("Start day of month", selection: Binding(get: { settings.monthlyStartDay }, set: { settings.monthlyStartDay = $0 })) {
 							ForEach(1...31, id: \.self) {
 								Text("\($0)")
 							}
 						}
 					}
 					
-					if budgetPeriod == "Weekly" {
-						Picker("Start day of week", selection: $weeklyStartDay) {
+					if settings.budgetPeriod == "Weekly" {
+						Picker("Start day of week", selection: Binding(get: { settings.weeklyStartDay }, set: { settings.weeklyStartDay = $0 })) {
 							ForEach(0..<Calendar.current.weekdaySymbols.count, id: \.self) { index in
 								Text(Calendar.current.weekdaySymbols[index]).tag(index + 1)
 							}
@@ -62,7 +56,7 @@ struct BudgetSettingsView: View {
 				}
 			}
 		}
-		.onChange(of: budgetEnabled) { _ in
+		.onChange(of: settings.budgetTrackingEnabled) { _ in
 			NotificationCenter.default.post(name: Notification.Name("budgetTrackingChanged"), object: nil)
 		}
 		.navigationTitle("Budget & Planning")

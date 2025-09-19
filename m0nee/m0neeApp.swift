@@ -3,58 +3,64 @@ import StoreKit
 
 @main
 struct m0neeApp: App {
-		let store = ExpenseStore()
+	@StateObject private var settings: AppSettings
+	@StateObject private var store: ExpenseStore
 
-		init() {
-				observeTransactionUpdates()
-		}
+	init() {
+		let sharedSettings = AppSettings.shared
+		let storeInstance = ExpenseStore()
+		_settings = StateObject(wrappedValue: sharedSettings)
+		_store = StateObject(wrappedValue: storeInstance)
+		observeTransactionUpdates(store: storeInstance)
+	}
 
-		private func observeTransactionUpdates() {
-				Task.detached {
-						for await result in Transaction.updates {
-								switch result {
-								case .verified(let transaction):
-										if transaction.productID == "com.chan.monir.pro.lifetime" {
-												store.productID = transaction.productID
-										}
-										await transaction.finish()
-								case .unverified(_, _):
-										// Handle unverified transactions silently
-								}
-						}
+	private func observeTransactionUpdates(store: ExpenseStore) {
+		Task {
+			for await result in Transaction.updates {
+				switch result {
+				case .verified(let transaction):
+					if transaction.productID == "com.chan.monir.pro.lifetime" {
+						store.productID = transaction.productID
+					}
+					await transaction.finish()
+				case .unverified(_, _):
+					break // Handle unverified transactions silently
 				}
+			}
 		}
+	}
 
 		var body: some Scene {
 				WindowGroup {
 						RootView()
-								.environmentObject(store)
+							.environmentObject(store)
+							.environmentObject(settings)
 				}
 		}
 }
 
 struct RootView: View {
-		@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false
-		@State private var showMain = false
+	@State private var showMain = false
 
-		@EnvironmentObject var store: ExpenseStore
+	@EnvironmentObject var store: ExpenseStore
+	@EnvironmentObject var settings: AppSettings
 
-		var body: some View {
-				ZStack {
-						if showMain || hasSeenTutorial {
-								ContentView()
-										.transition(.opacity)
-						} else {
-								TutorialView()
-										.transition(.opacity)
-						}
-				}
-				.animation(.easeInOut, value: showMain || hasSeenTutorial)
-				.onAppear {
-						if hasSeenTutorial {
-								showMain = true
-						}
-				}
-				.environmentObject(store)
+	var body: some View {
+		ZStack {
+			if showMain || settings.hasSeenTutorial {
+				ContentView()
+					.transition(.opacity)
+			} else {
+				TutorialView()
+					.transition(.opacity)
+			}
 		}
+		.animation(.easeInOut, value: showMain || settings.hasSeenTutorial)
+		.onAppear {
+			if settings.hasSeenTutorial {
+				showMain = true
+			}
+		}
+		.environmentObject(store)
+	}
 }

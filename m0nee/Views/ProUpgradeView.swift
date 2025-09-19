@@ -77,7 +77,7 @@ struct ProUpgradeModalView: View {
 														isPresented = false
 														dismiss()
 													case .unverified(_, _):
-														// Unverified purchase
+														break // Unverified purchase
 													}
 												default:
 													break

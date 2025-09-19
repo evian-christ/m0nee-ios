@@ -2,10 +2,9 @@ import SwiftUI
 
 struct RecurringSettingsView: View {
 	@EnvironmentObject var store: ExpenseStore
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+	@EnvironmentObject var settings: AppSettings
 	private var currencySymbol: String {
-		CurrencyManager.symbol(for: currencyCode)
+		CurrencyManager.symbol(for: settings.currencyCode)
 	}
 	
 	var body: some View {
@@ -19,7 +18,6 @@ struct RecurringSettingsView: View {
 				ForEach(store.recurringExpenses) { expense in
 					NavigationLink {
 						RecurringDetailView(recurring: expense)
-							.environmentObject(store)
 					} label: {
 						HStack(spacing: 12) {
 							// Category icon on the left
@@ -47,7 +45,7 @@ struct RecurringSettingsView: View {
 							Spacer()
 							
 							// Amount and chevron
-							Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.amount)) ?? "")
+						Text(NumberFormatter.currency(for: settings.decimalDisplayMode, currencyCode: settings.currencyCode).string(from: NSNumber(value: expense.amount)) ?? "")
 								.font(.system(size: 17, weight: .bold))
 								.foregroundColor(.primary)
 						}

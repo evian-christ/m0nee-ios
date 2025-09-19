@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct TutorialView: View {
-	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false
-	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
+	@EnvironmentObject var settings: AppSettings
 	@State private var page: Int = 0
+	@State private var showSwipeHint = true
+	@State private var arrowAnimation = false
 	@Environment(\.dismiss) private var dismiss
 
 	// Simplified to one image per page
@@ -49,7 +50,7 @@ struct TutorialView: View {
 
 							if index == titles.count - 1 {
 								Button(action: {
-									hasSeenTutorial = true
+									settings.hasSeenTutorial = true
 									withAnimation(.easeInOut) {
 										dismiss()
 									}
@@ -83,13 +84,43 @@ struct TutorialView: View {
 				}
 				.tabViewStyle(PageTabViewStyle())
 				.ignoresSafeArea(.all, edges: .bottom)
+				.onChange(of: page) { _ in
+					showSwipeHint = false
+				}
+
+				// Swipe hint overlay
+				if showSwipeHint && page < titles.count - 1 {
+					VStack {
+						Spacer().frame(height: 120)
+						
+						HStack {
+							Spacer()
+							Image(systemName: "arrow.right")
+								.font(.title2)
+								.foregroundColor(.primary)
+								.opacity(0.6)
+								.padding(12)
+								.background(Circle().fill(.regularMaterial).opacity(0.8))
+								.offset(x: arrowAnimation ? 8 : 0)
+								.animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: arrowAnimation)
+								.onAppear {
+									DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+										arrowAnimation = true
+									}
+								}
+							Spacer().frame(width: 40)
+						}
+						
+						Spacer()
+					}
+				}
 
 				// Content overlay: Button (if needed) can be re-added here if desired
 			}
 		}
 		.preferredColorScheme(
-			appearanceMode == "Light" ? .light :
-			appearanceMode == "Dark" ? .dark : nil
-		)
+			settings.appearanceMode == "Light" ? .light :
+			settings.appearanceMode == "Dark" ? .dark : nil
+	)
 	}
 }

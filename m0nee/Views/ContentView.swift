@@ -195,7 +195,7 @@ struct ContentView: View {
 								startDate: budgetDates.startDate,
 								endDate: budgetDates.endDate,
 								categories: store.categories,
-								isProUser: store.productID != "free"
+								isProUser: store.isProUser
 							)
 							.padding(.horizontal, 16)
 							Spacer()
@@ -612,7 +612,7 @@ struct ContentView: View {
 				}
 				.navigationDestination(isPresented: $showingSettings) {
 					VStack {
-						SettingsView(store: store)
+						SettingsView()
 					}
 				}
 				.navigationDestination(isPresented: $showingInsights) {

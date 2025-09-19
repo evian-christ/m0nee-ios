@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CategorySettingsView: View {
-	@ObservedObject var store: ExpenseStore
+	@EnvironmentObject var store: ExpenseStore
 	@State private var newCategory = ""
 	@State private var showingAddSheet = false
 	@State private var categoryToDelete: CategoryItem? = nil
@@ -17,7 +17,7 @@ struct CategorySettingsView: View {
 				Section {
 					ForEach(store.categories) { category in
 						if isEditing {
-							NavigationLink(destination: EditCategoryView(store: store, category: category)) {
+							NavigationLink(destination: EditCategoryView(category: category)) {
 								HStack(spacing: 12) {
 									ZStack {
 										Circle()

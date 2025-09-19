@@ -1,15 +1,15 @@
 import SwiftUI
 
 struct CategoryBudgetView: View {
-	@ObservedObject var store: ExpenseStore
+	@EnvironmentObject var store: ExpenseStore
+	@EnvironmentObject var settings: AppSettings
 	@State private var budgetInputs: [String: String] = [:]
 	@State private var selectedCategory: CategoryItem?
 	@State private var showAlert: Bool = false
 	@State private var alertInput: String = ""
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 
 	private var currencySymbol: String {
-		CurrencyManager.symbol(for: currencyCode)
+		CurrencyManager.symbol(for: settings.currencyCode)
 	}
 	
 	var body: some View {
@@ -49,11 +49,7 @@ struct CategoryBudgetView: View {
 			}
 		}
 		.onAppear {
-			let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-			if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
-				 let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
-				budgetInputs = decoded
-			}
+			budgetInputs = settings.categoryBudgets
 		}
 		.navigationTitle("Category Budgets")
 		.alert("Set Budget", isPresented: $showAlert, actions: {
@@ -66,9 +62,7 @@ struct CategoryBudgetView: View {
 					let roundedValue = Int(round(positiveValue))
 					let cleanValue = String(roundedValue)
 					budgetInputs[selected.name] = cleanValue
-					if let encoded = try? JSONEncoder().encode(budgetInputs) {
-						UserDefaults(suiteName: "group.com.chankim.Monir")?.set(encoded, forKey: "categoryBudgets")
-					}
+					settings.saveCategoryBudgets(budgetInputs)
 				}
 			}
 			Button("Cancel", role: .cancel) {}

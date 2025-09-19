@@ -1,28 +1,29 @@
 import SwiftUI
 
 struct DataSyncSettingsView: View {
-    @ObservedObject var store: ExpenseStore
+    @EnvironmentObject var store: ExpenseStore
+    @EnvironmentObject var settings: AppSettings
     @State private var showProUpgradeSheet = false
     @State private var showResetAlert = false
     @State private var showFullResetAlert = false
 
-    @AppStorage("useiCloud") private var useiCloud: Bool = true
-
     var body: some View {
         Form {
             Section(header: Text("Sync")) {
-                Toggle("Use iCloud", isOn: $useiCloud)
-                    .onChange(of: useiCloud) { _ in
+                Toggle("Use iCloud", isOn: Binding(get: { settings.useICloud }, set: { newValue in
+                        settings.useICloud = newValue
+                    }))
+                    .onChange(of: settings.useICloud) { _ in
                         store.syncStorageIfNeeded()
                     }
             }
 
             Section(header: Text("Backup & Restore")) {
                 if store.isProUser {
-                    NavigationLink(destination: ExportView().environmentObject(store)) {
+                    NavigationLink(destination: ExportView()) {
                         Text("Export Data")
                     }
-                    NavigationLink(destination: ImportView().environmentObject(store)) {
+                    NavigationLink(destination: ImportView()) {
                         Text("Import Data")
                     }
                 } else {
@@ -50,7 +51,7 @@ struct DataSyncSettingsView: View {
         .navigationTitle("Data & Sync")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showProUpgradeSheet) {
-            ProUpgradeModalView(isPresented: $showProUpgradeSheet).environmentObject(store)
+            ProUpgradeModalView(isPresented: $showProUpgradeSheet)
         }
         .alert("Restore All Settings", isPresented: $showResetAlert) {
             Button("Restore", role: .destructive) {
@@ -71,27 +72,7 @@ struct DataSyncSettingsView: View {
     }
 
     private func restoreDefaults() {
-        // Note: This only resets settings stored in AppStorage.
-        // We might need a more robust system for this.
-        let defaults = UserDefaults.standard
-        let groupDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-
-        defaults.removeObject(forKey: "groupByDay")
-        defaults.removeObject(forKey: "useFixedInsightCards")
-        defaults.removeObject(forKey: "displayMode")
-        defaults.removeObject(forKey: "appearanceMode")
-        defaults.removeObject(forKey: "useiCloud")
-        defaults.removeObject(forKey: "budgetPeriod")
-        defaults.removeObject(forKey: "monthlyStartDay")
-        defaults.removeObject(forKey: "weeklyStartDay")
-        defaults.removeObject(forKey: "monthlyBudget")
-        defaults.removeObject(forKey: "budgetEnabled")
-        defaults.removeObject(forKey: "budgetByCategory")
-        defaults.removeObject(forKey: "categoryBudgets")
-        defaults.removeObject(forKey: "decimalDisplayMode")
-
-        groupDefaults?.removeObject(forKey: "showRating")
-        groupDefaults?.removeObject(forKey: "currencyCode")
+        settings.resetSettings()
     }
 
     private func eraseAllData() {

@@ -1,18 +1,19 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @StateObject var store = ExpenseStore()
+    @EnvironmentObject var store: ExpenseStore
+    @EnvironmentObject var settings: AppSettings
 
     var body: some View {
         List {
             Section(header: Text("Configuration")) {
-                NavigationLink(destination: ExpenseBudgetSettingsView(store: store)) {
+                NavigationLink(destination: ExpenseBudgetSettingsView()) {
                     Label("Expense & Budget", systemImage: "chart.bar.xaxis")
                 }
                 NavigationLink(destination: AppearanceSettingsView()) {
                     Label("Appearance", systemImage: "wand.and.stars")
                 }
-                NavigationLink(destination: DataSyncSettingsView(store: store)) {
+                NavigationLink(destination: DataSyncSettingsView()) {
                     Label("Data & Sync", systemImage: "arrow.2.squarepath")
                 }
                 NavigationLink(destination: NotificationSettingsView()) {
@@ -28,10 +29,10 @@ struct SettingsView: View {
                     Label("Help & Support", systemImage: "questionmark.circle.fill")
                 }
             }
-            
+
             Section {
                 VStack(alignment: .center) {
-                    Text("Monir v1.4.1")
+                    Text("Monir v1.4.2")
                         .font(.footnote)
                         .foregroundColor(.gray)
                     Text("Made with ❤️ in SwiftUI")

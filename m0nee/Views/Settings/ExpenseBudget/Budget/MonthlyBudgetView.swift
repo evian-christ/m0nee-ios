@@ -2,34 +2,21 @@ import SwiftUI
 import Foundation
 
 struct MonthlyBudgetView: View {
-	    @State private var monthlyBudget: Double = UserDefaults(suiteName: "group.com.chankim.Monir")?.double(forKey: "monthlyBudget") ?? 0
-	@AppStorage("budgetPeriod", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetPeriod: String = "Monthly"
-	@AppStorage("budgetByCategory", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetByCategory: Bool = false
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
-	@ObservedObject var store: ExpenseStore
+	@EnvironmentObject var store: ExpenseStore
+	@EnvironmentObject var settings: AppSettings
 
 	private var currencySymbol: String {
-		CurrencyManager.symbol(for: currencyCode)
+		CurrencyManager.symbol(for: settings.currencyCode)
 	}
-	
-	@AppStorage("categoryBudgets", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var categoryBudgetsData: Data = Data()
 
-	var totalCategoryBudget: Double {
-		if let decoded = try? JSONDecoder().decode([String: String].self, from: categoryBudgetsData) {
-			return decoded.values.compactMap { Double($0) }.reduce(0, +)
-		}
-		return 0
+	private var totalCategoryBudget: Double {
+		settings.categoryBudgets.values.compactMap { Double($0) }.reduce(0, +)
 	}
-	
-		var formattedBudget: String {
-		NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: monthlyBudget)) ?? ""
-	}
-	
+
 	var body: some View {
 		Form {
 			Section {
-				if budgetByCategory {
+				if settings.budgetByCategory {
 					Text("\(currencySymbol)  \(totalCategoryBudget, specifier: "%.0f")")
 						.font(.title2)
 						.bold()
@@ -39,16 +26,18 @@ struct MonthlyBudgetView: View {
 				} else {
 					HStack {
 						Text(currencySymbol)
-						TextField("Budget", value: $monthlyBudget, format: .number)
-							.keyboardType(.decimalPad)
-							.onChange(of: monthlyBudget) { newValue in
+						TextField(
+							"Budget",
+							value: Binding(get: { settings.monthlyBudget }, set: { newValue in
 								let positiveValue = abs(newValue)
 								let rounded = round(positiveValue)
-								if monthlyBudget != rounded {
-									monthlyBudget = rounded
+								if settings.monthlyBudget != rounded {
+									settings.monthlyBudget = rounded
 								}
-								UserDefaults(suiteName: "group.com.chankim.Monir")?.set(monthlyBudget, forKey: "monthlyBudget")
-							}
+							}) ,
+							format: .number
+						)
+						.keyboardType(.decimalPad)
 					}
 					.font(.title2)
 					.bold()
@@ -56,26 +45,27 @@ struct MonthlyBudgetView: View {
 				}
 			}
 			Section {
-				Toggle("Budget by Category", isOn: $budgetByCategory)
-				if budgetByCategory {
-					NavigationLink(destination: CategoryBudgetView(store: store)) {
+				Toggle(
+					"Budget by Category",
+					isOn: Binding(get: { settings.budgetByCategory }, set: { newValue in
+						settings.budgetByCategory = newValue
+						if newValue {
+							settings.monthlyBudget = totalCategoryBudget
+						}
+					})
+				)
+				if settings.budgetByCategory {
+					NavigationLink(destination: CategoryBudgetView()) {
 						Text("Category Budgets")
 					}
 				}
 			}
 		}
-		.navigationTitle("\(budgetPeriod) Budget")
+		.navigationTitle("\(settings.budgetPeriod) Budget")
 		.navigationBarTitleDisplayMode(.inline)
-		.onChange(of: budgetByCategory) { newValue in
-			if newValue {
-				monthlyBudget = totalCategoryBudget
-				UserDefaults(suiteName: "group.com.chankim.Monir")?.set(monthlyBudget, forKey: "monthlyBudget")
-			}
-		}
-		.onChange(of: categoryBudgetsData) { _ in
-			if budgetByCategory {
-				monthlyBudget = totalCategoryBudget
-				UserDefaults(suiteName: "group.com.chankim.Monir")?.set(monthlyBudget, forKey: "monthlyBudget")
+		.onChange(of: settings.categoryBudgets) { _ in
+			if settings.budgetByCategory {
+				settings.monthlyBudget = totalCategoryBudget
 			}
 		}
 	}
