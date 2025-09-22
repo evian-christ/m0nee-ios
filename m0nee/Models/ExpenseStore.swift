@@ -254,6 +254,22 @@ class ExpenseStore: ObservableObject {
         }
     }
 
+    func binding(for expenseID: UUID) -> Binding<Expense>? {
+        guard expenses.contains(where: { $0.id == expenseID }) else { return nil }
+        return Binding(
+            get: { [weak self] in
+                guard let self, let item = self.expenses.first(where: { $0.id == expenseID }) else {
+                    return Expense(id: expenseID, date: Date(), name: "", amount: 0, category: "", details: nil, rating: nil, memo: nil)
+                }
+                return item
+            },
+            set: { [weak self] updated in
+                guard let self, let index = self.expenses.firstIndex(where: { $0.id == expenseID }) else { return }
+                self.expenses[index] = updated
+            }
+        )
+    }
+
     func updateRecurringExpenseMetadata(_ updatedExpense: RecurringExpense) {
         guard let index = recurringExpenses.firstIndex(where: { $0.id == updatedExpense.id }) else { return }
 

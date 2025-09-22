@@ -30,28 +30,35 @@ struct m0neeApp: App {
 		}
 	}
 
-		var body: some Scene {
-				WindowGroup {
-						RootView()
-							.environmentObject(store)
-							.environmentObject(settings)
-				}
+	var body: some Scene {
+		WindowGroup {
+			RootView(store: store, settings: settings)
 		}
+	}
 }
 
 struct RootView: View {
 	@State private var showMain = false
+	@ObservedObject private var store: ExpenseStore
+	@ObservedObject private var settings: AppSettings
+	@StateObject private var contentViewModel: ContentViewModel
 
-	@EnvironmentObject var store: ExpenseStore
-	@EnvironmentObject var settings: AppSettings
+	init(store: ExpenseStore, settings: AppSettings) {
+		_store = ObservedObject(initialValue: store)
+		_settings = ObservedObject(initialValue: settings)
+		_contentViewModel = StateObject(wrappedValue: ContentViewModel(store: store, settings: settings))
+	}
 
 	var body: some View {
 		ZStack {
 			if showMain || settings.hasSeenTutorial {
-				ContentView()
+				ContentView(viewModel: contentViewModel)
+					.environmentObject(store)
+					.environmentObject(settings)
 					.transition(.opacity)
 			} else {
 				TutorialView()
+					.environmentObject(settings)
 					.transition(.opacity)
 			}
 		}
@@ -61,6 +68,5 @@ struct RootView: View {
 				showMain = true
 			}
 		}
-		.environmentObject(store)
 	}
 }
