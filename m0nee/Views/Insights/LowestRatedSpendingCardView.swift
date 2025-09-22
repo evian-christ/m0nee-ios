@@ -85,17 +85,18 @@ struct LowestRatedSpendingCardView: View {
 
 struct LowestRatedSpendingCardView_Previews: PreviewProvider {
 		static var previews: some View {
-				LowestRatedSpendingCardView(expenses: [
-						Expense(id: UUID(), date: Date(), name: "Bad Food", amount: 15.0, category: "Food", details: nil, rating: 1, memo: nil),
-						Expense(id: UUID(), date: Date(), name: "Bad Service", amount: 25.0, category: "Service", details: nil, rating: 2, memo: nil),
-						Expense(id: UUID(), date: Date(), name: "Okay Purchase", amount: 50.0, category: "Shopping", details: nil, rating: 3, memo: nil),
-						Expense(id: UUID(), date: Date(), name: "Good Experience", amount: 10.0, category: "Entertainment", details: nil, rating: 4, memo: nil),
-						Expense(id: UUID(), date: Date(), name: "Great Buy", amount: 5.0, category: "Shopping", details: nil, rating: 5, memo: nil)
+				let sampleBudget = UUID()
+				return LowestRatedSpendingCardView(expenses: [
+						Expense(id: UUID(), date: Date(), name: "Bad Food", amount: 15.0, category: "Food", details: nil, rating: 1, memo: nil, budgetID: sampleBudget),
+						Expense(id: UUID(), date: Date(), name: "Bad Service", amount: 25.0, category: "Service", details: nil, rating: 2, memo: nil, budgetID: sampleBudget),
+						Expense(id: UUID(), date: Date(), name: "Okay Purchase", amount: 50.0, category: "Shopping", details: nil, rating: 3, memo: nil, budgetID: sampleBudget),
+						Expense(id: UUID(), date: Date(), name: "Good Experience", amount: 10.0, category: "Entertainment", details: nil, rating: 4, memo: nil, budgetID: sampleBudget),
+						Expense(id: UUID(), date: Date(), name: "Great Buy", amount: 5.0, category: "Shopping", details: nil, rating: 5, memo: nil, budgetID: sampleBudget)
 				])
 				.previewLayout(.sizeThatFits)
 				.padding()
 		}
-}
+	}
 
 
 private struct RankedExpenseView: View {

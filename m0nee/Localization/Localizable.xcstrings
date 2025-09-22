@@ -80,6 +80,9 @@
     "%lld" : {
 
     },
+    "%lld items" : {
+
+    },
     "%lld%% used" : {
 
     },
@@ -105,6 +108,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "인증 코드"
+          }
+        }
+      }
+    },
+    "Across %lld budget%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Across %1$lld budget%2$@"
           }
         }
       }
@@ -150,6 +163,7 @@
       }
     },
     "Add to Favourite" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -303,6 +317,9 @@
         }
       }
     },
+    "Budget name" : {
+
+    },
     "Budget Period" : {
       "localizations" : {
         "ko" : {
@@ -312,6 +329,9 @@
           }
         }
       }
+    },
+    "Budgets" : {
+
     },
     "Buy Lifetime – %@" : {
       "localizations" : {
@@ -786,6 +806,9 @@
         }
       }
     },
+    "e.g. September 2025" : {
+
+    },
     "Edit" : {
       "localizations" : {
         "ko" : {
@@ -1029,6 +1052,9 @@
         }
       }
     },
+    "Expense overview" : {
+
+    },
     "Export & Import Data" : {
       "localizations" : {
         "ko" : {
@@ -1123,6 +1149,7 @@
       }
     },
     "Go to the Insights tab and long-press on cards to add them here." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1132,7 +1159,24 @@
         }
       }
     },
+    "Goal (optional)" : {
+
+    },
+    "Goal: %@" : {
+
+    },
+    "Goal: %@  •  Remaining: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Goal: %1$@  •  Remaining: %2$@"
+          }
+        }
+      }
+    },
     "Got it" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1231,6 +1275,9 @@
         }
       }
     },
+    "Log expense" : {
+
+    },
     "Log today’s spending before you forget." : {
       "comment" : "Notification Body",
       "localizations" : {
@@ -1243,6 +1290,7 @@
       }
     },
     "Long-press a card\nand select \"Add to Favourite\"\nto add it to the main screen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1295,6 +1343,9 @@
           }
         }
       }
+    },
+    "Monir" : {
+
     },
     "Monir Pro" : {
 
@@ -1362,6 +1413,9 @@
         }
       }
     },
+    "New Budget" : {
+
+    },
     "New Category" : {
       "localizations" : {
         "ko" : {
@@ -1382,7 +1436,11 @@
         }
       }
     },
+    "No budgets yet" : {
+
+    },
     "No expenses here yet 💸" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1402,7 +1460,14 @@
         }
       }
     },
+    "No expenses yet" : {
+
+    },
+    "No goal set" : {
+
+    },
     "No Insight Cards Added" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1599,6 +1664,12 @@
         }
       }
     },
+    "Recurring rules" : {
+
+    },
+    "Remaining: %@" : {
+
+    },
     "Reminder Time" : {
       "localizations" : {
         "ko" : {
@@ -1610,6 +1681,7 @@
       }
     },
     "Remove from Favourite" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1863,6 +1935,9 @@
         }
       }
     },
+    "Summary" : {
+
+    },
     "Support & Pro" : {
       "localizations" : {
         "ko" : {
@@ -1886,7 +1961,11 @@
     "T %@" : {
 
     },
+    "Tap + to create your first budget." : {
+
+    },
     "Tap the ➕ up there and record your first glorious impulse buy." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1982,7 +2061,13 @@
         }
       }
     },
+    "Total spent" : {
+
+    },
     "Trailing" : {
+
+    },
+    "Transactions" : {
 
     },
     "tutorial_subtitle_1" : {
@@ -2189,6 +2274,7 @@
       }
     },
     "Week of %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {

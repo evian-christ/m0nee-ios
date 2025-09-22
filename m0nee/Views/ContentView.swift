@@ -1,26 +1,16 @@
 import SwiftUI
-import Charts
 import StoreKit
-
-func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -> Int? {
-    let cardHeight: CGFloat = 248  // 240 height + 8 vertical padding
-    let relativeY = location.y
-    let toIndex = Int(relativeY / cardHeight)
-    if toIndex >= 0 && toIndex < list.count {
-        return toIndex
-    }
-    return nil
-}
 
 struct ContentView: View {
     @EnvironmentObject private var store: ExpenseStore
     @EnvironmentObject private var settings: AppSettings
 
-    @State private var pressedExpenseID: UUID?
     @State private var showingAddExpense = false
     @State private var showingSettings = false
     @State private var showingInsights = false
-    @State private var selectedExpenseID: UUID?
+    @State private var showingAddBudget = false
+    @State private var newBudgetName: String = ""
+    @State private var newBudgetGoal: String = ""
 
     @StateObject private var viewModel: ContentViewModel
 
@@ -28,99 +18,74 @@ struct ContentView: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
-    private var currencyFormatter: NumberFormatter { viewModel.currencyFormatter() }
+    private var currencyFormatter: NumberFormatter {
+        NumberFormatter.currency(for: settings.decimalDisplayMode, currencyCode: settings.currencyCode)
+    }
+
+    private var preferredScheme: ColorScheme? {
+        switch settings.appearanceMode {
+        case "Dark": return .dark
+        case "Light": return .light
+        default: return nil
+        }
+    }
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .top) {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        if !viewModel.useFixedInsightCards {
-                            insightCardsView
-                        }
+            ZStack(alignment: .bottomTrailing) {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
 
-                        let expenseBindings = filteredExpenseBindings
-
-                        if expenseBindings.isEmpty {
-                            emptyStateView
-                        } else if viewModel.shouldGroupByDay {
-                            groupedExpenseSections
-                        } else {
-                            ForEach(Array(expenseBindings.enumerated()), id: \.element.wrappedValue.id) { _, binding in
-                                expenseRow(for: binding)
-                            }
-                        }
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        summaryCard
+                        budgetsSection
                     }
-                    .padding(.top, viewModel.useFixedInsightCards ? 290 : 0)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 36)
+                    .padding(.bottom, 120)
                 }
 
-                if viewModel.useFixedInsightCards {
-                    insightCardsView
-                        .padding(.top, 16)
-                        .offset(y: -24)
-                }
+                floatingAddButton
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    HStack(spacing: 12) {
-                        Button { showingSettings = true } label: {
-                            Image(systemName: "gearshape")
-                        }
+                    Button { showingSettings = true } label: {
+                        Image(systemName: "gear")
+                            .font(.title3)
+                    }
 
-                        Button { showingInsights = true } label: {
-                            Image(systemName: "chart.bar")
-                        }
+                    Button { showingInsights = true } label: {
+                        Image(systemName: "chart.bar")
+                            .font(.title3)
                     }
                 }
 
                 ToolbarItem(placement: .principal) {
-                    if viewModel.budgetPeriod == "Weekly" {
-                        Menu {
-                            ForEach(viewModel.recentWeeks, id: \.self) { weekStart in
-                                Button {
-                                    viewModel.selectedWeekStart = weekStart
-                                } label: {
-                                    Text("Week of \(weekStart.formatted(.dateTime.month().day()))")
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text("Week of \(viewModel.selectedWeekStart.formatted(.dateTime.month().day()))")
-                                    .font(.headline)
-                                Image(systemName: "chevron.down")
-                                    .font(.caption)
-                            }
-                        }
-                    } else {
-                        Menu {
-                            ForEach(viewModel.monthsWithExpenses, id: \.self) { month in
-                                Button {
-                                    viewModel.selectedMonth = month
-                                } label: {
-                                    Text(viewModel.displayMonth(month))
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text(viewModel.displayMonth(viewModel.selectedMonth))
-                                    .font(.headline)
-                                Image(systemName: "chevron.down")
-                                    .font(.caption)
-                            }
-                        }
+                    VStack(spacing: 2) {
+                        Text("Monir")
+                            .font(.headline.weight(.semibold))
+                        Text("Expense overview")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { showingAddExpense = true } label: {
+                    Button {
+                        newBudgetName = ""
+                        newBudgetGoal = ""
+                        showingAddBudget = true
+                    } label: {
                         Image(systemName: "plus")
+                            .font(.title3)
                     }
                 }
             }
             .sheet(isPresented: $showingAddExpense) {
                 NavigationStack {
-                    AddExpenseView { newExpense in
+                    AddExpenseView(defaultBudgetID: viewModel.summaries.first?.id) { newExpense in
                         store.add(newExpense)
                     }
                     .environmentObject(store)
@@ -133,298 +98,176 @@ struct ContentView: View {
                     .environmentObject(settings)
             }
             .navigationDestination(isPresented: $showingInsights) {
-                InsightsView(viewModel: InsightsViewModel(store: store, settings: settings))
+                InsightsView()
                     .environmentObject(store)
                     .environmentObject(settings)
             }
-            .onAppear {
-                viewModel.onAppear()
+            .sheet(isPresented: $showingAddBudget) {
+                NavigationStack {
+                    Form {
+                        Section("Budget name") {
+                            TextField("e.g. September 2025", text: $newBudgetName)
+                        }
 
-                Task {
-                    do {
-                        var foundEntitlement = false
-                        for await result in Transaction.currentEntitlements {
-                            if case .verified(let transaction) = result,
-                               transaction.productID == "com.chan.monir.pro.lifetime" {
-                                store.productID = transaction.productID
-                                foundEntitlement = true
-                                break
+                        Section("Goal (optional)") {
+                            TextField("Amount", text: $newBudgetGoal)
+                                .keyboardType(.decimalPad)
+                        }
+                    }
+                    .navigationTitle("New Budget")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") { showingAddBudget = false }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Add") {
+                                addBudget()
+                                showingAddBudget = false
                             }
+                            .disabled(newBudgetName.trimmingCharacters(in: .whitespaces).isEmpty)
                         }
-                        if !foundEntitlement {
-                            store.productID = "free"
-                        }
-                    } catch {
-                        store.productID = "free"
                     }
                 }
             }
         }
-        .preferredColorScheme(viewModel.preferredColorScheme)
+        .preferredColorScheme(preferredScheme)
     }
 
-    private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Text("No expenses here yet 💸")
-                .font(.subheadline)
+    // MARK: - Sections
+
+    private var summaryCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Total spent")
+                .font(.caption.weight(.medium))
                 .foregroundColor(.secondary)
-                .padding(.top, 40)
-            Text("Tap the ➕ up there and record your first glorious impulse buy.")
+            Text(currencyFormatter.string(from: NSNumber(value: viewModel.totalSpent)) ?? "—")
+                .font(.system(size: 34, weight: .semibold, design: .rounded))
+            Text("Across \(viewModel.summaries.count) budget\(viewModel.summaries.count == 1 ? "" : "s")")
                 .font(.footnote)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                .foregroundColor(.secondary)
         }
-        .frame(maxWidth: .infinity)
+        .padding(24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(Color(.systemBackground))
+                .shadow(color: Color.black.opacity(0.05), radius: 16, x: 0, y: 8)
+        )
     }
 
-    private var groupedExpenseSections: some View {
-        let groups = groupedExpenseBindings
-        return ForEach(groups, id: \.date) { section in
-            Section(
-                header: HStack {
-                    Text(DateFormatter.m0neeListSection.string(from: section.date))
-                        .font(.caption)
-                        .foregroundColor(Color.blue.opacity(0.7))
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 15)
-                .padding(.bottom, 8)
-            ) {
-                ForEach(Array(section.bindings.enumerated()), id: \.element.wrappedValue.id) { _, binding in
-                    expenseRow(for: binding)
-                }
-            }
-        }
-    }
+    private var budgetsSection: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Budgets")
+                .font(.title3.bold())
 
-    private var insightCardsView: some View {
-        VStack {
-            TabView {
-                if viewModel.favouriteCards.isEmpty {
-                    VStack {
-                        VStack(spacing: 12) {
-                            Text("No Insight Cards Added")
-                                .font(.headline)
-                            Text("Go to the Insights tab and long-press on cards to add them here.")
-                                .font(.subheadline)
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 20)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(16)
-                        .padding(.horizontal, 16)
-                        .frame(height: 240)
-                        Spacer()
-                    }
-                } else {
-                    let expenses = filteredExpenseBindings.map(\.wrappedValue)
-                    ForEach(viewModel.favouriteCards, id: \.self) { type in
-                        VStack {
-                            InsightCardView(
-                                type: type,
-                                expenses: expenses,
-                                startDate: viewModel.budgetDates.start,
-                                endDate: viewModel.budgetDates.end,
-                                categories: store.categories,
-                                isProUser: store.isProUser
-                            )
-                            .padding(.horizontal, 16)
-                            Spacer()
-                        }
-                    }
-                }
-            }
-            .id(viewModel.cardRefreshTokens)
-            .tabViewStyle(.page)
-            .indexViewStyle(.page(backgroundDisplayMode: .never))
-            .frame(height: 270)
-            .background(Color(.systemBackground))
-        }
-        .frame(height: 300)
-        .background(Color(.systemBackground))
-    }
-
-    @ViewBuilder
-    private func expenseRow(for expense: Binding<Expense>) -> some View {
-        switch viewModel.displayMode {
-        case "Compact":
-            compactRow(for: expense)
-        case "Detailed":
-            detailedRow(for: expense)
-        default:
-            standardRow(for: expense)
-        }
-    }
-
-    private func compactRow(for expense: Binding<Expense>) -> some View {
-        Button {
-            pressedExpenseID = expense.wrappedValue.id
-            DispatchQueue.main.async {
-                selectedExpenseID = expense.wrappedValue.id
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                pressedExpenseID = nil
-            }
-        } label: {
-            VStack(spacing: 0) {
-                rowContent(for: expense, iconSize: 24, showCategorySubtitle: false)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(pressedExpenseID == expense.wrappedValue.id ? Color.gray.opacity(0.3) : Color(.systemBackground))
-                Divider()
-            }
-        }
-        .buttonStyle(.plain)
-        .background(NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store), tag: expense.wrappedValue.id, selection: $selectedExpenseID) { EmptyView() }.hidden())
-    }
-
-    private func standardRow(for expense: Binding<Expense>) -> some View {
-        Button {
-            pressedExpenseID = expense.wrappedValue.id
-            DispatchQueue.main.async {
-                selectedExpenseID = expense.wrappedValue.id
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                pressedExpenseID = nil
-            }
-        } label: {
-            ZStack {
-                rowContent(for: expense, iconSize: 32, showCategorySubtitle: true)
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .background(pressedExpenseID == expense.wrappedValue.id ? Color.gray.opacity(0.3) : Color(.systemBackground))
-            }
-        }
-        .buttonStyle(.plain)
-        .background(NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store), tag: expense.wrappedValue.id, selection: $selectedExpenseID) { EmptyView() }.hidden())
-    }
-
-    private func detailedRow(for expense: Binding<Expense>) -> some View {
-        Button {
-            pressedExpenseID = expense.wrappedValue.id
-            DispatchQueue.main.async {
-                selectedExpenseID = expense.wrappedValue.id
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                pressedExpenseID = nil
-            }
-        } label: {
-            VStack(spacing: 0) {
-                detailedRowContent(for: expense)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(pressedExpenseID == expense.wrappedValue.id ? Color.gray.opacity(0.1) : Color(.systemGray5).opacity(0.01))
-                Divider()
-            }
-        }
-        .buttonStyle(.plain)
-        .background(NavigationLink(destination: ExpenseDetailView(expenseID: expense.wrappedValue.id, store: store), tag: expense.wrappedValue.id, selection: $selectedExpenseID) { EmptyView() }.hidden())
-    }
-
-    private func rowContent(for expense: Binding<Expense>, iconSize: CGFloat, showCategorySubtitle: Bool) -> some View {
-        HStack(spacing: 12) {
-            if let categoryItem = store.categories.first(where: { $0.name == expense.wrappedValue.category }) {
-                ZStack {
-                    Circle()
-                        .fill(categoryItem.color.color)
-                        .frame(width: iconSize, height: iconSize)
-                    Image(systemName: categoryItem.symbol)
-                        .font(.system(size: iconSize / 2, weight: .medium))
-                        .foregroundColor(.white)
-                }
-            } else {
-                ZStack {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: iconSize, height: iconSize)
-                    Image(systemName: "questionmark")
-                        .font(.system(size: iconSize / 2))
-                        .foregroundColor(.gray)
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
-                    Text(expense.wrappedValue.name)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                    if expense.wrappedValue.isRecurring {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                    }
-                }
-                .font(.body.weight(.semibold))
-                .foregroundColor(.primary)
-
-                if showCategorySubtitle {
-                    Text(expense.wrappedValue.category)
-                        .font(.footnote)
+            if viewModel.summaries.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("No budgets yet")
+                        .font(.headline)
+                    Text("Tap + to create your first budget.")
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
+                .padding(.vertical, 12)
+            } else {
+                ForEach(viewModel.summaries) { summary in
+                    NavigationLink {
+                        BudgetDetailView(
+                            budget: summary.budget,
+                            viewModel: viewModel,
+                            currencyFormatter: currencyFormatter
+                        )
+                        .environmentObject(store)
+                        .environmentObject(settings)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text(summary.budget.name)
+                                .font(.headline)
+                            HStack {
+                                Text(currencyFormatter.string(from: NSNumber(value: summary.totalSpent)) ?? "—")
+                                    .font(.title3.weight(.semibold))
+                                Spacer()
+                                Text("\(summary.expenseCount) items")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                            if let goal = summary.budget.goalAmount {
+                                let remaining = max(goal - summary.totalSpent, 0)
+                                Text("Goal: \(currencyFormatter.string(from: NSNumber(value: goal)) ?? "—")  •  Remaining: \(currencyFormatter.string(from: NSNumber(value: remaining)) ?? "—")")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(18)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private func expenseRow(_ expense: Expense) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            let categoryItem = store.categories.first { $0.name == expense.category }
+            Circle()
+                .fill((categoryItem?.color.color ?? Color.accentColor).opacity(0.18))
+                .frame(width: 36, height: 36)
+                .overlay(
+                    Image(systemName: categoryItem?.symbol ?? "questionmark")
+                        .foregroundColor(categoryItem?.color.color ?? .accentColor)
+                )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(expense.name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                Text(expense.date.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(currencyFormatter.string(from: NSNumber(value: expense.wrappedValue.amount)) ?? "")
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(.primary)
-
-                if showCategorySubtitle {
-                    Text(expense.wrappedValue.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption2)
-                        .foregroundColor(.gray)
-                }
-            }
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.gray)
+            Text(currencyFormatter.string(from: NSNumber(value: expense.amount)) ?? "")
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.primary)
         }
+        .contentShape(Rectangle())
     }
 
-    private func detailedRowContent(for expense: Binding<Expense>) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
-                rowContent(for: expense, iconSize: 40, showCategorySubtitle: true)
+    private var floatingAddButton: some View {
+        Button {
+            showingAddExpense = true
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "plus.circle.fill")
+                Text("Log expense")
+                    .fontWeight(.semibold)
             }
-
-            if let memo = expense.wrappedValue.memo, !memo.isEmpty {
-                Text(memo)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .padding(.trailing, 8)
-            }
-
-            if viewModel.showRating, let rating = expense.wrappedValue.rating {
-                HStack(spacing: 2) {
-                    ForEach(1...5, id: \.self) { star in
-                        Image(systemName: star <= rating ? "star.fill" : "star")
-                            .foregroundColor(.yellow)
-                            .font(.caption)
-                    }
-                }
-            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 16)
+            .background(Color.accentColor)
+            .foregroundColor(.white)
+            .clipShape(Capsule())
+            .shadow(color: Color.accentColor.opacity(0.3), radius: 16, x: 0, y: 10)
+            .padding(.trailing, 24)
+            .padding(.bottom, 48)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
+        .disabled(viewModel.summaries.isEmpty)
     }
 
-    private var filteredExpenseBindings: [Binding<Expense>] {
-        viewModel.filteredExpenseIDs.compactMap { store.binding(for: $0) }
-    }
-
-    private var groupedExpenseBindings: [(date: Date, bindings: [Binding<Expense>])] {
-        viewModel.groupedExpenseIDs.map { tuple in
-            let bindings = tuple.ids.compactMap { store.binding(for: $0) }
-            return (date: tuple.date, bindings: bindings)
-        }
-        .filter { !$0.bindings.isEmpty }
+    private func addBudget() {
+        let trimmedName = newBudgetName.trimmingCharacters(in: .whitespaces)
+        guard !trimmedName.isEmpty else { return }
+        let goal = Double(newBudgetGoal)
+        viewModel.createBudget(name: trimmedName, goalAmount: goal)
+        newBudgetName = ""
+        newBudgetGoal = ""
     }
 }
