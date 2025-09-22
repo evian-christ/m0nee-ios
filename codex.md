@@ -5,44 +5,33 @@
 2. 코드 변경이 있을 때마다 **무엇을 변경했는지**와 **왜 그렇게 변경했는지**를 간단하고 이해하기 쉽게 설명합니다.
 3. 설명은 실무 초심자도 이해할 수 있도록 너무 깊게 파고들지 말고, 핵심 개념과 이유를 중심으로 적당히 쉽게 작성합니다.
 
-# Codex Internal Roadmap
+# 현재 기반
 
-Authoritative sequence of work for the m0nee refactor. Written for Codex use only.
+- 모든 지출과 반복 지출은 반드시 하나의 `Budget`에 속한다.
+- `StoreData`는 `budgets`, `expenses`, `categories`, `recurringExpenses`를 직렬화한다.
+- 홈 화면은 예산 요약 + 리스트, 예산 상세 화면은 일자별 지출을 보여준다.
+- 새 지출 작성 시 예산 선택이 필수이며, 반복 지출도 해당 예산을 따라 생성된다.
 
-## Ground Rules
-- Single `ExpenseStore` instance per process; inject via `@EnvironmentObject`.
-- New types must declare ownership (`@MainActor`, `Sendable`) and document side effects.
-- Prefer dependency injection over globals; no direct `UserDefaults.standard` access in UI.
+# 향후 작업
 
-## Phase 1 — Extract Core Services
-**Goal:** collapse `ExpenseStore` responsibilities into service protocols that can be mocked.
-1. Introduce protocols: `ExpenseRepository`, `BudgetComputing`, `RecurringExpenseScheduling`, `WidgetSyncing`, `ProAccessHandling`.
-2. Create concrete implementations by moving logic out of `ExpenseStore` (repository first, then budget, recurring, widget, pro).
-3. Refactor `ExpenseStore` into a coordinator that composes these services; ensure persistence APIs become async and main-actor safe.
+## 1. 예산 경험 고도화
+- 예산 생성 플로우 개선: 목표 금액, 기간, 템플릿(월간/프로젝트) 지원.
+- 예산 간 정렬/검색/아카이브 제공, 기본 예산 변경 허용.
+- 예산 삭제 시 이동할 대상 선택 UX 정립 및 취소선택 방지.
 
-## Phase 2 — App State Unification
-1. Provide the composed `ExpenseStore` from `m0neeApp` and remove `@StateObject` instantiations in child views (e.g. `SettingsView`).
-2. Replace scattered `UserDefaults` keys with an `AppSettings` facade that encapsulates suite identifiers and change notifications.
-3. Audit `NotificationCenter` usage; migrate to Combine publishers sourced from the unified store.
+## 2. 지출 입력 및 관리
+- 지출 폼 단축(최근 예산 자동 선택, 즐겨찾기/템플릿 항목).
+- 예산 간 지출 이동 기능(예산 상세에서 편집/이동).
+- 반복 지출 편집이 예산 변경을 반영하도록 개선.
 
-## Phase 3 — Presentation Layer Cleanup
-1. Introduce `ContentViewModel` and `InsightsViewModel` that depend on the services from Phase 1.
-2. Move date-range filtering, favourite insight management, and budget formatting into the view models.
-3. Keep SwiftUI views declarative: no direct persistence or calculations beyond formatting.
+## 3. 인사이트 & 리포트 재구성
+- 예산별 진행률, 초과 경보, 기간 비교 등 기본 위젯 재정비.
+- 다중 예산 합산/필터링 뷰 제공(전체 개요, 태그/카테고리별 비교).
 
-## Phase 4 — Testing Expansion
-1. Provide in-memory fakes for each new service protocol; update existing tests to inject fakes instead of hitting file system/iCloud.
-2. Add unit tests for budget/recurring calculations, widget payload generation, and pro-access decisions.
-3. Establish SwiftUI snapshot coverage for Content, Insights, and Settings flows; add StoreKit TestKit scenarios for purchase lifecycle.
+## 4. 동기화 & 내보내기
+- CSV 포맷 문서화 및 마이그레이션 전략 정립.
+- 예산 구조를 유지한 백업/복원 UX 설계.
 
-## Phase 5 — Concurrency & Event Hygiene
-1. Mark transaction observers and persistence entry points with `@MainActor`; route background file I/O through Task.detached hops that hand results back to the main actor.
-2. Replace ad-hoc notifications with structured Combine pipelines; expose typed events (`expensesDidChange`, `budgetDidChange`).
-3. Adopt async/await entry points for services and update call sites accordingly.
-
-## Phase 6 — Long-Term Feature Tracks
-- Forecasting: surface projected balance using `RecurringExpenseScheduling` data.
-- Goal-based budgeting: extend budget service to manage goal envelopes and progress metrics.
-- Localized coaching: hook `LanguageManager` + notification pipeline to deliver locale-aware tips.
-
-Maintain incremental PRs per bullet; no phase should land without corresponding tests and documentation updates.
+## 5. 테스트 및 안정성
+- 예산/지출 관계 검증 테스트 추가 (생성, 삭제, 마이그레이션).
+- Import/Export 라운드트립 테스트, 반복 지출 생성 시 예산 일관성 검증.
