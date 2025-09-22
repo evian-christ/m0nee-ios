@@ -65,18 +65,13 @@ struct SubscriptionSettingsView: View {
 				.task {
 						await checkSubscriptionStatus()
 				}
-				.sheet(isPresented: $showUpgradeModal, onDismiss: {
-						Task {
-								await checkSubscriptionStatus()
-						}
-				}) {
-						ProUpgradeModalView(isPresented: $showUpgradeModal)
+			.sheet(isPresented: $showUpgradeModal, onDismiss: {
+				Task {
+					await checkSubscriptionStatus()
 				}
-				.onReceive(NotificationCenter.default.publisher(for: .didUpgradeToPro)) { _ in
-						Task {
-								await checkSubscriptionStatus()
-						}
-				}
+			}) {
+					ProUpgradeModalView(isPresented: $showUpgradeModal)
+			}
 				.alert("Enter Access Code", isPresented: $showPromoCodeAlert) {
 						TextField("Code", text: $promoCodeInput)
 								.autocapitalization(.none)

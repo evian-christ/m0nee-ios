@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct CategoryBudgetProgressCardView: View {
-	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
-	@AppStorage("enableBudgetTracking") private var budgetTrackingEnabled: Bool = true
 	let expenses: [Expense]
 	let startDate: Date
 	let endDate: Date

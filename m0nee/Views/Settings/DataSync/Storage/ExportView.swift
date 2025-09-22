@@ -3,8 +3,7 @@ import UniformTypeIdentifiers
 
 struct ExportView: View {
 	@EnvironmentObject var store: ExpenseStore
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+	@EnvironmentObject var settings: AppSettings
 	
 	var body: some View {
 		List {
@@ -32,7 +31,7 @@ struct ExportView: View {
 			let date = DateFormatter.m0neeCSV.string(from: expense.date)
 			let time = DateFormatter.m0neeTimeOnly.string(from: expense.date)
 			let name = escape(expense.name)
-						let amount = NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.amount)) ?? ""
+			let amount = NumberFormatter.currency(for: settings.decimalDisplayMode, currencyCode: settings.currencyCode).string(from: NSNumber(value: expense.amount)) ?? ""
 			let category = escape(expense.category)
 			let details = escape(expense.details ?? "")
 			let rating = expense.rating.map { "\($0)" } ?? ""
@@ -49,7 +48,7 @@ struct ExportView: View {
 						// Format start date with both date and time (dd-MM-yyyy HH:mm)
 						let start = "\(DateFormatter.m0neeCSV.string(from: recurring.startDate)) \(DateFormatter.m0neeTimeOnly.string(from: recurring.startDate))"
 						let name = escape(recurring.name)
-												let amount = NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: recurring.amount)) ?? ""
+						let amount = NumberFormatter.currency(for: settings.decimalDisplayMode, currencyCode: settings.currencyCode).string(from: NSNumber(value: recurring.amount)) ?? ""
 						let category = escape(recurring.category)
 						let interval = "\(recurring.recurrenceRule.interval)"
 						let period = recurring.recurrenceRule.period.rawValue

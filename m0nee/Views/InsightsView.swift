@@ -2,20 +2,23 @@ import SwiftUI
 
 struct InsightsView: View {
 		@EnvironmentObject var store: ExpenseStore
-		@AppStorage("favouriteInsightCards") private var favouriteInsightCardsRaw: Data = Data()
+		@EnvironmentObject var settings: AppSettings
 		@State private var favourites: [InsightCardType] = []
 		@State private var deleteTrigger = UUID()
 		@State private var showHelpTooltip = false
 		@State private var showProUpgradeModal = false
-		@AppStorage("showRating", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var showRating: Bool = true
 	
+	private var showRating: Bool { settings.showRating }
+	private var budgetPeriod: String { settings.budgetPeriod }
+	private var weeklyStartDay: Int { settings.weeklyStartDay }
+	private var monthlyStartDay: Int { settings.monthlyStartDay }
+
 	private var currentBudgetDates: (startDate: Date, endDate: Date) {
 		let calendar = Calendar.current
 		let today = Date()
-		let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
-		let startDay = UserDefaults.standard.integer(forKey: period == "Weekly" ? "weeklyStartDay" : "monthlyStartDay")
+		let startDay = budgetPeriod == "Weekly" ? weeklyStartDay : monthlyStartDay
 		
-		if period == "Weekly" {
+		if budgetPeriod == "Weekly" {
 			let weekdayToday = calendar.component(.weekday, from: today)
 			let delta = (weekdayToday - startDay + 7) % 7
 			let weekStart = calendar.date(byAdding: .day, value: -delta, to: today)!
@@ -46,10 +49,10 @@ struct InsightsView: View {
 				}
 				.padding(.vertical)
 				.onAppear {
-					favourites = loadFavourites()
+					syncFavouritesWithSettings()
 				}
-				.onChange(of: favourites) { _ in
-					saveFavourites()
+				.onChange(of: settings.favouriteInsightCardsData) { _ in
+					syncFavouritesWithSettings()
 				}
 			}
 			.navigationTitle("Insights")
@@ -99,19 +102,6 @@ struct InsightsView: View {
 	
 	
 	
-	private func loadFavourites() -> [InsightCardType] {
-		guard let decoded = try? JSONDecoder().decode([InsightCardType].self, from: favouriteInsightCardsRaw) else {
-			return []
-		}
-		return decoded
-	}
-	
-	private func saveFavourites() {
-		if let encoded = try? JSONEncoder().encode(favourites) {
-			favouriteInsightCardsRaw = encoded
-		}
-	}
-	
 	private func toggleFavourite(_ type: InsightCardType) {
 		if let index = favourites.firstIndex(of: type) {
 			favourites.remove(at: index)
@@ -119,12 +109,22 @@ struct InsightsView: View {
 			favourites.append(type)
 		}
 		saveFavourites()
-		favourites = loadFavourites()
-		NotificationCenter.default.post(name: Notification.Name("favouritesUpdated"), object: nil)
+		syncFavouritesWithSettings()
 	}
-	
+
 	private func isFavourited(_ type: InsightCardType) -> Bool {
 		favourites.contains(type)
+	}
+
+	private func syncFavouritesWithSettings() {
+		let decoded = (try? JSONDecoder().decode([InsightCardType].self, from: settings.favouriteInsightCardsData)) ?? []
+		favourites = decoded
+	}
+
+	private func saveFavourites() {
+		if let encoded = try? JSONEncoder().encode(favourites) {
+			settings.favouriteInsightCardsData = encoded
+		}
 	}
 
 	@ViewBuilder

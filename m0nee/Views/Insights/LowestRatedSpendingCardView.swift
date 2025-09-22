@@ -2,11 +2,9 @@ import SwiftUI
 
 struct LowestRatedSpendingCardView: View {
 		let expenses: [Expense]
-		@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+		@EnvironmentObject var settings: AppSettings
 
-		private var currencySymbol: String {
-				CurrencyManager.symbol(for: currencyCode)
-		}
+		private var currencySymbol: String { CurrencyManager.symbol(for: settings.currencyCode) }
 
 		private var lowestRatedExpenses: [Expense] {
 				expenses
@@ -106,10 +104,10 @@ private struct RankedExpenseView: View {
 		let fontSize: Font
 		var isHighlighted: Bool = false
 
-		@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
+		@EnvironmentObject var settings: AppSettings
 
 		private var currencySymbol: String {
-				CurrencyManager.symbol(for: currencyCode)
+				CurrencyManager.symbol(for: settings.currencyCode)
 		}
 
 		var body: some View {

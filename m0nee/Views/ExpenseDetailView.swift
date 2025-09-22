@@ -1,14 +1,15 @@
 import SwiftUI
 
 struct ExpenseDetailView: View {
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("showRating") private var showRating: Bool = true
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+	@EnvironmentObject var settings: AppSettings
 	@Environment(\.colorScheme) private var colorScheme
 
 	private var currencySymbol: String {
-			CurrencyManager.symbol(for: currencyCode)
+		CurrencyManager.symbol(for: currencyCode)
 	}
+	private var currencyCode: String { settings.currencyCode }
+	private var showRating: Bool { settings.showRating }
+	private var decimalDisplayMode: DecimalDisplayMode { settings.decimalDisplayMode }
 	
 	@Environment(\.dismiss) private var dismiss
 	let expenseID: UUID

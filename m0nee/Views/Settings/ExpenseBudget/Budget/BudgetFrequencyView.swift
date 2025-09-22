@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct BudgetFrequencyView: View {
-	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
+	@EnvironmentObject var settings: AppSettings
 	let frequencies = ["Weekly", "Monthly"]
-	
+
 	var body: some View {
 		Form {
-			Picker("Select Period", selection: $budgetPeriod) {
+			Picker("Select Period", selection: settings.binding(\.budgetPeriod)) {
 				ForEach(frequencies, id: \.self) { frequency in
 					Text(LocalizedStringKey(frequency)).tag(frequency)
 				}

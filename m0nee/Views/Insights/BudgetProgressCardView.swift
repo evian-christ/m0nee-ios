@@ -1,13 +1,11 @@
 import SwiftUI
 
 struct BudgetProgressCardView: View {
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("enableBudgetTracking") private var budgetTrackingEnabled: Bool = true
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+	@EnvironmentObject var settings: AppSettings
 
-	private var currencySymbol: String {
-		CurrencyManager.symbol(for: currencyCode)
-	}
+	private var currencyCode: String { settings.currencyCode }
+	private var decimalDisplayMode: DecimalDisplayMode { settings.decimalDisplayMode }
+	private var budgetTrackingEnabled: Bool { settings.budgetTrackingEnabled }
 
 	let expenses: [Expense]
 	let startDate: Date

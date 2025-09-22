@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 // MARK: - Language Model
 struct Language: Identifiable, Hashable {
@@ -9,13 +10,18 @@ struct Language: Identifiable, Hashable {
 }
 
 // MARK: - Language Manager
+@MainActor
 class LanguageManager: ObservableObject {
-    @AppStorage("selectedLanguage") var languageCode: String = "en" {
+    @Published var languageCode: String {
         didSet {
-            // Ensure the UI updates when the language code changes.
-            objectWillChange.send()
+            if settings.selectedLanguage != languageCode {
+                settings.selectedLanguage = languageCode
+            }
         }
     }
+
+    private let settings: AppSettings
+    private var cancellable: AnyCancellable?
 
     var currentLocale: Locale {
         Locale(identifier: languageCode)
@@ -26,11 +32,25 @@ class LanguageManager: ObservableObject {
         Language(code: "ko", name: "한국어 (Korean)")
     ]
 
-    init() {
-        // If there's no saved language, try to use the device's preferred language if it's supported.
-        if UserDefaults.standard.string(forKey: "selectedLanguage") == nil {
-            let preferredLanguage = Locale.preferredLanguages.first?.components(separatedBy: "-").first ?? "en"
-            languageCode = LanguageManager.availableLanguages.contains(where: { $0.code == preferredLanguage }) ? preferredLanguage : "en"
+    init(settings: AppSettings = .shared) {
+        self.settings = settings
+        let preferred = settings.selectedLanguage
+        if LanguageManager.availableLanguages.contains(where: { $0.code == preferred }) {
+            self.languageCode = preferred
+        } else {
+            let fallback = Locale.preferredLanguages.first?.components(separatedBy: "-").first ?? "en"
+            let resolved = LanguageManager.availableLanguages.contains(where: { $0.code == fallback }) ? fallback : "en"
+            self.languageCode = resolved
+            self.settings.selectedLanguage = resolved
         }
+
+        cancellable = settings.$selectedLanguage
+            .removeDuplicates()
+            .sink { [weak self] newValue in
+                guard let self else { return }
+                if self.languageCode != newValue {
+                    self.languageCode = newValue
+                }
+            }
     }
 }

@@ -204,14 +204,12 @@ class ExpenseStore: ObservableObject {
     func add(_ expense: Expense) {
         expenses.append(expense)
         persist()
-        NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
     }
 
     func update(_ updated: Expense) {
         if let index = expenses.firstIndex(where: { $0.id == updated.id }) {
             expenses[index] = updated
             persist()
-            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
         }
     }
 
@@ -219,7 +217,6 @@ class ExpenseStore: ObservableObject {
         if let index = expenses.firstIndex(where: { $0.id == expense.id }) {
             expenses.remove(at: index)
             persist()
-            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
         }
     }
 
@@ -233,10 +230,9 @@ class ExpenseStore: ObservableObject {
     // MARK: - Recurring Expenses
 
     func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
-        var generated = recurringService.generateExpenses(for: &recurringExpenses, currentDate: currentDate)
+        let generated = recurringService.generateExpenses(for: &recurringExpenses, currentDate: currentDate)
         if !generated.isEmpty {
             expenses.append(contentsOf: generated)
-            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
         }
         persist()
     }
@@ -247,7 +243,6 @@ class ExpenseStore: ObservableObject {
         recurringExpenses.append(preparedRecurring)
         if !generated.isEmpty {
             expenses.append(contentsOf: generated)
-            NotificationCenter.default.post(name: Notification.Name("expensesUpdated"), object: nil)
         }
         persist()
     }

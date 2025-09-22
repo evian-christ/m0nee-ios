@@ -2,17 +2,15 @@ import SwiftUI
 import UserNotifications
 
 struct NotificationSettingsView: View {
-    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false
-    @AppStorage("notificationHour") private var notificationHour: Int = 20
-    @AppStorage("notificationMinute") private var notificationMinute: Int = 0
+    @EnvironmentObject var settings: AppSettings
 
     @State private var selectedTime: Date = Date()
 
     var body: some View {
         Form {
             Section {
-                Toggle("Enable Daily Reminders", isOn: $notificationsEnabled)
-                    .onChange(of: notificationsEnabled) { newValue in
+                Toggle("Enable Daily Reminders", isOn: settings.binding(\.notificationsEnabled))
+                    .onChange(of: settings.notificationsEnabled) { newValue in
                         if newValue {
                             requestNotificationAuthorization()
                             scheduleDailyNotification()
@@ -22,13 +20,13 @@ struct NotificationSettingsView: View {
                     }
             }
 
-            if notificationsEnabled {
+            if settings.notificationsEnabled {
                 Section {
                     DatePicker("Reminder Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
                         .onChange(of: selectedTime) { newTime in
                             let components = Calendar.current.dateComponents([.hour, .minute], from: newTime)
-                            notificationHour = components.hour ?? 20
-                            notificationMinute = components.minute ?? 0
+                            settings.notificationHour = components.hour ?? 20
+                            settings.notificationMinute = components.minute ?? 0
                             scheduleDailyNotification()
                         }
                 }
@@ -41,9 +39,9 @@ struct NotificationSettingsView: View {
 
     private func setupInitialNotificationState() {
         // Initialize selectedTime from stored hour and minute
-        selectedTime = Calendar.current.date(bySettingHour: notificationHour, minute: notificationMinute, second: 0, of: Date()) ?? Date()
+        selectedTime = Calendar.current.date(bySettingHour: settings.notificationHour, minute: settings.notificationMinute, second: 0, of: Date()) ?? Date()
 
-        if notificationsEnabled {
+        if settings.notificationsEnabled {
             scheduleDailyNotification()
         }
     }
@@ -63,7 +61,7 @@ struct NotificationSettingsView: View {
     private func scheduleDailyNotification() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 
-        guard notificationsEnabled else { return }
+        guard settings.notificationsEnabled else { return }
 
         let content = UNMutableNotificationContent()
         content.title = NSLocalizedString("Daily check-in time", comment: "Notification Title")
@@ -71,8 +69,8 @@ struct NotificationSettingsView: View {
         content.sound = .default
 
         var dateComponents = DateComponents()
-        dateComponents.hour = notificationHour
-        dateComponents.minute = notificationMinute
+        dateComponents.hour = settings.notificationHour
+        dateComponents.minute = settings.notificationMinute
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
 

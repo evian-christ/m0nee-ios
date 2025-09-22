@@ -6,7 +6,7 @@ struct TotalSpendingCardView: View {
 	let monthlyBudget: Double
 	let currencyCode: String
 	let budgetTrackingEnabled: Bool
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+	let decimalDisplayMode: DecimalDisplayMode
 
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: currencyCode)
@@ -44,5 +44,4 @@ struct TotalSpendingCardView: View {
 		}
 	}
 }
-
 

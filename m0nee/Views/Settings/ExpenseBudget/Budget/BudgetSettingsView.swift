@@ -56,9 +56,6 @@ struct BudgetSettingsView: View {
 				}
 			}
 		}
-		.onChange(of: settings.budgetTrackingEnabled) { _ in
-			NotificationCenter.default.post(name: Notification.Name("budgetTrackingChanged"), object: nil)
-		}
 		.navigationTitle("Budget & Planning")
 		.navigationBarTitleDisplayMode(.inline)
 	}

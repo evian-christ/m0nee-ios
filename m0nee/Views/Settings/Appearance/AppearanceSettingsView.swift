@@ -1,35 +1,32 @@
 import SwiftUI
 
 struct AppearanceSettingsView: View {
-    @AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-    @AppStorage("displayMode") private var displayMode: String = "Standard"
-    @AppStorage("groupByDay") private var groupByDay: Bool = true
-    @AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
+    @EnvironmentObject var settings: AppSettings
 
     var body: some View {
         Form {
             Section(header: Text("Visuals")) {
-                NavigationLink(destination: ThemeSelectionView(appearanceMode: $appearanceMode)) {
+                NavigationLink(destination: ThemeSelectionView(appearanceMode: settings.binding(\.appearanceMode))) {
                     HStack {
                         Text("Theme")
                         Spacer()
-                        Text(NSLocalizedString(appearanceMode.capitalized, comment: "Appearance mode name"))
+                        Text(NSLocalizedString(settings.appearanceMode.capitalized, comment: "Appearance mode name"))
                             .foregroundColor(.secondary)
                     }
                 }
             }
 
             Section(header: Text("Main Screen Layout")) {
-                NavigationLink(destination: DisplayModeSelectionView(displayMode: $displayMode)) {
+                NavigationLink(destination: DisplayModeSelectionView(displayMode: settings.binding(\.displayMode))) {
                     HStack {
                         Text("Display Mode")
                         Spacer()
-                        Text(NSLocalizedString(displayMode.capitalized, comment: "Display mode name"))
+                        Text(NSLocalizedString(settings.displayMode.capitalized, comment: "Display mode name"))
                             .foregroundColor(.secondary)
                     }
                 }
-                Toggle("Group Expenses by Day", isOn: $groupByDay)
-                Toggle("Pin Insight Cards", isOn: $useFixedInsightCards)
+                Toggle("Group Expenses by Day", isOn: settings.binding(\.groupByDay))
+                Toggle("Pin Insight Cards", isOn: settings.binding(\.useFixedInsightCards))
             }
 
             Section(header: Text("Language")) {

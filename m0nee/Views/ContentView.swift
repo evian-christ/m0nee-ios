@@ -1,6 +1,7 @@
 import SwiftUI
 import Charts
 import StoreKit
+import Combine
 
 func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -> Int? {
 	let cardHeight: CGFloat = 248  // 240 height + 8 vertical padding
@@ -14,35 +15,31 @@ func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -
 
 struct ContentView: View {
 	@EnvironmentObject var store: ExpenseStore
+	@EnvironmentObject var settings: AppSettings
 	@State private var pressedExpenseID: UUID?
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	
-	@AppStorage("hasSeenTutorial") private var hasSeenTutorial = false // force tutorial for testing
-	
-	private var currencySymbol: String {
-		CurrencyManager.symbol(for: currencyCode)
-	}
-	@AppStorage("displayMode") private var displayMode: String = "Standard"
-	@AppStorage("budgetPeriod") private var budgetPeriod: String = "Monthly"
-	@AppStorage("appearanceMode") private var appearanceMode: String = "Automatic"
-	@AppStorage("useFixedInsightCards") private var useFixedInsightCards: Bool = true
-@AppStorage("groupByDay") private var groupByDay: Bool = true
-	@AppStorage("showRating") private var showRating: Bool = true
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
-	
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
 	@State private var showingInsights = false
 	@State private var selectedMonth: String
 	@State private var selectedWeekStart: Date = Calendar.current.startOfDay(for: Date())
-	@AppStorage("budgetByCategory") private var budgetByCategory: Bool = false
-	@AppStorage("categoryBudgets") private var categoryBudgets: String = ""
-	@AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
-	@AppStorage("weeklyStartDay") private var weeklyStartDay: Int = 1
-	@AppStorage("monthlyStartDay") private var monthlyStartDay: Int = 1
 	@State private var favouriteCards: [InsightCardType] = []
 	@State private var cardRefreshTokens: [InsightCardType: UUID] = [:]
 	@State private var selectedExpenseID: UUID?
+
+	private var currencyCode: String { settings.currencyCode }
+	private var currencySymbol: String { CurrencyManager.symbol(for: currencyCode) }
+	private var hasSeenTutorial: Bool { settings.hasSeenTutorial }
+	private var displayMode: String { settings.displayMode }
+	private var budgetPeriod: String { settings.budgetPeriod }
+	private var appearanceMode: String { settings.appearanceMode }
+	private var useFixedInsightCards: Bool { settings.useFixedInsightCards }
+	private var groupByDay: Bool { settings.groupByDay }
+	private var showRating: Bool { settings.showRating }
+	private var decimalDisplayMode: DecimalDisplayMode { settings.decimalDisplayMode }
+	private var budgetByCategory: Bool { settings.budgetByCategory }
+	private var monthlyBudget: Double { settings.monthlyBudget }
+	private var weeklyStartDay: Int { settings.weeklyStartDay }
+	private var monthlyStartDay: Int { settings.monthlyStartDay }
 	
 	private var displayedDateRange: String {
 		if budgetPeriod == "Weekly" {
@@ -157,7 +154,7 @@ struct ContentView: View {
 		
 		let calendar = Calendar.current
 		let today = Date()
-		let startDay = UserDefaults.standard.integer(forKey: "weeklyStartDay")
+		let startDay = calendar.firstWeekday
 		let weekdayToday = calendar.component(.weekday, from: today)
 		let delta = (weekdayToday - startDay + 7) % 7
 		let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) ?? today
@@ -641,7 +638,7 @@ struct ContentView: View {
 				.onChange(of: monthlyBudget) { _ in
 					store.updateTotalSpendingWidgetData()
 				}
-				.onChange(of: categoryBudgets) { _ in
+				.onChange(of: settings.budgetByCategory) { _ in
 					store.updateTotalSpendingWidgetData()
 				}
 				if useFixedInsightCards {
@@ -653,12 +650,8 @@ struct ContentView: View {
 		.environmentObject(store)
 		.onAppear {
 			store.updateTotalSpendingWidgetData()
-			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
-				favouriteCards = decoded
-			} else {
-				favouriteCards = []
-			}
+			updateFavouriteCards()
+			updateSelectedWeekStart()
 			Task {
 				do {
 					var foundEntitlement = false
@@ -680,40 +673,25 @@ struct ContentView: View {
 				}
 			}
 		}
-		.onReceive(NotificationCenter.default.publisher(for: Notification.Name("favouritesUpdated")), perform: { _ in
-			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
-				favouriteCards = decoded
-			} else {
-				favouriteCards = []
-			}
-		})
-		.onReceive(NotificationCenter.default.publisher(for: Notification.Name("expensesUpdated")), perform: { _ in
-			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
-				favouriteCards = decoded
-				for type in decoded {
-					cardRefreshTokens[type] = UUID()
-				}
-			} else {
-				favouriteCards = []
-			}
-		})
-		.onReceive(NotificationCenter.default.publisher(for: Notification.Name("categoriesUpdated")), perform: { _ in
-			if let data = UserDefaults.standard.data(forKey: "favouriteInsightCards"),
-				 let decoded = try? JSONDecoder().decode([InsightCardType].self, from: data) {
-				favouriteCards = decoded
-				for type in decoded {
-					cardRefreshTokens[type] = UUID()
-				}
-			} else {
-				favouriteCards = []
-			}
-		})
-		.preferredColorScheme(
-			appearanceMode == "Dark" ? .dark :
-				appearanceMode == "Light" ? .light : nil
-		)
+		.onReceive(settings.$categoryBudgets) { _ in
+			store.updateTotalSpendingWidgetData()
+		}
+		.onChange(of: settings.weeklyStartDay) { _ in
+			updateSelectedWeekStart()
+		}
+		.onChange(of: settings.monthlyStartDay) { _ in
+			selectedMonth = currentMonthIdentifier()
+		}
+		.onChange(of: settings.favouriteInsightCardsData) { _ in
+			updateFavouriteCards(resetTokens: true)
+		}
+		.onReceive(store.$expenses) { _ in
+			updateFavouriteCards(resetTokens: true)
+		}
+		.onReceive(store.$categories) { _ in
+			updateFavouriteCards(resetTokens: true)
+		}
+		.preferredColorScheme(preferredScheme)
 	}
 	
 	private func displayMonth(_ month: String) -> String {
@@ -754,5 +732,39 @@ extension ContentView {
 		
 		let uniqueWeekStarts = Set(allWeekStarts)
 		return uniqueWeekStarts.sorted(by: >)
+	}
+
+	private func updateFavouriteCards(resetTokens: Bool = false) {
+		let decoded = (try? JSONDecoder().decode([InsightCardType].self, from: settings.favouriteInsightCardsData)) ?? []
+		favouriteCards = decoded
+		if resetTokens {
+			cardRefreshTokens = Dictionary(uniqueKeysWithValues: decoded.map { ($0, UUID()) })
+		}
+	}
+
+	private func updateSelectedWeekStart() {
+		let calendar = Calendar.current
+		let today = calendar.startOfDay(for: Date())
+		let delta = (calendar.component(.weekday, from: today) - settings.weeklyStartDay + 7) % 7
+		if let adjusted = calendar.date(byAdding: .day, value: -delta, to: today) {
+			selectedWeekStart = calendar.startOfDay(for: adjusted)
+		}
+	}
+
+	private func currentMonthIdentifier() -> String {
+		let formatter = DateFormatter()
+		formatter.dateFormat = "yyyy-MM"
+		return formatter.string(from: Date())
+	}
+
+	private var preferredScheme: ColorScheme? {
+		switch appearanceMode {
+		case "Dark":
+			return .dark
+		case "Light":
+			return .light
+		default:
+			return nil
+		}
 	}
 }

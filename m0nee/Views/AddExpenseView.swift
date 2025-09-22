@@ -35,6 +35,7 @@ struct RecurrenceDraft {
 
 struct AddExpenseView: View {
 	@Environment(\.dismiss) private var dismiss
+	@EnvironmentObject var settings: AppSettings
 	@State private var recurrenceDraft = RecurrenceDraft()
 	
 	enum Field {
@@ -53,16 +54,12 @@ struct AddExpenseView: View {
 	@State private var showFieldValidation = false
 	@State private var isRecurring: Bool = false
 	@State private var repeatSummary: String = "Never"
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
 	@State private var rawAmount: String = ""
 	@State private var showingCategorySelection = false
 	@State private var showingRepeatSelection = false
 	@State private var showingProUpgrade = false
 	@EnvironmentObject var store: ExpenseStore
-	
-	@AppStorage("categories") private var categoriesString: String = "Food,Transport,Other"
-	@AppStorage("showRating") private var showRating: Bool = true
-	@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+
 	@State private var showingDeleteAlert = false
 	@State private var showingDuplicateAlert = false
 	@State private var showAmountTooLargeAlert = false
@@ -143,8 +140,11 @@ struct AddExpenseView: View {
 			Button("Cancel", role: .cancel) {}
 	}
 	
-	var categoryList: [String] {
-		categoriesString.split(separator: ",").map { String($0) }
+	private var currencyCode: String { settings.currencyCode }
+	private var decimalDisplayMode: DecimalDisplayMode { settings.decimalDisplayMode }
+	private var showRating: Bool { settings.showRating }
+	private var categoryList: [String] {
+		settings.categoriesList.split(separator: ",").map { String($0) }
 	}
 	
 	var onSave: (Expense) -> Void

@@ -16,8 +16,8 @@ struct EditRecurringExpenseView: View {
     @State private var showingCategorySelection = false
     @State private var showFieldValidation = false
 
-    @AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-    @AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+    private let decimalDisplayMode: DecimalDisplayMode
+    private let currencyCode: String
 
     init(recurringExpense: RecurringExpense, decimalDisplayMode: DecimalDisplayMode, currencyCode: String) {
         _recurringExpense = State(initialValue: recurringExpense)
@@ -26,6 +26,8 @@ struct EditRecurringExpenseView: View {
         _category = State(initialValue: recurringExpense.category)
         _memo = State(initialValue: recurringExpense.memo ?? "")
         _details = State(initialValue: recurringExpense.details ?? "")
+        self.decimalDisplayMode = decimalDisplayMode
+        self.currencyCode = currencyCode
     }
 
     private var currencySymbol: String {

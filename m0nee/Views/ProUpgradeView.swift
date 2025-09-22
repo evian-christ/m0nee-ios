@@ -1,7 +1,3 @@
-extension Notification.Name {
-		static let didUpgradeToPro = Notification.Name("didUpgradeToPro")
-}
-
 import SwiftUI
 import StoreKit
 
@@ -72,8 +68,6 @@ struct ProUpgradeModalView: View {
 													switch verification {
 													case .verified(_):
 														expenseStore.productID = lifetime.id
-														UserDefaults.standard.set(true, forKey: "isProUser")
-														NotificationCenter.default.post(name: .didUpgradeToPro, object: nil)
 														isPresented = false
 														dismiss()
 													case .unverified(_, _):

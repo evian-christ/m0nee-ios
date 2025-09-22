@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 @MainActor
 final class AppSettings: ObservableObject {
@@ -324,5 +325,15 @@ extension AppSettings {
         let defaults = UserDefaults(suiteName: suiteName) ?? .standard
         let shared = UserDefaults(suiteName: "group.com.chankim.Monir.testing.\(UUID().uuidString)")
         return AppSettings(defaults: defaults, sharedDefaults: shared)
+    }
+}
+
+extension AppSettings {
+    @MainActor
+    func binding<T>(_ keyPath: ReferenceWritableKeyPath<AppSettings, T>) -> Binding<T> {
+        Binding(
+            get: { self[keyPath: keyPath] },
+            set: { self[keyPath: keyPath] = $0 }
+        )
     }
 }

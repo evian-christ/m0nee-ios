@@ -13,19 +13,17 @@ enum InsightCardType: String, Identifiable, Codable {
 	}
 	
 	var id: String { self.rawValue }
-	
-	var title: String {
+
+	func title(for budgetPeriod: String) -> String {
 		switch self {
 		case .totalSpending:
-			let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
-			return period == "Weekly" ? "This Week's Total Spending" : "This Month's Total Spending"
+			return budgetPeriod == "Weekly" ? "This Week's Total Spending" : "This Month's Total Spending"
 		case .spendingTrend:
 			return NSLocalizedString("Spending Trend", comment: "Title for the Spending Trend insight card")
 		case .categoryRating:
 			return NSLocalizedString("Category Satisfaction", comment: "Title for the Category Satisfaction insight card")
 		case .budgetProgress:
-			let period = UserDefaults.standard.string(forKey: "budgetPeriod") ?? "Monthly"
-			return period == "Weekly" ? "Week's Progress" : "Month's Progress"
+			return budgetPeriod == "Weekly" ? "Week's Progress" : "Month's Progress"
 		case .categoryBudgetProgress:
 			return NSLocalizedString("Category Budget Progress", comment: "Title for the Category Budget Progress insight card")
 		case .lowestRatedSpending:
@@ -67,11 +65,21 @@ struct InsightCardView: View {
 	let endDate: Date
 	let categories: [CategoryItem]
 	let isProUser: Bool
-	@AppStorage("monthlyBudget", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var monthlyBudget: Double = 0
-	@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-	@AppStorage("enableBudgetTracking", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var enableBudgetTracking: Bool = true
-	@AppStorage("budgetByCategory", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var budgetByCategory: Bool = false
-	@AppStorage("showRating", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var showRating: Bool = true
+	@EnvironmentObject var settings: AppSettings
+
+	private var monthlyBudget: Double { settings.monthlyBudget }
+	private var currencyCode: String { settings.currencyCode }
+	private var enableBudgetTracking: Bool { settings.budgetTrackingEnabled }
+	private var budgetByCategory: Bool { settings.budgetByCategory }
+	private var showRating: Bool { settings.showRating }
+	private var budgetPeriod: String { settings.budgetPeriod }
+	private var categoryBudgetValues: [String: Double] {
+		settings.categoryBudgets.reduce(into: [String: Double]()) { result, entry in
+			if let value = Double(entry.value) {
+				result[entry.key] = value
+			}
+		}
+	}
 	
 
 	private var currencySymbol: String {
@@ -117,7 +125,7 @@ struct InsightCardView: View {
 			VStack(alignment: .leading, spacing: 12) {
 				if type != .budgetProgress && type != .categoryBudgetProgress && type != .totalSpending && type != .lowestRatedSpending {
 					HStack {
-						Label(type.title, systemImage: type.icon)
+						Label(type.title(for: budgetPeriod), systemImage: type.icon)
 							.font(.headline)
 						Spacer()
 					}
@@ -130,7 +138,8 @@ struct InsightCardView: View {
 							expenses: expenses,
 							monthlyBudget: monthlyBudget,
 							currencyCode: currencyCode,
-							budgetTrackingEnabled: enableBudgetTracking
+							budgetTrackingEnabled: enableBudgetTracking,
+							decimalDisplayMode: settings.decimalDisplayMode
 						)
 					case .spendingTrend:
 						SpendingTrendCardView(
@@ -149,21 +158,11 @@ struct InsightCardView: View {
 							monthlyBudget: monthlyBudget
 						)
 					case .categoryBudgetProgress:
-						let categoryBudgetDict: [String: Double] = {
-							guard let data = UserDefaults(suiteName: "group.com.chankim.Monir")?.data(forKey: "categoryBudgets"),
-										let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
-								return [:]
-							}
-							return decoded.reduce(into: [String: Double]()) { dict, pair in
-								if let value = Double(pair.value) {
-									dict[pair.key] = value
-								}
-							}
-						}()
-						
+						let categoryBudgetDict = categoryBudgetValues
+
 						VStack(alignment: .leading, spacing: 12) {
 							HStack {
-								Label(type.title, systemImage: type.icon)
+								Label(type.title(for: budgetPeriod), systemImage: type.icon)
 									.font(.headline)
 								Spacer()
 							}

@@ -103,8 +103,7 @@ extension RecurringSettingsView {
 	struct RecurringDetailView: View {
 		let recurring: RecurringExpense
 		@EnvironmentObject var store: ExpenseStore
-		@AppStorage("currencyCode", store: UserDefaults(suiteName: "group.com.chankim.Monir")) private var currencyCode: String = Locale.current.currency?.identifier ?? "USD"
-		@AppStorage("decimalDisplayMode") private var decimalDisplayMode: DecimalDisplayMode = .automatic
+		@EnvironmentObject var settings: AppSettings
 		@Environment(\.colorScheme) private var colorScheme
 	@Environment(\.dismiss) private var dismiss
 	@State private var showingDeleteDialog = false
@@ -117,7 +116,7 @@ extension RecurringSettingsView {
 			categoryItem?.color.color ?? .gray
 		}
 		private var currencySymbol: String {
-			CurrencyManager.symbol(for: currencyCode)
+			CurrencyManager.symbol(for: settings.currencyCode)
 		}
 		
 		var body: some View {
@@ -144,7 +143,7 @@ extension RecurringSettingsView {
 						}
 						Spacer()
 						// Amount on the right
-												Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: recurring.amount)) ?? "")
+										Text(NumberFormatter.currency(for: settings.decimalDisplayMode, currencyCode: settings.currencyCode).string(from: NSNumber(value: recurring.amount)) ?? "")
 							.font(.title3.bold())
 					}
 					.padding()
@@ -225,7 +224,7 @@ extension RecurringSettingsView {
 				}
 			}
 			.sheet(isPresented: $showingEditSheet) {
-				EditRecurringExpenseView(recurringExpense: recurring, decimalDisplayMode: decimalDisplayMode, currencyCode: currencyCode)
+				EditRecurringExpenseView(recurringExpense: recurring, decimalDisplayMode: settings.decimalDisplayMode, currencyCode: settings.currencyCode)
 					.environmentObject(store)
 			}
 		}
