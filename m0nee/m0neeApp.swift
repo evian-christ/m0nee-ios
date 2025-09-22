@@ -46,7 +46,7 @@ struct RootView: View {
 	init(store: ExpenseStore, settings: AppSettings) {
 		_store = ObservedObject(initialValue: store)
 		_settings = ObservedObject(initialValue: settings)
-		_contentViewModel = StateObject(wrappedValue: ContentViewModel(store: store, settings: settings))
+		_contentViewModel = StateObject(wrappedValue: ContentViewModel(store: store))
 	}
 
 	var body: some View {

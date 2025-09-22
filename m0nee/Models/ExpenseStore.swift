@@ -14,6 +14,7 @@ class ExpenseStore: ObservableObject {
         proAccessManager.isPro(productID: productID)
     }
 
+    @Published var budgets: [Budget] = []
     @Published var categories: [CategoryItem] = []
     @Published var recurringExpenses: [RecurringExpense] = []
     @Published var restoredFromBackup: Bool = false
@@ -89,6 +90,7 @@ class ExpenseStore: ObservableObject {
             migrateRecurringExpenseRatings()
             budgetService.cleanupBudgets(using: categories)
         } else {
+            budgets = [Budget(name: "My Budget")]
             categories = defaultCategories()
             budgetService.seedBudgetsIfNeeded(with: categories)
             persist()
@@ -100,6 +102,14 @@ class ExpenseStore: ObservableObject {
             persist()
         }
 
+        if budgets.isEmpty {
+            budgets = [Budget(name: "My Budget")]
+            reassignExpensesToDefaultBudget()
+            persist()
+        }
+
+        ensureExpensesHaveBudget()
+
         if !forTesting {
             generateExpensesFromRecurringIfNeeded()
         } else {
@@ -108,6 +118,7 @@ class ExpenseStore: ObservableObject {
     }
 
     private func apply(storeData: StoreData) {
+        budgets = storeData.budgets
         expenses = storeData.expenses
         categories = storeData.categories
         recurringExpenses = storeData.recurringExpenses
@@ -126,6 +137,7 @@ class ExpenseStore: ObservableObject {
 
     private func persist() {
         let snapshot = StoreData(
+            budgets: budgets,
             expenses: expenses,
             categories: categories,
             recurringExpenses: recurringExpenses
@@ -142,6 +154,36 @@ class ExpenseStore: ObservableObject {
 
         widgetService.syncExpenses(expenses)
         widgetService.updateTotalSpending(using: expenses)
+    }
+
+    private func ensureExpensesHaveBudget() {
+        guard let defaultBudget = budgets.first else { return }
+        var changed = false
+        for index in expenses.indices {
+            if !budgets.contains(where: { $0.id == expenses[index].budgetID }) {
+                expenses[index].budgetID = defaultBudget.id
+                changed = true
+            }
+        }
+        for index in recurringExpenses.indices {
+            if !budgets.contains(where: { $0.id == recurringExpenses[index].budgetID }) {
+                recurringExpenses[index].budgetID = defaultBudget.id
+                changed = true
+            }
+        }
+        if changed {
+            persist()
+        }
+    }
+
+    private func reassignExpensesToDefaultBudget() {
+        guard let defaultBudget = budgets.first else { return }
+        for index in expenses.indices {
+            expenses[index].budgetID = defaultBudget.id
+        }
+        for index in recurringExpenses.indices {
+            recurringExpenses[index].budgetID = defaultBudget.id
+        }
     }
 
     // MARK: - Category Management
@@ -227,6 +269,36 @@ class ExpenseStore: ObservableObject {
             .mapValues { $0.reduce(0) { $0 + $1.amount } }
     }
 
+    func createBudget(name: String, goalAmount: Double?) -> Budget {
+        let budget = Budget(name: name, goalAmount: goalAmount)
+        budgets.append(budget)
+        persist()
+        return budget
+    }
+
+    func updateBudget(_ budget: Budget) {
+        guard let index = budgets.firstIndex(where: { $0.id == budget.id }) else { return }
+        budgets[index] = budget
+        persist()
+    }
+
+    func deleteBudget(_ budget: Budget) {
+        guard let index = budgets.firstIndex(where: { $0.id == budget.id }) else { return }
+        let remainingBudgets = budgets.filter { $0.id != budget.id }
+        guard let fallback = remainingBudgets.first else { return }
+        budgets.remove(at: index)
+        for idx in expenses.indices {
+            if expenses[idx].budgetID == budget.id {
+                expenses[idx].budgetID = fallback.id
+            }
+        }
+        persist()
+    }
+
+    func expenses(for budgetID: UUID) -> [Expense] {
+        expenses.filter { $0.budgetID == budgetID }
+    }
+
     // MARK: - Recurring Expenses
 
     func generateExpensesFromRecurringIfNeeded(currentDate: Date = Date()) {
@@ -259,7 +331,8 @@ class ExpenseStore: ObservableObject {
         return Binding(
             get: { [weak self] in
                 guard let self, let item = self.expenses.first(where: { $0.id == expenseID }) else {
-                    return Expense(id: expenseID, date: Date(), name: "", amount: 0, category: "", details: nil, rating: nil, memo: nil)
+                    let fallbackBudget = self?.budgets.first?.id ?? UUID()
+                    return Expense(id: expenseID, date: Date(), name: "", amount: 0, category: "", details: nil, rating: nil, memo: nil, budgetID: fallbackBudget)
                 }
                 return item
             },

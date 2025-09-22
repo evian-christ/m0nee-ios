@@ -1,9 +1,30 @@
 import Foundation
 
 struct StoreData: Codable {
+    var budgets: [Budget]
     var expenses: [Expense]
     var categories: [CategoryItem]
     var recurringExpenses: [RecurringExpense]
+
+    init(
+        budgets: [Budget],
+        expenses: [Expense],
+        categories: [CategoryItem],
+        recurringExpenses: [RecurringExpense]
+    ) {
+        self.budgets = budgets
+        self.expenses = expenses
+        self.categories = categories
+        self.recurringExpenses = recurringExpenses
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        budgets = try container.decodeIfPresent([Budget].self, forKey: .budgets) ?? []
+        expenses = try container.decodeIfPresent([Expense].self, forKey: .expenses) ?? []
+        categories = try container.decodeIfPresent([CategoryItem].self, forKey: .categories) ?? []
+        recurringExpenses = try container.decodeIfPresent([RecurringExpense].self, forKey: .recurringExpenses) ?? []
+    }
 }
 
 protocol ExpenseRepository: Sendable {

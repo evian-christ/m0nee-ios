@@ -59,6 +59,7 @@ struct AddExpenseView: View {
 	@State private var showingRepeatSelection = false
 	@State private var showingProUpgrade = false
 	@EnvironmentObject var store: ExpenseStore
+	@State private var selectedBudgetID: UUID?
 
 	@State private var showingDeleteAlert = false
 	@State private var showingDuplicateAlert = false
@@ -68,7 +69,11 @@ struct AddExpenseView: View {
 	@ViewBuilder
 	private var deleteDialogButtons: some View {
 		let parentExists = store.recurringExpenses.first { $0.id == store.expenses.first(where: { $0.id == expenseID })?.parentRecurringID } != nil
+		let fallbackBudgetID = selectedBudgetID
+			?? (expenseID.flatMap { id in store.expenses.first(where: { $0.id == id })?.budgetID })
+			?? store.budgets.first?.id
 		if let id = expenseID, let parentID = store.expenses.first(where: { $0.id == id })?.parentRecurringID, parentExists {
+			let budgetID = fallbackBudgetID ?? UUID()
 					Button("Delete only this expense", role: .destructive) {
 						let expense = Expense(
 							id: id,
@@ -80,7 +85,8 @@ struct AddExpenseView: View {
 							rating: rating,
 							memo: memo,
 							isRecurring: isRecurring,
-							parentRecurringID: parentID
+							parentRecurringID: parentID,
+							budgetID: budgetID
 						)
 						onSave(expense)
 						dismiss()
@@ -97,7 +103,8 @@ struct AddExpenseView: View {
 							rating: rating,
 							memo: memo,
 							isRecurring: isRecurring,
-							parentRecurringID: parentID
+							parentRecurringID: parentID,
+							budgetID: budgetID
 						)
 						onSave(expense)
 						dismiss()
@@ -115,12 +122,14 @@ struct AddExpenseView: View {
 							rating: rating,
 							memo: memo,
 							isRecurring: isRecurring,
-							parentRecurringID: parentID
+							parentRecurringID: parentID,
+							budgetID: budgetID
 						)
 						onSave(expense)
 						dismiss()
 					}
 			} else if let id = expenseID {
+			let budgetID = fallbackBudgetID ?? UUID()
 					Button("Delete", role: .destructive) {
 						let expense = Expense(
 							id: id,
@@ -131,7 +140,8 @@ struct AddExpenseView: View {
 							details: details,
 							rating: rating,
 							memo: memo,
-							isRecurring: isRecurring
+							isRecurring: isRecurring,
+							budgetID: budgetID
 						)
 						onSave(expense)
 						dismiss()
@@ -159,6 +169,7 @@ struct AddExpenseView: View {
 		rating: Int = 5,
 		memo: String = "",
 		isRecurring: Bool = false,
+		defaultBudgetID: UUID? = nil,
 		onSave: @escaping (Expense) -> Void
 	) {
 		_expenseID = State(initialValue: expenseID)
@@ -173,6 +184,7 @@ struct AddExpenseView: View {
 		_memo = State(initialValue: memo)
 		_isRecurring = State(initialValue: isRecurring)
 		self.onSave = onSave
+		_selectedBudgetID = State(initialValue: defaultBudgetID)
 	}
 	
 	private var currencySymbol: String {
@@ -229,6 +241,17 @@ struct AddExpenseView: View {
 	
 	var body: some View {
 		Form {
+			Section(header: Text("Budget").font(.caption)) {
+				Picker("Budget", selection: Binding(
+					get: { selectedBudgetID ?? store.budgets.first?.id },
+					set: { selectedBudgetID = $0 }
+				)) {
+					ForEach(store.budgets) { budget in
+						Text(budget.name).tag(Optional(budget.id))
+					}
+				}
+			}
+
 			Section(header: Text("Amount").font(.caption)) {
 				VStack(spacing: 8) {
 					HStack {
@@ -416,6 +439,7 @@ struct AddExpenseView: View {
 		}
 		.alert("Duplicate Expense", isPresented: $showingDuplicateAlert) {
 			Button("Add Anyway", role: .destructive) {
+				guard let budgetID = selectedBudgetID ?? store.budgets.first?.id else { return }
 				let parsedAmount = (abs(Double(rawAmount) ?? 0) * 100).rounded() / 100
 				let recurringID: UUID? = nil // duplicate check only occurs for non-recurring
 				let newExpense = Expense(
@@ -428,7 +452,8 @@ struct AddExpenseView: View {
 					rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
 					memo: memo.isEmpty ? nil : memo,
 					isRecurring: isRecurring,
-					parentRecurringID: recurringID
+					parentRecurringID: recurringID,
+					budgetID: budgetID
 				)
 				onSave(newExpense)
 				dismiss()
@@ -446,7 +471,11 @@ struct AddExpenseView: View {
 			if let expenseID = expenseID {
 				if let expense = store.expenses.first(where: { $0.id == expenseID }) {
 					self.isRecurring = expense.isRecurring
+					self.selectedBudgetID = expense.budgetID
 				}
+			}
+			if selectedBudgetID == nil {
+				selectedBudgetID = store.budgets.first?.id
 			}
 			if category.isEmpty, let firstCategory = store.categories.first?.name {
 				category = firstCategory
@@ -481,6 +510,9 @@ struct AddExpenseView: View {
 					guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
 								!rawAmount.trimmingCharacters(in: .whitespaces).isEmpty,
 								!category.isEmpty else {
+						return
+					}
+					guard let budgetID = selectedBudgetID ?? store.budgets.first?.id else {
 						return
 					}
 					if expenseID == nil {
@@ -533,7 +565,8 @@ struct AddExpenseView: View {
 							memo: memo.isEmpty ? nil : memo,
 							startDate: date,
 							recurrenceRule: rule,
-							lastGeneratedDate: nil
+							lastGeneratedDate: nil,
+							budgetID: budgetID
 						)
 
 						recurringID = newRecurring.id
@@ -550,7 +583,8 @@ struct AddExpenseView: View {
 						rating: isRecurring ? nil : (showRating ? rating : 5),
 						memo: memo.isEmpty ? nil : memo,
 						isRecurring: isRecurring,
-						parentRecurringID: recurringID
+						parentRecurringID: recurringID,
+						budgetID: budgetID
 					)
 
 					if expenseID == nil && isRecurring {
