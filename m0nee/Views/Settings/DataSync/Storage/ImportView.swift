@@ -68,11 +68,12 @@ struct ImportView: View {
 						}
 				}
 				.alert("Import Data", isPresented: $showImportOptions) {
-						Button("Reset and Import") {
-								if let content = pendingContent {
-										// Clear existing data
-										store.expenses.removeAll()
-										store.recurringExpenses.removeAll()
+					Button("Reset and Import") {
+							if let content = pendingContent {
+									// Clear existing data
+									store.budgets.removeAll()
+									store.expenses.removeAll()
+									store.recurringExpenses.removeAll()
 										// Import new data
 										do {
 												try importCSV(content)
@@ -82,7 +83,7 @@ struct ImportView: View {
 										}
 								}
 						}
-						Button("Append and Import") {
+					Button("Append and Import") {
 								if let content = pendingContent {
 										do {
 												try importCSV(content)
@@ -106,41 +107,68 @@ struct ImportView: View {
 				let dateTimeFormatter = DateFormatter()
 				dateTimeFormatter.dateFormat = "dd-MM-yyyy HH:mm"
 
-				let allRows = content.components(separatedBy: "\n").filter { !$0.isEmpty }
-				var inRecurringSection = false
+				let rows = content.components(separatedBy: "\n").filter { !$0.isEmpty }
 
-				for row in allRows {
-						let trimmed = row.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-						// Detect start of recurring section by keyword
-						if trimmed.contains("recurringexpenses") {
-								inRecurringSection = true
+				enum Section {
+						case none
+						case budgets
+						case expenses
+						case recurring
+				}
+
+				var section: Section = .none
+
+				for row in rows {
+						let trimmed = row.trimmingCharacters(in: .whitespacesAndNewlines)
+						let lower = trimmed.lowercased()
+
+						if lower == "# budgets" {
+								section = .budgets
 								continue
 						}
-						// Skip header rows
-						if trimmed.contains("date") && trimmed.contains("name") {
+						if lower == "# expenses" {
+								section = .expenses
+								continue
+						}
+						if lower == "# recurringexpenses" {
+								section = .recurring
 								continue
 						}
 
+						if trimmed.isEmpty { continue }
 						let columns = splitCSVRow(row)
-						// Skip rows with an empty date column
-						let dateStringRaw = columns[0].trimmingCharacters(in: .whitespacesAndNewlines)
-						guard !dateStringRaw.isEmpty else { continue }
-						// Regular expenses (before recurring section)
-						if !inRecurringSection {
-								guard columns.count >= 10 else { continue }
-								let dateString = columns[0]
-								let timeString = columns[1]
-								let date = DateFormatter.dateFromCSV(dateString: dateString, timeString: timeString) ?? Date()
+
+						switch section {
+						case .budgets:
+								if columns.first?.lowercased() == "id" { continue }
+								guard columns.count >= 6 else { continue }
+								let id = UUID(uuidString: columns[0]) ?? UUID()
+								let name = columns[1]
+								let goalAmount = Double(columns[2])
+								let startDate = columns[3].isEmpty ? nil : dateFormatter.date(from: columns[3])
+								let endDate = columns[4].isEmpty ? nil : dateFormatter.date(from: columns[4])
+								let notes = columns[5].isEmpty ? nil : columns[5]
+								let budget = Budget(id: id, name: name, goalAmount: goalAmount, startDate: startDate, endDate: endDate, notes: notes)
+								if let index = store.budgets.firstIndex(where: { $0.id == id }) {
+										store.budgets[index] = budget
+								} else {
+										store.budgets.append(budget)
+								}
+
+						case .expenses:
+								if columns.first?.lowercased() == "date" { continue }
+								guard columns.count >= 11 else { continue }
+								let date = DateFormatter.dateFromCSV(dateString: columns[0], timeString: columns[1]) ?? Date()
 								let name = columns[2]
 								let amount = Double(columns[3]) ?? 0
 								let category = columns[4]
-								let isRecurring = (columns.count > 8)
-									? ["true", "yes"].contains(columns[8].trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
-									: false
-								let parentRecurringID = (columns.count > 9) ? UUID(uuidString: columns[9]) : nil
 								let details = columns[5]
 								let rating = Int(columns[6])
 								let memo = columns[7]
+								let isRecurring = ["true", "yes"].contains(columns[8].trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+								let parentRecurringID = UUID(uuidString: columns[9])
+								let budgetID = UUID(uuidString: columns[10]) ?? store.budgets.first?.id ?? UUID()
+
 								let expense = Expense(
 										id: UUID(),
 										date: date,
@@ -151,27 +179,29 @@ struct ImportView: View {
 										rating: rating,
 										memo: memo,
 										isRecurring: isRecurring,
-										parentRecurringID: parentRecurringID
+										parentRecurringID: parentRecurringID,
+										budgetID: budgetID
 								)
 								store.expenses.append(expense)
-						} else {
-								// Recurring expenses
-								// Expecting 14 columns as per updated export:
-								guard columns.count >= 14 else { continue }
-								let startDate        = dateTimeFormatter.date(from: columns[0]) ?? Date()
-								let lastGen          = dateTimeFormatter.date(from: columns[1])
-								let name             = columns[2]
-								let amount           = Double(columns[3]) ?? 0
-								let category         = columns[4]
-								let details          = columns[5]
-								let rating           = Int(columns[6])
-								let memo             = columns[7]
-								let frequencyRaw     = columns[8]
-								let interval         = Int(columns[9]) ?? 1
-								let periodRaw        = columns[10]
-								let weekdays         = columns[11].split(separator: "|").compactMap { Int($0) }
-								let monthDays        = columns[12].split(separator: "|").compactMap { Int($0) }
-								let recurringID      = UUID(uuidString: columns[13]) ?? UUID()
+
+						case .recurring:
+								if columns.first?.lowercased() == "startdate" { continue }
+								guard columns.count >= 15 else { continue }
+								let startDate = dateTimeFormatter.date(from: columns[0]) ?? Date()
+								let lastGen = dateTimeFormatter.date(from: columns[1])
+								let name = columns[2]
+								let amount = Double(columns[3]) ?? 0
+								let category = columns[4]
+								let details = columns[5]
+								let rating = Int(columns[6])
+								let memo = columns[7]
+								let frequencyRaw = columns[8]
+								let interval = Int(columns[9]) ?? 1
+								let periodRaw = columns[10]
+								let weekdays = columns[11].split(separator: "|").compactMap { Int($0) }
+								let monthDays = columns[12].split(separator: "|").compactMap { Int($0) }
+								let budgetID = UUID(uuidString: columns[13]) ?? store.budgets.first?.id ?? UUID()
+								let recurringID = UUID(uuidString: columns[14]) ?? UUID()
 
 								let rule = RecurrenceRule(
 										period: RecurrenceRule.Period(rawValue: periodRaw) ?? .monthly,
@@ -193,12 +223,21 @@ struct ImportView: View {
 										memo: memo,
 										startDate: startDate,
 										recurrenceRule: rule,
-										lastGeneratedDate: lastGen
+										lastGeneratedDate: lastGen,
+										budgetID: budgetID
 								)
 								store.recurringExpenses.append(recurring)
+
+						case .none:
+								continue
 						}
 				}
-				// Persist all changes
+
+				if store.budgets.isEmpty {
+						store.budgets = [Budget(name: "Imported Budget")]
+				}
+
 				store.generateExpensesFromRecurringIfNeeded()
 		}
+
 }

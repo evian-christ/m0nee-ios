@@ -25,7 +25,20 @@ struct ExportView: View {
 		let fileName = "Monir_Export.csv"
 		let path = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
 		
-		var csvText = "Date,Time,Name,Amount,Category,Details,Rating,Note,IsRecurring,ParentRecurringID\n"
+		var csvText = "# Budgets\n"
+		csvText += "ID,Name,GoalAmount,StartDate,EndDate,Notes\n"
+		let dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "yyyy-MM-dd"
+		for budget in store.budgets {
+			let goal = budget.goalAmount.map { String($0) } ?? ""
+			let start = budget.startDate.map { dateFormatter.string(from: $0) } ?? ""
+			let end = budget.endDate.map { dateFormatter.string(from: $0) } ?? ""
+			let notes = escape(budget.notes ?? "")
+			csvText += "\(budget.id.uuidString),\(escape(budget.name)),\(goal),\(start),\(end),\(notes)\n"
+		}
+
+		csvText += "\n# Expenses\n"
+		csvText += "Date,Time,Name,Amount,Category,Details,Rating,Note,IsRecurring,ParentRecurringID,BudgetID\n"
 		
 		for expense in store.expenses {
 			let date = DateFormatter.m0neeCSV.string(from: expense.date)
@@ -38,11 +51,12 @@ struct ExportView: View {
 			let note = escape(expense.memo ?? "")
 			let isRecurring = expense.isRecurring ? "Yes" : "No"
 			let parentRecurringID = expense.parentRecurringID?.uuidString ?? ""
-			csvText += "\(date),\(time),\(name),\(amount),\(category),\(details),\(rating),\(note),\(isRecurring),\(parentRecurringID)\n"
+			let budgetID = expense.budgetID.uuidString
+			csvText += "\(date),\(time),\(name),\(amount),\(category),\(details),\(rating),\(note),\(isRecurring),\(parentRecurringID),\(budgetID)\n"
 		}
 
 				csvText += "\n# RecurringExpenses\n"
-				csvText += "StartDate,LastGeneratedDate,Name,Amount,Category,Details,Rating,Note,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,RecurringExpenseID\n"
+				csvText += "StartDate,LastGeneratedDate,Name,Amount,Category,Details,Rating,Note,FrequencyType,Interval,Period,SelectedWeekdays,SelectedMonthDays,BudgetID,RecurringExpenseID\n"
 
 				for recurring in store.recurringExpenses {
 						// Format start date with both date and time (dd-MM-yyyy HH:mm)
@@ -60,12 +74,13 @@ struct ExportView: View {
 								? "\(DateFormatter.m0neeCSV.string(from: recurring.lastGeneratedDate!)) \(DateFormatter.m0neeTimeOnly.string(from: recurring.lastGeneratedDate!))"
 								: ""
 						let details = escape(recurring.details ?? "")
-						let rating = recurring.rating.map { "\($0)" } ?? ""
-						csvText += """
-						\(start),\(lastGenerated),\(name),\(amount),\(category),\
-						\(details),\(rating),\(note),\(frequencyType),\(interval),\
-						\(period),\(selectedWeekdays),\(selectedMonthDays),\(recurring.id.uuidString)\n
-						"""
+					let rating = recurring.rating.map { "\($0)" } ?? ""
+					let budgetID = recurring.budgetID.uuidString
+					csvText += """
+\(start),\(lastGenerated),\(name),\(amount),\(category),\
+\(details),\(rating),\(note),\(frequencyType),\(interval),\
+\(period),\(selectedWeekdays),\(selectedMonthDays),\(budgetID),\(recurring.id.uuidString)\n
+"""
 				}
 		
 		do {
