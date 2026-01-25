@@ -692,6 +692,18 @@ struct ContentView: View {
 			updateFavouriteCards(resetTokens: true)
 		}
 		.preferredColorScheme(preferredScheme)
+		.alert("Error", isPresented: Binding(
+			get: { store.errorMessage != nil },
+			set: { if !$0 { store.errorMessage = nil } }
+		)) {
+			Button("OK") {
+				store.errorMessage = nil
+			}
+		} message: {
+			if let errorMessage = store.errorMessage {
+				Text(errorMessage)
+			}
+		}
 	}
 	
 	private func displayMonth(_ month: String) -> String {

@@ -47,7 +47,10 @@ struct RootView: View {
 
 	var body: some View {
 		ZStack {
-			if showMain || settings.hasSeenTutorial {
+			if store.isLoading {
+				LoadingView()
+					.transition(.opacity)
+			} else if showMain || settings.hasSeenTutorial {
 				ContentView()
 					.transition(.opacity)
 			} else {
@@ -55,6 +58,7 @@ struct RootView: View {
 					.transition(.opacity)
 			}
 		}
+		.animation(.easeInOut, value: store.isLoading)
 		.animation(.easeInOut, value: showMain || settings.hasSeenTutorial)
 		.onAppear {
 			if settings.hasSeenTutorial {

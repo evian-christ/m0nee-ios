@@ -18,6 +18,8 @@ class ExpenseStore: ObservableObject {
     @Published var recurringExpenses: [RecurringExpense] = []
     @Published var restoredFromBackup: Bool = false
     @Published var failedToRestore: Bool = false
+    @Published var errorMessage: String? = nil
+    @Published var isLoading: Bool = true
 
     private let repository: ExpenseRepository
     private let budgetService: BudgetComputing
@@ -79,19 +81,30 @@ class ExpenseStore: ObservableObject {
     }
 
     private func bootstrap() async {
+        defer { isLoading = false }
+
+        // 최소 1초 동안 로딩 화면 표시 (UX 개선)
+        let startTime = Date()
+
         if !forTesting {
             await repository.syncStorageIfNeeded()
         }
 
-        if let loaded = try? await repository.load() {
-            apply(storeData: loaded)
-            migrateRecurringRules()
-            migrateRecurringExpenseRatings()
-            budgetService.cleanupBudgets(using: categories)
-        } else {
+        do {
+            if let loaded = try await repository.load() {
+                apply(storeData: loaded)
+                migrateRecurringRules()
+                migrateRecurringExpenseRatings()
+                budgetService.cleanupBudgets(using: categories)
+            } else {
+                categories = defaultCategories()
+                budgetService.seedBudgetsIfNeeded(with: categories)
+                persist()
+            }
+        } catch {
+            errorMessage = ExpenseStoreError.loadFailed(underlying: error).userFriendlyMessage
             categories = defaultCategories()
             budgetService.seedBudgetsIfNeeded(with: categories)
-            persist()
         }
 
         if categories.isEmpty {
@@ -104,6 +117,12 @@ class ExpenseStore: ObservableObject {
             generateExpensesFromRecurringIfNeeded()
         } else {
             widgetService.syncExpenses(expenses)
+        }
+
+        // 최소 1초 동안 로딩 화면 표시 보장
+        let elapsed = Date().timeIntervalSince(startTime)
+        if elapsed < 1.0 {
+            try? await Task.sleep(nanoseconds: UInt64((1.0 - elapsed) * 1_000_000_000))
         }
     }
 
@@ -136,7 +155,9 @@ class ExpenseStore: ObservableObject {
             do {
                 try await repository.save(snapshot)
             } catch {
-                // ignore persistence errors for now
+                await MainActor.run {
+                    self.errorMessage = ExpenseStoreError.saveFailed(underlying: error).userFriendlyMessage
+                }
             }
         }
 
@@ -287,9 +308,13 @@ class ExpenseStore: ObservableObject {
 
     func syncStorageIfNeeded() {
         Task {
-            await repository.syncStorageIfNeeded()
-            if let loaded = try? await repository.load() {
-                apply(storeData: loaded)
+            do {
+                await repository.syncStorageIfNeeded()
+                if let loaded = try await repository.load() {
+                    apply(storeData: loaded)
+                }
+            } catch {
+                errorMessage = ExpenseStoreError.syncFailed(underlying: error).userFriendlyMessage
             }
         }
     }
