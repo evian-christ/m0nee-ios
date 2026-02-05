@@ -5,6 +5,11 @@ struct AddExpenseView: View {
 	@EnvironmentObject var settings: AppSettings
 	@EnvironmentObject var store: ExpenseStore
 
+	enum Field {
+		case amount, name, details
+	}
+	@FocusState private var focusedField: Field?
+
 	@State private var currentPage = 0
 	@State private var expenseID: UUID?
 	@State private var amount: String = ""
@@ -60,17 +65,6 @@ struct AddExpenseView: View {
 
 	var body: some View {
 		VStack(spacing: 0) {
-			// Progress indicator
-			HStack(spacing: 8) {
-				ForEach(0..<6) { index in
-					Circle()
-						.fill(index <= currentPage ? Color.accentColor : Color.secondary.opacity(0.3))
-						.frame(width: 8, height: 8)
-				}
-			}
-			.padding()
-			.background(Color(.systemGroupedBackground))
-
 			// Page content
 			TabView(selection: $currentPage) {
 				amountPage.tag(0)
@@ -82,6 +76,18 @@ struct AddExpenseView: View {
 			}
 			.tabViewStyle(.page(indexDisplayMode: .never))
 			.animation(.easeInOut, value: currentPage)
+			.simultaneousGesture(DragGesture().onChanged { _ in })
+
+			// Progress indicator
+			HStack(spacing: 8) {
+				ForEach(0..<6) { index in
+					Circle()
+						.fill(index <= currentPage ? Color.accentColor : Color.secondary.opacity(0.3))
+						.frame(width: 8, height: 8)
+				}
+			}
+			.padding()
+			.background(Color(.systemGroupedBackground))
 		}
 		.background(Color(.systemGroupedBackground))
 		.navigationTitle("Add Expense")
@@ -118,9 +124,11 @@ struct AddExpenseView: View {
 					TextField("0", text: $amount)
 						.keyboardType(.decimalPad)
 						.font(.system(size: 48, weight: .semibold))
-						.multilineTextAlignment(.leading)
-						.frame(maxWidth: 200)
+						.multilineTextAlignment(.center)
+						.fixedSize()
+						.focused($focusedField, equals: .amount)
 				}
+				.frame(maxWidth: .infinity)
 			}
 
 			Spacer()
@@ -142,10 +150,13 @@ struct AddExpenseView: View {
 			}
 			.disabled(!canProceed)
 			.padding(.horizontal, 24)
-			.padding(.bottom, 40)
+			.padding(.bottom, 16)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color(.systemGroupedBackground))
+		.onAppear {
+			focusedField = .amount
+		}
 	}
 
 	// MARK: - Page 2: Name
@@ -165,6 +176,7 @@ struct AddExpenseView: View {
 					.background(Color(.secondarySystemBackground))
 					.cornerRadius(12)
 					.padding(.horizontal, 32)
+					.focused($focusedField, equals: .name)
 					.onChange(of: name) { newValue in
 						if newValue.count > 30 {
 							name = String(newValue.prefix(30))
@@ -207,10 +219,13 @@ struct AddExpenseView: View {
 				.disabled(!canProceed)
 			}
 			.padding(.horizontal, 24)
-			.padding(.bottom, 40)
+			.padding(.bottom, 16)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color(.systemGroupedBackground))
+		.onAppear {
+			focusedField = .name
+		}
 	}
 
 	// MARK: - Page 3: Date
@@ -224,7 +239,6 @@ struct AddExpenseView: View {
 					.font(.system(size: 28, weight: .bold))
 
 				DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
-					.datePickerStyle(.graphical)
 					.labelsHidden()
 					.padding()
 			}
@@ -261,10 +275,13 @@ struct AddExpenseView: View {
 				}
 			}
 			.padding(.horizontal, 24)
-			.padding(.bottom, 40)
+			.padding(.bottom, 16)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color(.systemGroupedBackground))
+		.onAppear {
+			focusedField = nil
+		}
 	}
 
 	// MARK: - Page 4: Category
@@ -292,7 +309,10 @@ struct AddExpenseView: View {
 								}
 								Text(item.name)
 									.font(.caption)
+									.fontWeight(category == item.name ? .bold : .regular)
 									.foregroundColor(category == item.name ? .primary : .secondary)
+									.lineLimit(1)
+									.truncationMode(.tail)
 							}
 						}
 					}
@@ -333,10 +353,13 @@ struct AddExpenseView: View {
 				.disabled(!canProceed)
 			}
 			.padding(.horizontal, 24)
-			.padding(.bottom, 40)
+			.padding(.bottom, 16)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color(.systemGroupedBackground))
+		.onAppear {
+			focusedField = nil
+		}
 	}
 
 	// MARK: - Page 5: Rating
@@ -395,10 +418,13 @@ struct AddExpenseView: View {
 				}
 			}
 			.padding(.horizontal, 24)
-			.padding(.bottom, 40)
+			.padding(.bottom, 16)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color(.systemGroupedBackground))
+		.onAppear {
+			focusedField = nil
+		}
 	}
 
 	// MARK: - Page 6: Notes & Add
@@ -408,20 +434,21 @@ struct AddExpenseView: View {
 			Spacer()
 
 			VStack(spacing: 16) {
-				Text("Add a note")
+				Text("Add details")
 					.font(.system(size: 28, weight: .bold))
 
 				Text("(optional)")
 					.font(.subheadline)
 					.foregroundColor(.secondary)
 
-				TextField("Notes...", text: $details, axis: .vertical)
+				TextField("Details...", text: $details, axis: .vertical)
 					.lineLimit(3...6)
 					.font(.system(size: 16))
 					.padding()
 					.background(Color(.secondarySystemBackground))
 					.cornerRadius(12)
 					.padding(.horizontal, 32)
+					.focused($focusedField, equals: .details)
 					.onChange(of: details) { newValue in
 						if newValue.count > 200 {
 							details = String(newValue.prefix(200))
@@ -459,10 +486,13 @@ struct AddExpenseView: View {
 				}
 			}
 			.padding(.horizontal, 24)
-			.padding(.bottom, 40)
+			.padding(.bottom, 16)
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color(.systemGroupedBackground))
+		.onAppear {
+			focusedField = .details
+		}
 	}
 
 	// MARK: - Save Logic

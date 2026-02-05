@@ -99,9 +99,6 @@
         }
       }
     },
-    "Add a note" : {
-
-    },
     "Add Anyway" : {
       "localizations" : {
         "ko" : {
@@ -111,6 +108,9 @@
           }
         }
       }
+    },
+    "Add details" : {
+
     },
     "Add Expense" : {
       "localizations" : {
@@ -745,6 +745,9 @@
           }
         }
       }
+    },
+    "Details..." : {
+
     },
     "Display Mode" : {
       "localizations" : {
@@ -1450,9 +1453,6 @@
           }
         }
       }
-    },
-    "Notes..." : {
-
     },
     "Notifications" : {
       "localizations" : {
