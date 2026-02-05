@@ -4,10 +4,10 @@ import StoreKit
 struct ContentView: View {
 	@EnvironmentObject var store: ExpenseStore
 	@EnvironmentObject var settings: AppSettings
+	@Environment(\.colorScheme) private var colorScheme
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
 	@State private var selectedMonth: String
-	@State private var selectedWeekStart: Date = Calendar.current.startOfDay(for: Date())
 
 	private var currencyCode: String { settings.currencyCode }
 	private var hasSeenTutorial: Bool { settings.hasSeenTutorial }
@@ -17,32 +17,24 @@ struct ContentView: View {
 	private var groupByDay: Bool { settings.groupByDay }
 	private var showRating: Bool { settings.showRating }
 	private var decimalDisplayMode: DecimalDisplayMode { settings.decimalDisplayMode }
-	private var weeklyStartDay: Int { settings.weeklyStartDay }
 	private var monthlyStartDay: Int { settings.monthlyStartDay }
 
 	// MARK: - Date & Filter Logic
 
 	private var budgetDates: (startDate: Date, endDate: Date) {
 		let calendar = Calendar.current
-		let startDay = budgetPeriod == "Weekly" ? weeklyStartDay : monthlyStartDay
+		let startDay = monthlyStartDay
+		let inputFormatter = DateFormatter()
+		inputFormatter.dateFormat = "yyyy-MM"
 
-		if budgetPeriod == "Weekly" {
-			let start = calendar.startOfDay(for: selectedWeekStart)
-			let end = calendar.date(byAdding: .day, value: 6, to: start)!
-			return (start, end)
-		} else {
-			let inputFormatter = DateFormatter()
-			inputFormatter.dateFormat = "yyyy-MM"
-
-			guard let baseDate = inputFormatter.date(from: selectedMonth) else {
-				return (Date(), Date())
-			}
-
-			let monthStart = calendar.date(byAdding: .day, value: startDay - 1, to: baseDate)!
-			let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
-			let endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth)!
-			return (calendar.startOfDay(for: monthStart), calendar.startOfDay(for: endDate))
+		guard let baseDate = inputFormatter.date(from: selectedMonth) else {
+			return (Date(), Date())
 		}
+
+		let monthStart = calendar.date(byAdding: .day, value: startDay - 1, to: baseDate)!
+		let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+		let endDate = calendar.date(byAdding: .day, value: -1, to: nextMonth)!
+		return (calendar.startOfDay(for: monthStart), calendar.startOfDay(for: endDate))
 	}
 
 	private var monthsWithExpenses: [String] {
@@ -70,19 +62,7 @@ struct ContentView: View {
 	}
 
 	private var filteredExpenses: [Binding<Expense>] {
-		if budgetPeriod == "Weekly" {
-			let calendar = Calendar.current
-			let weekStart = selectedWeekStart
-			guard let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
-				return []
-			}
-			return $store.expenses
-				.filter {
-					let startOfDay = calendar.startOfDay(for: $0.wrappedValue.date)
-					return startOfDay >= calendar.startOfDay(for: weekStart) && startOfDay <= calendar.startOfDay(for: weekEnd)
-				}
-				.sorted { $0.wrappedValue.date > $1.wrappedValue.date }
-		} else if !selectedMonth.isEmpty {
+		if !selectedMonth.isEmpty {
 			let dates = budgetDates
 			let calendar = Calendar.current
 			let start = calendar.startOfDay(for: dates.startDate)
@@ -104,14 +84,6 @@ struct ContentView: View {
 		let formatter = DateFormatter()
 		formatter.dateFormat = "yyyy-MM"
 		_selectedMonth = State(initialValue: formatter.string(from: Date()))
-
-		let calendar = Calendar.current
-		let today = Date()
-		let startDay = calendar.firstWeekday
-		let weekdayToday = calendar.component(.weekday, from: today)
-		let delta = (weekdayToday - startDay + 7) % 7
-		let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) ?? today
-		_selectedWeekStart = State(initialValue: calendar.startOfDay(for: correctedWeekStart))
 	}
 
 	// MARK: - Body
@@ -178,7 +150,6 @@ struct ContentView: View {
 		}
 		.environmentObject(store)
 		.onAppear {
-			updateSelectedWeekStart()
 			Task {
 				do {
 					var foundEntitlement = false
@@ -198,9 +169,6 @@ struct ContentView: View {
 					store.productID = "free"
 				}
 			}
-		}
-		.onChange(of: settings.weeklyStartDay) { _ in
-			updateSelectedWeekStart()
 		}
 		.onChange(of: settings.monthlyStartDay) { _ in
 			selectedMonth = currentMonthIdentifier()
@@ -224,28 +192,16 @@ struct ContentView: View {
 
 	private var periodPill: some View {
 		Menu {
-			if budgetPeriod == "Weekly" {
-				ForEach(recentWeeks(), id: \.self) { weekStart in
-					Button {
-						selectedWeekStart = weekStart
-					} label: {
-						Text("Week of \(weekStart.formatted(.dateTime.month().day()))")
-					}
-				}
-			} else {
-				ForEach(monthsWithExpenses, id: \.self) { month in
-					Button {
-						selectedMonth = month
-					} label: {
-						Text(displayMonth(month))
-					}
+			ForEach(monthsWithExpenses, id: \.self) { month in
+				Button {
+					selectedMonth = month
+				} label: {
+					Text(displayMonth(month))
 				}
 			}
 		} label: {
 			HStack(spacing: 4) {
-				Text(budgetPeriod == "Weekly"
-					? "Week of \(selectedWeekStart.formatted(.dateTime.month().day()))"
-					: displayMonth(selectedMonth))
+				Text(displayMonth(selectedMonth))
 				Image(systemName: "chevron.down")
 					.font(.system(size: 12, weight: .medium))
 			}
@@ -309,9 +265,8 @@ struct ContentView: View {
 				}
 			}
 		}
-		.background(Color(.systemBackground))
+		.background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground))
 		.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-		.shadow(color: .primary.opacity(0.04), radius: 4, x: 0, y: 2)
 	}
 
 	// MARK: - Expense Row
@@ -468,28 +423,6 @@ extension Array where Element: Equatable {
 // MARK: - ContentView Helpers
 
 extension ContentView {
-	private func recentWeeks() -> [Date] {
-		let calendar = Calendar.current
-		let startDay = weeklyStartDay
-
-		let allWeekStarts = store.expenses.map { expense -> Date in
-			let weekday = calendar.component(.weekday, from: expense.date)
-			let delta = (weekday - startDay + 7) % 7
-			return calendar.startOfDay(for: calendar.date(byAdding: .day, value: -delta, to: expense.date)!)
-		}
-
-		return Set(allWeekStarts).sorted(by: >)
-	}
-
-	private func updateSelectedWeekStart() {
-		let calendar = Calendar.current
-		let today = calendar.startOfDay(for: Date())
-		let delta = (calendar.component(.weekday, from: today) - settings.weeklyStartDay + 7) % 7
-		if let adjusted = calendar.date(byAdding: .day, value: -delta, to: today) {
-			selectedWeekStart = calendar.startOfDay(for: adjusted)
-		}
-	}
-
 	private func currentMonthIdentifier() -> String {
 		let formatter = DateFormatter()
 		formatter.dateFormat = "yyyy-MM"

@@ -76,7 +76,7 @@ struct ExpenseDetailView: View {
 
 							Spacer()
 
-														Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencySymbol).string(from: NSNumber(value: expense.amount)) ?? "")
+														Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: expense.amount)) ?? "")
 								.font(.title3.bold())
 							
 						}
@@ -176,7 +176,7 @@ struct ExpenseDetailView: View {
 			}
 			.sheet(isPresented: $isEditing) {
 				NavigationStack {
-					AddExpenseView(
+					EditExpenseView(
 						expenseID: expense.id,
 						date: expense.date,
 						name: expense.name,

@@ -17,14 +17,6 @@ struct AppearanceSettingsView: View {
             }
 
             Section(header: Text("Main Screen Layout")) {
-                NavigationLink(destination: DisplayModeSelectionView(displayMode: settings.binding(\.displayMode))) {
-                    HStack {
-                        Text("Display Mode")
-                        Spacer()
-                        Text(NSLocalizedString(settings.displayMode.capitalized, comment: "Display mode name"))
-                            .foregroundColor(.secondary)
-                    }
-                }
                 Toggle("Group Expenses by Day", isOn: settings.binding(\.groupByDay))
             }
 

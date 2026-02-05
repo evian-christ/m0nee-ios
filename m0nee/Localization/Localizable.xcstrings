@@ -7,6 +7,9 @@
     " · %@" : {
 
     },
+    "(optional)" : {
+
+    },
     "%@  %.0f" : {
       "localizations" : {
         "en" : {
@@ -60,6 +63,9 @@
     "%lld" : {
 
     },
+    "0" : {
+
+    },
     "0.00" : {
 
     },
@@ -92,6 +98,9 @@
           }
         }
       }
+    },
+    "Add a note" : {
+
     },
     "Add Anyway" : {
       "localizations" : {
@@ -236,6 +245,9 @@
         }
       }
     },
+    "Back" : {
+
+    },
     "Backup & Restore" : {
       "localizations" : {
         "ko" : {
@@ -285,6 +297,9 @@
           }
         }
       }
+    },
+    "Budget period is now fixed to Monthly." : {
+
     },
     "Buy Lifetime – %@" : {
       "localizations" : {
@@ -791,6 +806,9 @@
         }
       }
     },
+    "Edit Expense" : {
+
+    },
     "Edit Recurring Expense" : {
       "localizations" : {
         "ko" : {
@@ -838,6 +856,7 @@
       }
     },
     "Enable Budget Tracking" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1000,6 +1019,9 @@
         }
       }
     },
+    "Expense name" : {
+
+    },
     "Expense not found" : {
       "localizations" : {
         "ko" : {
@@ -1144,6 +1166,9 @@
           }
         }
       }
+    },
+    "How much?" : {
+
     },
     "Import Data" : {
       "localizations" : {
@@ -1426,6 +1451,9 @@
         }
       }
     },
+    "Notes..." : {
+
+    },
     "Notifications" : {
       "localizations" : {
         "ko" : {
@@ -1526,6 +1554,9 @@
           }
         }
       }
+    },
+    "Rate this purchase" : {
+
     },
     "Rating" : {
       "localizations" : {
@@ -1709,6 +1740,7 @@
       }
     },
     "Select Period" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1821,6 +1853,7 @@
       }
     },
     "Start day of week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2163,6 +2196,7 @@
       }
     },
     "Week of %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2183,6 +2217,7 @@
       }
     },
     "Weekly Budget" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2201,6 +2236,12 @@
           }
         }
       }
+    },
+    "What did you buy?" : {
+
+    },
+    "When?" : {
+
     },
     "Would you like to reset existing data before importing, or append to existing data?" : {
       "localizations" : {

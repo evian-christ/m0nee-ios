@@ -58,12 +58,12 @@ final class AppSettings: ObservableObject {
         didSet { set(decimalDisplayMode.rawValue, for: Keys.decimalDisplayMode, store: .standard) }
     }
 
-    @Published var displayMode: String {
-        didSet { set(displayMode, for: Keys.displayMode, store: .standard) }
+    var displayMode: String {
+        "Standard"
     }
 
-    @Published var budgetPeriod: String {
-        didSet { set(budgetPeriod, for: Keys.budgetPeriod, store: .shared) }
+    var budgetPeriod: String {
+        "Monthly"
     }
 
     @Published var appearanceMode: String {
@@ -94,8 +94,8 @@ final class AppSettings: ObservableObject {
         didSet { set(monthlyStartDay, for: Keys.monthlyStartDay, store: .standard) }
     }
 
-    @Published var budgetTrackingEnabled: Bool {
-        didSet { set(budgetTrackingEnabled, for: Keys.budgetTrackingEnabled, store: .shared) }
+    var budgetTrackingEnabled: Bool {
+        true
     }
 
     @Published var useICloud: Bool {
@@ -131,8 +131,6 @@ final class AppSettings: ObservableObject {
         self.categoriesList = Self.stringValue(for: Keys.displayedCategories, store: .standard, default: "Food,Transport,Other", defaults: defaults, sharedDefaults: sharedDefaults)
         self.showRating = Self.boolValue(for: Keys.showRating, store: .shared, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.decimalDisplayMode = DecimalDisplayMode(rawValue: Self.stringValue(for: Keys.decimalDisplayMode, store: .standard, default: DecimalDisplayMode.automatic.rawValue, defaults: defaults, sharedDefaults: sharedDefaults)) ?? .automatic
-        self.displayMode = Self.stringValue(for: Keys.displayMode, store: .standard, default: "Standard", defaults: defaults, sharedDefaults: sharedDefaults)
-        self.budgetPeriod = Self.stringValue(for: Keys.budgetPeriod, store: .shared, default: "Monthly", defaults: defaults, sharedDefaults: sharedDefaults)
         self.appearanceMode = Self.stringValue(for: Keys.appearanceMode, store: .standard, default: "Automatic", defaults: defaults, sharedDefaults: sharedDefaults)
         self.groupByDay = Self.boolValue(for: Keys.groupByDay, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.budgetByCategory = Self.boolValue(for: Keys.budgetByCategory, store: .shared, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
@@ -140,7 +138,6 @@ final class AppSettings: ObservableObject {
         self.monthlyBudget = Self.doubleValue(for: Keys.monthlyBudget, store: .shared, default: 0, defaults: defaults, sharedDefaults: sharedDefaults)
         self.weeklyStartDay = Self.intValue(for: Keys.weeklyStartDay, store: .standard, default: 1, defaults: defaults, sharedDefaults: sharedDefaults)
         self.monthlyStartDay = Self.intValue(for: Keys.monthlyStartDay, store: .standard, default: 1, defaults: defaults, sharedDefaults: sharedDefaults)
-        self.budgetTrackingEnabled = Self.boolValue(for: Keys.budgetTrackingEnabled, store: .shared, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.useICloud = Self.boolValue(for: Keys.useICloud, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.notificationsEnabled = Self.boolValue(for: Keys.notificationsEnabled, store: .standard, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
         self.notificationHour = Self.intValue(for: Keys.notificationHour, store: .standard, default: 20, defaults: defaults, sharedDefaults: sharedDefaults)
@@ -159,19 +156,16 @@ final class AppSettings: ObservableObject {
 
     func resetSettings() {
         hasSeenTutorial = false
-        displayMode = "Standard"
         appearanceMode = "Automatic"
         groupByDay = true
         showRating = true
         decimalDisplayMode = .automatic
         currencyCode = Locale.current.currency?.identifier ?? "USD"
-        budgetPeriod = "Monthly"
         weeklyStartDay = 1
         monthlyStartDay = 1
         budgetByCategory = false
         monthlyBudget = 0
         categoryBudgets = [:]
-        budgetTrackingEnabled = true
         useICloud = true
         notificationsEnabled = false
         notificationHour = 20
