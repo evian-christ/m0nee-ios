@@ -26,7 +26,6 @@ struct AppearanceSettingsView: View {
                     }
                 }
                 Toggle("Group Expenses by Day", isOn: settings.binding(\.groupByDay))
-                Toggle("Pin Insight Cards", isOn: settings.binding(\.useFixedInsightCards))
             }
 
             Section(header: Text("Language")) {

@@ -8,19 +8,17 @@ struct TutorialView: View {
 	@Environment(\.dismiss) private var dismiss
 
 	// Simplified to one image per page
-	let images: [String] = ["expense_1", "budget_1", "insight_1"]
+	let images: [String] = ["expense_1", "budget_1"]
 
 	let titles: [LocalizedStringKey] = [
 		"tutorial_title_1",
 		"tutorial_title_2",
-		"tutorial_title_3",
 		"tutorial_title_4",
 	]
 
 	let subtitles: [LocalizedStringKey] = [
 		"tutorial_subtitle_1",
 		"tutorial_subtitle_2",
-		"tutorial_subtitle_3",
 		"tutorial_subtitle_4",
 	]
 

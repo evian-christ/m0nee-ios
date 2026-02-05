@@ -1,17 +1,5 @@
 import SwiftUI
-import Charts
 import StoreKit
-import Combine
-
-func indexForDrag(location: CGPoint, in list: [InsightCardType], current: Int) -> Int? {
-	let cardHeight: CGFloat = 248  // 240 height + 8 vertical padding
-	let relativeY = location.y
-	let toIndex = Int(relativeY / cardHeight)
-	if toIndex >= 0 && toIndex < list.count {
-		return toIndex
-	}
-	return nil
-}
 
 struct ContentView: View {
 	@EnvironmentObject var store: ExpenseStore
@@ -19,11 +7,8 @@ struct ContentView: View {
 	@State private var pressedExpenseID: UUID?
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
-	@State private var showingInsights = false
 	@State private var selectedMonth: String
 	@State private var selectedWeekStart: Date = Calendar.current.startOfDay(for: Date())
-	@State private var favouriteCards: [InsightCardType] = []
-	@State private var cardRefreshTokens: [InsightCardType: UUID] = [:]
 	@State private var selectedExpenseID: UUID?
 
 	private var currencyCode: String { settings.currencyCode }
@@ -32,7 +17,6 @@ struct ContentView: View {
 	private var displayMode: String { settings.displayMode }
 	private var budgetPeriod: String { settings.budgetPeriod }
 	private var appearanceMode: String { settings.appearanceMode }
-	private var useFixedInsightCards: Bool { settings.useFixedInsightCards }
 	private var groupByDay: Bool { settings.groupByDay }
 	private var showRating: Bool { settings.showRating }
 	private var decimalDisplayMode: DecimalDisplayMode { settings.decimalDisplayMode }
@@ -161,55 +145,6 @@ struct ContentView: View {
 		_selectedWeekStart = State(initialValue: calendar.startOfDay(for: correctedWeekStart))
 	}
 	
-	private var insightCardsView: some View {
-		VStack {
-			TabView {
-				if favouriteCards.isEmpty {
-					VStack {
-						VStack(spacing: 12) {
-							Text("No Insight Cards Added")
-								.font(.headline)
-							Text("Go to the Insights tab and long-press on cards to add them here.")
-								.font(.subheadline)
-								.multilineTextAlignment(.center)
-								.foregroundColor(.secondary)
-								.padding(.horizontal, 20)
-						}
-						.frame(maxWidth: .infinity, maxHeight: .infinity)
-						.padding()
-						.background(Color(.systemGray6))
-						.cornerRadius(16)
-						.padding(.horizontal, 16)
-						.frame(height: 240)
-						Spacer()
-					}
-				} else {
-					ForEach(favouriteCards, id: \.self) { type in
-						VStack {
-							InsightCardView(
-								type: type,
-								expenses: filteredExpenses.map(\.wrappedValue),
-								startDate: budgetDates.startDate,
-								endDate: budgetDates.endDate,
-								categories: store.categories,
-								isProUser: store.isProUser
-							)
-							.padding(.horizontal, 16)
-							Spacer()
-						}
-					}
-				}
-			}
-			.id(cardRefreshTokens)
-			.tabViewStyle(.page)
-			.indexViewStyle(.page(backgroundDisplayMode: .never))
-			.frame(height: 270)
-			.background(Color(.systemBackground))
-		}
-		.frame(height: 300)
-		.background(Color(.systemBackground))
-	}
-	
 	@ViewBuilder
 	private func expenseRow(for expense: Binding<Expense>) -> some View {
 		if displayMode == "Compact" {
@@ -254,6 +189,11 @@ struct ContentView: View {
 									Image(systemName: "arrow.triangle.2.circlepath")
 										.font(.caption)
 										.foregroundColor(.blue)
+								}
+								if expense.wrappedValue.excludeFromBudget {
+									Image(systemName: "circle.slash")
+										.font(.caption)
+										.foregroundColor(.orange)
 								}
 							}
 							.layoutPriority(0.5)
@@ -329,6 +269,11 @@ struct ContentView: View {
 											.font(.caption)
 											.foregroundColor(.blue)
 									}
+									if expense.wrappedValue.excludeFromBudget {
+										Image(systemName: "circle.slash")
+											.font(.caption)
+											.foregroundColor(.orange)
+									}
 								}
 								.font(.system(.body, design: .default))
 								.fontWeight(.semibold)
@@ -400,6 +345,11 @@ struct ContentView: View {
 											Image(systemName: "arrow.triangle.2.circlepath")
 												.font(.caption)
 												.foregroundColor(.blue)
+										}
+										if expense.wrappedValue.excludeFromBudget {
+											Image(systemName: "circle.slash")
+												.font(.caption)
+												.foregroundColor(.orange)
 										}
 									}
 									.font(.headline)
@@ -483,13 +433,8 @@ struct ContentView: View {
 	
 	private var mainBody: some View {
 		NavigationStack {
-			ZStack(alignment: .top) {
 				ScrollView {
 					VStack(spacing: 0) {
-						if !useFixedInsightCards {
-							insightCardsView
-						}
-						
 						let groupedByDate: [Date: [Binding<Expense>]] = Dictionary(
 							grouping: filteredExpenses,
 							by: { Calendar.current.startOfDay(for: $0.wrappedValue.date) }
@@ -537,23 +482,14 @@ struct ContentView: View {
 							}
 						}
 					}
-					.padding(.top, useFixedInsightCards ? 290 : 0)
 				}
 				.toolbar {
-					ToolbarItemGroup(placement: .navigationBarLeading) {
-						HStack(spacing: 12) {
+					ToolbarItem(placement: .navigationBarLeading) {
 							Button {
 								showingSettings = true
 							} label: {
 								Image(systemName: "gearshape")
 							}
-							
-							Button {
-								showingInsights = true
-							} label: {
-								Image(systemName: "chart.bar")
-							}
-						}
 					}
 					ToolbarItem(placement: .principal) {
 						if budgetPeriod == "Weekly" {
@@ -612,45 +548,10 @@ struct ContentView: View {
 						SettingsView()
 					}
 				}
-				.navigationDestination(isPresented: $showingInsights) {
-					InsightsView().environmentObject(store)
-				}
-				.onChange(of: weeklyStartDay) { _ in
-					let calendar = Calendar.current
-					let today = Date()
-					let weekdayToday = calendar.component(.weekday, from: today)
-					let delta = (weekdayToday - weeklyStartDay + 7) % 7
-					if let correctedWeekStart = calendar.date(byAdding: .day, value: -delta, to: today) {
-						selectedWeekStart = calendar.startOfDay(for: correctedWeekStart)
-					}
-					store.updateTotalSpendingWidgetData()
-				}
-				.onChange(of: monthlyStartDay) { _ in
-					selectedMonth = selectedMonth + ""
-					store.updateTotalSpendingWidgetData()
-				}
-				.onChange(of: budgetPeriod) { _ in
-					store.updateTotalSpendingWidgetData()
-				}
-				.onChange(of: budgetByCategory) { _ in
-					store.updateTotalSpendingWidgetData()
-				}
-				.onChange(of: monthlyBudget) { _ in
-					store.updateTotalSpendingWidgetData()
-				}
-				.onChange(of: settings.budgetByCategory) { _ in
-					store.updateTotalSpendingWidgetData()
-				}
-				if useFixedInsightCards {
-					insightCardsView
-				}
-			}
 			.navigationBarTitleDisplayMode(.inline)
 		}
 		.environmentObject(store)
 		.onAppear {
-			store.updateTotalSpendingWidgetData()
-			updateFavouriteCards()
 			updateSelectedWeekStart()
 			Task {
 				do {
@@ -673,23 +574,11 @@ struct ContentView: View {
 				}
 			}
 		}
-		.onReceive(settings.$categoryBudgets) { _ in
-			store.updateTotalSpendingWidgetData()
-		}
 		.onChange(of: settings.weeklyStartDay) { _ in
 			updateSelectedWeekStart()
 		}
 		.onChange(of: settings.monthlyStartDay) { _ in
 			selectedMonth = currentMonthIdentifier()
-		}
-		.onChange(of: settings.favouriteInsightCardsData) { _ in
-			updateFavouriteCards(resetTokens: true)
-		}
-		.onReceive(store.$expenses) { _ in
-			updateFavouriteCards(resetTokens: true)
-		}
-		.onReceive(store.$categories) { _ in
-			updateFavouriteCards(resetTokens: true)
 		}
 		.preferredColorScheme(preferredScheme)
 		.alert("Error", isPresented: Binding(
@@ -744,14 +633,6 @@ extension ContentView {
 		
 		let uniqueWeekStarts = Set(allWeekStarts)
 		return uniqueWeekStarts.sorted(by: >)
-	}
-
-	private func updateFavouriteCards(resetTokens: Bool = false) {
-		let decoded = (try? JSONDecoder().decode([InsightCardType].self, from: settings.favouriteInsightCardsData)) ?? []
-		favouriteCards = decoded
-		if resetTokens {
-			cardRefreshTokens = Dictionary(uniqueKeysWithValues: decoded.map { ($0, UUID()) })
-		}
 	}
 
 	private func updateSelectedWeekStart() {

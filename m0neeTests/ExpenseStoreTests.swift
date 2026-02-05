@@ -10,6 +10,7 @@ import Foundation
 import Testing
 @testable import m0nee // Import your app module to access its code
 
+@MainActor
 struct ExpenseStoreTests {
 
     // This initializer runs once before all tests in this struct.
@@ -42,7 +43,6 @@ struct ExpenseStoreTests {
         sharedDefaults?.removeObject(forKey: "weeklyStartDay")
         sharedDefaults?.removeObject(forKey: "monthlyStartDay")
         sharedDefaults?.removeObject(forKey: "currencyCode")
-        sharedDefaults?.removeObject(forKey: "totalSpendingWidgetData")
         sharedDefaults?.synchronize() // Force synchronization for test reliability
     }
 
@@ -655,8 +655,18 @@ struct ExpenseStoreTests {
     }
 
     @Test func testEraseAllData() {
-        // ARRANGE: Populate the store with data
-        let store = ExpenseStore(forTesting: true)
+        // ARRANGE: 테스트용 의존성을 직접 생성하여 budgetService를 공유
+        let settings = AppSettings.testingInstance()
+        let repository = InMemoryExpenseRepository()
+        let budgetService = AppBudgetService(settings: settings)
+        let store = ExpenseStore(
+            repository: repository,
+            budgetService: budgetService,
+            recurringService: RecurringExpenseService(),
+            proAccessManager: UserDefaultsProAccessManager(),
+            settings: settings,
+            forTesting: true
+        )
 
         // Add some expenses
         store.add(Expense(id: UUID(), date: dateFrom("2025-01-01"), name: "Old Expense 1", amount: 10.0, category: "Food", details: nil, rating: nil, memo: nil))
@@ -672,12 +682,8 @@ struct ExpenseStoreTests {
         store.addCategory(customCategory1)
         store.addCategory(customCategory2)
 
-        // Set some budget data in UserDefaults
-        let initialBudgets: [String: String] = ["Food": "500", "Transport": "200", "Custom 1": "100"]
-        let sharedDefaults = UserDefaults(suiteName: "group.com.chankim.Monir")
-        if let encoded = try? JSONEncoder().encode(initialBudgets) {
-            sharedDefaults?.set(encoded, forKey: "categoryBudgets")
-        }
+        // Set some budget data through the same budgetService store가 사용하는 것
+        budgetService.saveBudgets(["Food": "500", "Transport": "200", "Custom 1": "100"])
 
         // ACT: Erase all data
         store.eraseAllData()
@@ -696,20 +702,15 @@ struct ExpenseStoreTests {
             CategoryItem(name: "Shopping", symbol: "bag.fill", color: CodableColor(.pink))
         ]
         #expect(store.categories.count == defaultCategories.count)
-        // Check if all default categories are present in the store's categories
         for defaultCat in defaultCategories {
             #expect(store.categories.contains(where: { $0.name == defaultCat.name && $0.symbol == defaultCat.symbol }))
         }
 
-        // Verify budgets are reset to "0" for default categories
-        if let data = sharedDefaults?.data(forKey: "categoryBudgets"),
-           let decodedBudgets = try? JSONDecoder().decode([String: String].self, from: data) {
-            #expect(decodedBudgets.count == defaultCategories.count)
-            for defaultCat in defaultCategories {
-                #expect(decodedBudgets[defaultCat.name] == "0")
-            }
-        } else {
-            #expect(false, "Failed to load or decode budgets after eraseAllData.")
+        // Verify budgets are reset to "0" — 같은 budgetService를 통해 검증
+        let budgets = budgetService.loadBudgets()
+        #expect(budgets.count == defaultCategories.count)
+        for defaultCat in defaultCategories {
+            #expect(budgets[defaultCat.name] == "0")
         }
     }
 
@@ -871,4 +872,96 @@ struct ExpenseStoreTests {
         #expect(migratedRule.selectedMonthDays == [10, 25], "Selected month days should be preserved")
         #expect(migratedRule.selectedWeekdays == nil, "Selected weekdays should be cleared")
     }
+
+    // MARK: - excludeFromBudget Tests
+
+    @Test func testAddExpenseWithExcludeFromBudget() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        let expense = Expense(
+            id: UUID(),
+            date: dateFrom("2025-07-15"),
+            name: "Hospital",
+            amount: 150000,
+            category: "Health",
+            details: nil,
+            rating: nil,
+            memo: nil,
+            excludeFromBudget: true
+        )
+
+        // ACT
+        store.add(expense)
+
+        // ASSERT
+        #expect(store.expenses.count == 1)
+        #expect(store.expenses.first?.excludeFromBudget == true)
+    }
+
+    @Test func testExcludeFromBudgetDefaultsToFalse() {
+        // ARRANGE: excludeFromBudget를 명시하지 않은 Expense 생성
+        let store = ExpenseStore(forTesting: true)
+        let expense = Expense(
+            id: UUID(),
+            date: dateFrom("2025-07-15"),
+            name: "Coffee",
+            amount: 5000,
+            category: "Food",
+            details: nil,
+            rating: nil,
+            memo: nil
+        )
+
+        // ACT
+        store.add(expense)
+
+        // ASSERT
+        #expect(store.expenses.first?.excludeFromBudget == false)
+    }
+
+    @Test func testExcludeFromBudgetBackwardCompatibleDecode() {
+        // ARRANGE: excludeFromBudget 키가 없는 기존 형식의 JSON
+        let legacyJSON = """
+        {
+            "id": "12345678-1234-1234-1234-123456789abc",
+            "date": 1752537600,
+            "name": "Old Expense",
+            "amount": 10000,
+            "category": "Food",
+            "isRecurring": false
+        }
+        """
+        let data = legacyJSON.data(using: .utf8)!
+
+        // ACT
+        let expense = try! JSONDecoder().decode(Expense.self, from: data)
+
+        // ASSERT: 기본값 false로 디코딩되어야 함
+        #expect(expense.excludeFromBudget == false)
+        #expect(expense.name == "Old Expense")
+    }
+
+    @Test func testBudgetTotalExcludesMarkedExpenses() {
+        // ARRANGE
+        let store = ExpenseStore(forTesting: true)
+        store.expenses = [
+            Expense(id: UUID(), date: dateFrom("2025-07-01"), name: "Coffee", amount: 5000, category: "Food", details: nil, rating: nil, memo: nil, excludeFromBudget: false),
+            Expense(id: UUID(), date: dateFrom("2025-07-02"), name: "Lunch", amount: 15000, category: "Food", details: nil, rating: nil, memo: nil, excludeFromBudget: false),
+            Expense(id: UUID(), date: dateFrom("2025-07-03"), name: "Hospital", amount: 150000, category: "Health", details: nil, rating: nil, memo: nil, excludeFromBudget: true),
+            Expense(id: UUID(), date: dateFrom("2025-07-04"), name: "Trip", amount: 800000, category: "Travel", details: nil, rating: nil, memo: nil, excludeFromBudget: true)
+        ]
+
+        // ACT: 예산에 포함되는 지출만 합산
+        let budgetTotal = store.expenses
+            .filter { !$0.excludeFromBudget }
+            .reduce(0) { $0 + $1.amount }
+
+        // 전체 지출 합산 (통계용)
+        let totalSpending = store.expenses.reduce(0) { $0 + $1.amount }
+
+        // ASSERT
+        #expect(budgetTotal == 20000)       // Coffee + Lunch만
+        #expect(totalSpending == 970000)    // 전체
+    }
+
 }

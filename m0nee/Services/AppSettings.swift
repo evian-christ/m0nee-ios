@@ -13,7 +13,6 @@ final class AppSettings: ObservableObject {
         static let displayedCategories = "categories"
         static let displayMode = "displayMode"
         static let appearanceMode = "appearanceMode"
-        static let useFixedInsightCards = "useFixedInsightCards"
         static let groupByDay = "groupByDay"
         static let showRating = "showRating"
         static let decimalDisplayMode = "decimalDisplayMode"
@@ -26,7 +25,6 @@ final class AppSettings: ObservableObject {
         static let monthlyStartDay = "monthlyStartDay"
         static let budgetTrackingEnabled = "enableBudgetTracking"
         static let useICloud = "useiCloud"
-        static let favouriteInsightCards = "favouriteInsightCards"
         static let notificationsEnabled = "notificationsEnabled"
         static let notificationHour = "notificationHour"
         static let notificationMinute = "notificationMinute"
@@ -72,10 +70,6 @@ final class AppSettings: ObservableObject {
         didSet { set(appearanceMode, for: Keys.appearanceMode, store: .standard) }
     }
 
-    @Published var useFixedInsightCards: Bool {
-        didSet { set(useFixedInsightCards, for: Keys.useFixedInsightCards, store: .standard) }
-    }
-
     @Published var groupByDay: Bool {
         didSet { set(groupByDay, for: Keys.groupByDay, store: .standard) }
     }
@@ -106,10 +100,6 @@ final class AppSettings: ObservableObject {
 
     @Published var useICloud: Bool {
         didSet { set(useICloud, for: Keys.useICloud, store: .standard) }
-    }
-
-    @Published var favouriteInsightCardsData: Data {
-        didSet { set(favouriteInsightCardsData, for: Keys.favouriteInsightCards, store: .standard) }
     }
 
     @Published var notificationsEnabled: Bool {
@@ -144,7 +134,6 @@ final class AppSettings: ObservableObject {
         self.displayMode = Self.stringValue(for: Keys.displayMode, store: .standard, default: "Standard", defaults: defaults, sharedDefaults: sharedDefaults)
         self.budgetPeriod = Self.stringValue(for: Keys.budgetPeriod, store: .shared, default: "Monthly", defaults: defaults, sharedDefaults: sharedDefaults)
         self.appearanceMode = Self.stringValue(for: Keys.appearanceMode, store: .standard, default: "Automatic", defaults: defaults, sharedDefaults: sharedDefaults)
-        self.useFixedInsightCards = Self.boolValue(for: Keys.useFixedInsightCards, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.groupByDay = Self.boolValue(for: Keys.groupByDay, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.budgetByCategory = Self.boolValue(for: Keys.budgetByCategory, store: .shared, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
         self.categoryBudgets = Self.decodeBudgets(for: Keys.categoryBudgets, defaults: defaults, sharedDefaults: sharedDefaults)
@@ -153,7 +142,6 @@ final class AppSettings: ObservableObject {
         self.monthlyStartDay = Self.intValue(for: Keys.monthlyStartDay, store: .standard, default: 1, defaults: defaults, sharedDefaults: sharedDefaults)
         self.budgetTrackingEnabled = Self.boolValue(for: Keys.budgetTrackingEnabled, store: .shared, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.useICloud = Self.boolValue(for: Keys.useICloud, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
-        self.favouriteInsightCardsData = Self.dataValue(for: Keys.favouriteInsightCards, store: .standard, default: Data(), defaults: defaults, sharedDefaults: sharedDefaults)
         self.notificationsEnabled = Self.boolValue(for: Keys.notificationsEnabled, store: .standard, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
         self.notificationHour = Self.intValue(for: Keys.notificationHour, store: .standard, default: 20, defaults: defaults, sharedDefaults: sharedDefaults)
         self.notificationMinute = Self.intValue(for: Keys.notificationMinute, store: .standard, default: 0, defaults: defaults, sharedDefaults: sharedDefaults)
@@ -173,7 +161,6 @@ final class AppSettings: ObservableObject {
         hasSeenTutorial = false
         displayMode = "Standard"
         appearanceMode = "Automatic"
-        useFixedInsightCards = true
         groupByDay = true
         showRating = true
         decimalDisplayMode = .automatic
@@ -190,7 +177,6 @@ final class AppSettings: ObservableObject {
         notificationHour = 20
         notificationMinute = 0
         categoriesList = "Food,Transport,Other"
-        favouriteInsightCardsData = Data()
     }
 
     // MARK: Private helpers

@@ -7,9 +7,6 @@
     " " : {
 
     },
-    "#%lld" : {
-
-    },
     "%@  %.0f" : {
       "localizations" : {
         "en" : {
@@ -26,16 +23,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ (%2$@)"
-          }
-        }
-      }
-    },
-    "%@ / %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ / %2$@"
           }
         }
       }
@@ -60,16 +47,6 @@
         }
       }
     },
-    "%@%.2f" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@%2$.2f"
-          }
-        }
-      }
-    },
     "%@%@" : {
       "localizations" : {
         "en" : {
@@ -83,13 +60,7 @@
     "%lld" : {
 
     },
-    "%lld%% used" : {
-
-    },
     "0.00" : {
-
-    },
-    "A an example control that runs a timer." : {
 
     },
     "A similar expense already exists. Are you sure you want to add this?" : {
@@ -153,6 +124,7 @@
       }
     },
     "Add to Favourite" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -163,6 +135,7 @@
       }
     },
     "Advanced insight cards" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -273,9 +246,6 @@
         }
       }
     },
-    "Bottom %@" : {
-
-    },
     "Budget" : {
       "localizations" : {
         "ko" : {
@@ -358,6 +328,7 @@
     },
     "Category Budget Progress" : {
       "comment" : "Title for the Category Budget Progress insight card",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -389,6 +360,7 @@
     },
     "Category Satisfaction" : {
       "comment" : "Title for the Category Satisfaction insight card",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -831,6 +803,7 @@
     },
     "Enable 'Budget Tracking' and 'Budget by Category' in Budget Settings to view this insight." : {
       "comment" : "Message shown when 'Budget Tracking' or 'Budget by Category' is disabled",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -842,6 +815,7 @@
     },
     "Enable 'Budget Tracking' in Budget Settings to view this insight." : {
       "comment" : "Message shown when 'Budget Tracking' is disabled",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -853,6 +827,7 @@
     },
     "Enable 'Show Rating' in General Settings to view this insight." : {
       "comment" : "Message shown when 'Show Rating' is disabled",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1012,6 +987,9 @@
         }
       }
     },
+    "Exclude from budget" : {
+
+    },
     "Expense & Budget" : {
       "localizations" : {
         "ko" : {
@@ -1126,6 +1104,7 @@
       }
     },
     "Go to the Insights tab and long-press on cards to add them here." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1136,6 +1115,7 @@
       }
     },
     "Got it" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1154,9 +1134,6 @@
           }
         }
       }
-    },
-    "Hello %@" : {
-
     },
     "Help & Support" : {
       "localizations" : {
@@ -1189,6 +1166,7 @@
       }
     },
     "Insights" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1197,9 +1175,6 @@
           }
         }
       }
-    },
-    "L" : {
-
     },
     "Language" : {
       "localizations" : {
@@ -1210,9 +1185,6 @@
           }
         }
       }
-    },
-    "Leading" : {
-
     },
     "Light" : {
       "localizations" : {
@@ -1246,6 +1218,7 @@
       }
     },
     "Long-press a card\nand select \"Add to Favourite\"\nto add it to the main screen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1257,6 +1230,7 @@
     },
     "Lowest Rated Spending" : {
       "comment" : "Title for the Lowest Rated Spending insight card",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1396,6 +1370,7 @@
       }
     },
     "No expenses with 3 stars or lower found." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1406,6 +1381,7 @@
       }
     },
     "No Insight Cards Added" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1456,9 +1432,6 @@
         }
       }
     },
-    "Off" : {
-
-    },
     "OK" : {
       "localizations" : {
         "ko" : {
@@ -1468,9 +1441,6 @@
           }
         }
       }
-    },
-    "On" : {
-
     },
     "On specific days" : {
       "localizations" : {
@@ -1523,6 +1493,7 @@
       }
     },
     "Pin Insight Cards" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1613,6 +1584,7 @@
       }
     },
     "Remove from Favourite" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1780,6 +1752,7 @@
       }
     },
     "Shows your spending trend over time." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1790,6 +1763,7 @@
       }
     },
     "Shows your total expenses." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1801,6 +1775,7 @@
     },
     "Spending Trend" : {
       "comment" : "Title for the Spending Trend insight card",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1811,6 +1786,7 @@
       }
     },
     "Spending vs. Time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1829,9 +1805,6 @@
           }
         }
       }
-    },
-    "Start a timer" : {
-
     },
     "Start day of month" : {
       "localizations" : {
@@ -1852,9 +1825,6 @@
           }
         }
       }
-    },
-    "Start Timer" : {
-
     },
     "Starts on" : {
       "localizations" : {
@@ -1885,9 +1855,6 @@
           }
         }
       }
-    },
-    "T %@" : {
-
     },
     "Tap the ➕ up there and record your first glorious impulse buy." : {
       "localizations" : {
@@ -1949,12 +1916,6 @@
         }
       }
     },
-    "Timer" : {
-
-    },
-    "Timer is running" : {
-
-    },
     "To change the start date or recurrence rule, please delete this recurring expense and create a new one." : {
       "localizations" : {
         "ko" : {
@@ -1966,6 +1927,7 @@
       }
     },
     "Total" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1976,6 +1938,7 @@
       }
     },
     "Total Spending" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1984,9 +1947,6 @@
           }
         }
       }
-    },
-    "Trailing" : {
-
     },
     "tutorial_subtitle_1" : {
       "localizations" : {
@@ -2021,6 +1981,7 @@
       }
     },
     "tutorial_subtitle_3" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2085,6 +2046,7 @@
       }
     },
     "tutorial_title_3" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2159,6 +2121,7 @@
     },
     "Upgrade to Monir Pro to unlock this feature." : {
       "comment" : "Message shown when a pro feature is locked",
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {

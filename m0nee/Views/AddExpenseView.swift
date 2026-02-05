@@ -58,6 +58,7 @@ struct AddExpenseView: View {
 	@State private var showingCategorySelection = false
 	@State private var showingRepeatSelection = false
 	@State private var showingProUpgrade = false
+	@State private var excludeFromBudget: Bool = false
 	@EnvironmentObject var store: ExpenseStore
 
 	@State private var showingDeleteAlert = false
@@ -159,6 +160,7 @@ struct AddExpenseView: View {
 		rating: Int = 5,
 		memo: String = "",
 		isRecurring: Bool = false,
+		excludeFromBudget: Bool = false,
 		onSave: @escaping (Expense) -> Void
 	) {
 		_expenseID = State(initialValue: expenseID)
@@ -172,6 +174,7 @@ struct AddExpenseView: View {
 		_rating = State(initialValue: rating)
 		_memo = State(initialValue: memo)
 		_isRecurring = State(initialValue: isRecurring)
+		_excludeFromBudget = State(initialValue: excludeFromBudget)
 		self.onSave = onSave
 	}
 	
@@ -375,6 +378,10 @@ struct AddExpenseView: View {
 					}
 			}
 			
+			Section {
+				Toggle("Exclude from budget", isOn: $excludeFromBudget)
+			}
+			
 			if expenseID == nil {
 				Section {
 					if store.isProUser {
@@ -428,7 +435,8 @@ struct AddExpenseView: View {
 					rating: showRating ? rating : (expenseID != nil ? self.rating : 5),
 					memo: memo.isEmpty ? nil : memo,
 					isRecurring: isRecurring,
-					parentRecurringID: recurringID
+					parentRecurringID: recurringID,
+					excludeFromBudget: excludeFromBudget
 				)
 				onSave(newExpense)
 				dismiss()
@@ -550,7 +558,8 @@ struct AddExpenseView: View {
 						rating: isRecurring ? nil : (showRating ? rating : 5),
 						memo: memo.isEmpty ? nil : memo,
 						isRecurring: isRecurring,
-						parentRecurringID: recurringID
+						parentRecurringID: recurringID,
+						excludeFromBudget: excludeFromBudget
 					)
 
 					if expenseID == nil && isRecurring {

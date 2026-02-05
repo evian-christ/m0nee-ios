@@ -33,11 +33,6 @@ struct ProUpgradeModalView: View {
 								Text("Recurring expense feature")
 							}
 							HStack(spacing: 8) {
-								Image(systemName: "chart.xyaxis.line")
-									.foregroundColor(.accentColor)
-								Text("Advanced insight cards")
-							}
-							HStack(spacing: 8) {
 								Image(systemName: "square.and.arrow.up")
 									.foregroundColor(.accentColor)
 								Text("Export & import feature")

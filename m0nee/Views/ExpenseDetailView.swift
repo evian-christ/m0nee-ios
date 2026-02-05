@@ -61,6 +61,11 @@ struct ExpenseDetailView: View {
 											.font(.subheadline)
 											.foregroundColor(.blue)
 									}
+									if expense.excludeFromBudget {
+										Image(systemName: "circle.slash")
+											.font(.subheadline)
+											.foregroundColor(.orange)
+									}
 								}
 								.font(.title2.bold())
 
@@ -180,6 +185,7 @@ struct ExpenseDetailView: View {
 						details: expense.details ?? "",
 						rating: expense.rating ?? 3,
 						memo: expense.memo ?? "",
+						excludeFromBudget: expense.excludeFromBudget,
 						onSave: { updated in
 							if updated.amount == -1 {
 								store.delete(updated)

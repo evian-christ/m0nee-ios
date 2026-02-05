@@ -24,7 +24,6 @@ class ExpenseStore: ObservableObject {
     private let repository: ExpenseRepository
     private let budgetService: BudgetComputing
     private let recurringService: RecurringExpenseScheduling
-    private let widgetService: WidgetSyncing
     private let proAccessManager: ProAccessHandling
     private let settings: AppSettings
     private let forTesting: Bool
@@ -33,7 +32,6 @@ class ExpenseStore: ObservableObject {
         repository: ExpenseRepository,
         budgetService: BudgetComputing,
         recurringService: RecurringExpenseScheduling,
-        widgetService: WidgetSyncing,
         proAccessManager: ProAccessHandling,
         settings: AppSettings,
         forTesting: Bool = false
@@ -41,7 +39,6 @@ class ExpenseStore: ObservableObject {
         self.repository = repository
         self.budgetService = budgetService
         self.recurringService = recurringService
-        self.widgetService = widgetService
         self.proAccessManager = proAccessManager
         self.settings = settings
         self.forTesting = forTesting
@@ -56,20 +53,16 @@ class ExpenseStore: ObservableObject {
     convenience init(forTesting: Bool = false) {
         let settings: AppSettings = forTesting ? AppSettings.testingInstance() : AppSettings.shared
         let repository: ExpenseRepository
-        let widgetService: WidgetSyncing
         if forTesting {
             repository = InMemoryExpenseRepository()
-            widgetService = WidgetSyncService(allowsWidgetReload: false)
         } else {
             repository = FileExpenseRepository(forTesting: false)
-            widgetService = WidgetSyncService()
         }
 
         self.init(
             repository: repository,
             budgetService: AppBudgetService(settings: settings),
             recurringService: RecurringExpenseService(),
-            widgetService: widgetService,
             proAccessManager: UserDefaultsProAccessManager(),
             settings: settings,
             forTesting: forTesting
@@ -115,8 +108,6 @@ class ExpenseStore: ObservableObject {
 
         if !forTesting {
             generateExpensesFromRecurringIfNeeded()
-        } else {
-            widgetService.syncExpenses(expenses)
         }
 
         // 최소 1초 동안 로딩 화면 표시 보장
@@ -161,8 +152,6 @@ class ExpenseStore: ObservableObject {
             }
         }
 
-        widgetService.syncExpenses(expenses)
-        widgetService.updateTotalSpending(using: expenses)
     }
 
     // MARK: - Category Management
@@ -206,11 +195,6 @@ class ExpenseStore: ObservableObject {
         persist()
     }
 
-    // MARK: - Budget Helpers
-
-    func updateTotalSpendingWidgetData() {
-        widgetService.updateTotalSpending(using: expenses)
-    }
 
     // MARK: - Expense CRUD
 
