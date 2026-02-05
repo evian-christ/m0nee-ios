@@ -4,7 +4,7 @@
     "" : {
 
     },
-    " " : {
+    " · %@" : {
 
     },
     "%@  %.0f" : {
@@ -1360,6 +1360,7 @@
       }
     },
     "No expenses here yet 💸" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1379,6 +1380,9 @@
           }
         }
       }
+    },
+    "No expenses yet" : {
+
     },
     "No Insight Cards Added" : {
       "extractionState" : "stale",
@@ -1856,7 +1860,11 @@
         }
       }
     },
+    "Tap the + button to record your first expense." : {
+
+    },
     "Tap the ➕ up there and record your first glorious impulse buy." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
