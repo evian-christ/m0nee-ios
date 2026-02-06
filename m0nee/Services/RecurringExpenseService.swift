@@ -34,7 +34,8 @@ struct RecurringExpenseService: RecurringExpenseScheduling {
                         rating: nil,
                         memo: recurring.memo,
                         isRecurring: true,
-                        parentRecurringID: recurring.id
+                        parentRecurringID: recurring.id,
+                        excludeFromBudget: recurring.excludeFromBudget
                     )
                     generated.append(expense)
                     recurring.lastGeneratedDate = currentGenerationDate

@@ -305,6 +305,7 @@
 
     },
     "Buy Lifetime – %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -477,6 +478,9 @@
           }
         }
       }
+    },
+    "Continue" : {
+
     },
     "Currency" : {
       "localizations" : {
@@ -1049,6 +1053,7 @@
       }
     },
     "Export & import feature" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1079,6 +1084,7 @@
       }
     },
     "Family Sharing" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1217,6 +1223,9 @@
         }
       }
     },
+    "Lifetime Access" : {
+
+    },
     "Light" : {
       "localizations" : {
         "ko" : {
@@ -1228,6 +1237,7 @@
       }
     },
     "Loading lifetime option..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1236,6 +1246,9 @@
           }
         }
       }
+    },
+    "Loading..." : {
+
     },
     "Log today’s spending before you forget." : {
       "comment" : "Notification Body",
@@ -1487,6 +1500,9 @@
         }
       }
     },
+    "One-time payment" : {
+
+    },
     "Optional" : {
       "localizations" : {
         "ko" : {
@@ -1507,7 +1523,11 @@
         }
       }
     },
+    "Pay once, own forever across all your devices" : {
+
+    },
     "Pay once, use forever" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1547,6 +1567,9 @@
           }
         }
       }
+    },
+    "PRO" : {
+
     },
     "Q&A" : {
       "localizations" : {
@@ -1592,6 +1615,7 @@
       }
     },
     "Recurring expense feature" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2137,6 +2161,7 @@
       }
     },
     "Unlock powerful features to manage your money better." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2145,6 +2170,9 @@
           }
         }
       }
+    },
+    "Unlock the full potential of your expense tracking" : {
+
     },
     "Upgrade Plan" : {
       "localizations" : {
@@ -2157,6 +2185,7 @@
       }
     },
     "Upgrade to Monir Pro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {

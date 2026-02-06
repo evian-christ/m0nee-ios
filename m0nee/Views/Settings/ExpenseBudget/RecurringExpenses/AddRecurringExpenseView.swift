@@ -12,6 +12,7 @@ struct AddRecurringExpenseView: View {
 	@State private var details: String = ""
 	@State private var startDate: Date = Date()
 	@State private var recurrenceDraft = RecurrenceDraft()
+	@State private var excludeFromBudget: Bool = false
 
 	@State private var showingCategorySelection = false
 	@State private var showingRepeatSelection = false
@@ -178,6 +179,10 @@ struct AddRecurringExpenseView: View {
 						}
 					}
 				}
+
+				Section {
+					Toggle("Exclude from budget", isOn: $excludeFromBudget)
+				}
 			}
 			.navigationTitle("Add Recurring Expense")
 			.navigationBarTitleDisplayMode(.inline)
@@ -220,7 +225,8 @@ struct AddRecurringExpenseView: View {
 							memo: memo.isEmpty ? nil : memo,
 							startDate: startDate,
 							recurrenceRule: rule,
-							lastGeneratedDate: nil
+							lastGeneratedDate: nil,
+							excludeFromBudget: excludeFromBudget
 						)
 
 						store.addRecurringExpense(newRecurring)

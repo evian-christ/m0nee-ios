@@ -76,7 +76,7 @@ class ExpenseStore: ObservableObject {
     private func bootstrap() async {
         defer { isLoading = false }
 
-        // 최소 1초 동안 로딩 화면 표시 (UX 개선)
+        // 최소 0.5초 동안 로딩 화면 표시 (UX 개선)
         let startTime = Date()
 
         if !forTesting {
@@ -110,10 +110,10 @@ class ExpenseStore: ObservableObject {
             generateExpensesFromRecurringIfNeeded()
         }
 
-        // 최소 1초 동안 로딩 화면 표시 보장
+        // 최소 0.5초 동안 로딩 화면 표시 보장
         let elapsed = Date().timeIntervalSince(startTime)
-        if elapsed < 1.0 {
-            try? await Task.sleep(nanoseconds: UInt64((1.0 - elapsed) * 1_000_000_000))
+        if elapsed < 0.5 {
+            try? await Task.sleep(nanoseconds: UInt64((0.5 - elapsed) * 1_000_000_000))
         }
     }
 
@@ -202,7 +202,7 @@ class ExpenseStore: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
         return expenses
-            .filter { formatter.string(from: $0.date) == month }
+            .filter { formatter.string(from: $0.date) == month && !$0.excludeFromBudget }
             .reduce(0) { $0 + $1.amount }
     }
 
@@ -228,7 +228,7 @@ class ExpenseStore: ObservableObject {
     func totalSpentByMonth() -> [String: Double] {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM"
-        return Dictionary(grouping: expenses, by: { formatter.string(from: $0.date) })
+        return Dictionary(grouping: expenses.filter { !$0.excludeFromBudget }, by: { formatter.string(from: $0.date) })
             .mapValues { $0.reduce(0) { $0 + $1.amount } }
     }
 
@@ -267,6 +267,7 @@ class ExpenseStore: ObservableObject {
         recurringExpenses[index].category = updatedExpense.category
         recurringExpenses[index].memo = updatedExpense.memo
         recurringExpenses[index].details = updatedExpense.details
+        recurringExpenses[index].excludeFromBudget = updatedExpense.excludeFromBudget
 
         for i in expenses.indices where expenses[i].parentRecurringID == updatedExpense.id {
             expenses[i].name = updatedExpense.name
@@ -274,6 +275,7 @@ class ExpenseStore: ObservableObject {
             expenses[i].category = updatedExpense.category
             expenses[i].memo = updatedExpense.memo
             expenses[i].details = updatedExpense.details
+            expenses[i].excludeFromBudget = updatedExpense.excludeFromBudget
         }
 
         persist()

@@ -40,7 +40,7 @@ final class AppSettings: ObservableObject {
     }
 
     @Published var currencyCode: String {
-        didSet { set(currencyCode, for: Keys.currencyCode, store: .shared) }
+        didSet { set(currencyCode, for: Keys.currencyCode, store: .standard) }
     }
 
     @Published var categoriesList: String {
@@ -50,7 +50,6 @@ final class AppSettings: ObservableObject {
     @Published var showRating: Bool {
         didSet {
             set(showRating, for: Keys.showRating, store: .standard)
-            set(showRating, for: Keys.showRating, store: .shared)
         }
     }
 
@@ -75,7 +74,7 @@ final class AppSettings: ObservableObject {
     }
 
     @Published var budgetByCategory: Bool {
-        didSet { set(budgetByCategory, for: Keys.budgetByCategory, store: .shared) }
+        didSet { set(budgetByCategory, for: Keys.budgetByCategory, store: .standard) }
     }
 
     @Published var categoryBudgets: [String: String] {
@@ -83,7 +82,7 @@ final class AppSettings: ObservableObject {
     }
 
     @Published var monthlyBudget: Double {
-        didSet { set(monthlyBudget, for: Keys.monthlyBudget, store: .shared) }
+        didSet { set(monthlyBudget, for: Keys.monthlyBudget, store: .standard) }
     }
 
     @Published var weeklyStartDay: Int {
@@ -121,21 +120,21 @@ final class AppSettings: ObservableObject {
     // MARK: Init
     init(
         defaults: UserDefaults = .standard,
-        sharedDefaults: UserDefaults? = UserDefaults(suiteName: "group.com.chankim.Monir")
+        sharedDefaults: UserDefaults? = nil
     ) {
         self.defaults = defaults
         self.sharedDefaults = sharedDefaults
 
         self.hasSeenTutorial = Self.boolValue(for: Keys.hasSeenTutorial, store: .standard, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
-        self.currencyCode = Self.stringValue(for: Keys.currencyCode, store: .shared, default: Locale.current.currency?.identifier ?? "USD", defaults: defaults, sharedDefaults: sharedDefaults)
+        self.currencyCode = Self.stringValue(for: Keys.currencyCode, store: .standard, default: Locale.current.currency?.identifier ?? "USD", defaults: defaults, sharedDefaults: sharedDefaults)
         self.categoriesList = Self.stringValue(for: Keys.displayedCategories, store: .standard, default: "Food,Transport,Other", defaults: defaults, sharedDefaults: sharedDefaults)
-        self.showRating = Self.boolValue(for: Keys.showRating, store: .shared, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
+        self.showRating = Self.boolValue(for: Keys.showRating, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
         self.decimalDisplayMode = DecimalDisplayMode(rawValue: Self.stringValue(for: Keys.decimalDisplayMode, store: .standard, default: DecimalDisplayMode.automatic.rawValue, defaults: defaults, sharedDefaults: sharedDefaults)) ?? .automatic
         self.appearanceMode = Self.stringValue(for: Keys.appearanceMode, store: .standard, default: "Automatic", defaults: defaults, sharedDefaults: sharedDefaults)
         self.groupByDay = Self.boolValue(for: Keys.groupByDay, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
-        self.budgetByCategory = Self.boolValue(for: Keys.budgetByCategory, store: .shared, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
+        self.budgetByCategory = Self.boolValue(for: Keys.budgetByCategory, store: .standard, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
         self.categoryBudgets = Self.decodeBudgets(for: Keys.categoryBudgets, defaults: defaults, sharedDefaults: sharedDefaults)
-        self.monthlyBudget = Self.doubleValue(for: Keys.monthlyBudget, store: .shared, default: 0, defaults: defaults, sharedDefaults: sharedDefaults)
+        self.monthlyBudget = Self.doubleValue(for: Keys.monthlyBudget, store: .standard, default: 0, defaults: defaults, sharedDefaults: sharedDefaults)
         self.weeklyStartDay = Self.intValue(for: Keys.weeklyStartDay, store: .standard, default: 1, defaults: defaults, sharedDefaults: sharedDefaults)
         self.monthlyStartDay = Self.intValue(for: Keys.monthlyStartDay, store: .standard, default: 1, defaults: defaults, sharedDefaults: sharedDefaults)
         self.useICloud = Self.boolValue(for: Keys.useICloud, store: .standard, default: true, defaults: defaults, sharedDefaults: sharedDefaults)
@@ -176,7 +175,6 @@ final class AppSettings: ObservableObject {
     // MARK: Private helpers
     private func persistCategoryBudgets() {
         guard let encoded = try? JSONEncoder().encode(categoryBudgets) else { return }
-        set(encoded, for: Keys.categoryBudgets, store: .shared)
         set(encoded, for: Keys.categoryBudgets, store: .standard)
 
         let total = categoryBudgets.values.compactMap { Double($0) }.reduce(0, +)
@@ -303,8 +301,7 @@ extension AppSettings {
     static func testingInstance() -> AppSettings {
         let suiteName = "com.m0nee.testing.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName) ?? .standard
-        let shared = UserDefaults(suiteName: "group.com.chankim.Monir.testing.\(UUID().uuidString)")
-        return AppSettings(defaults: defaults, sharedDefaults: shared)
+        return AppSettings(defaults: defaults, sharedDefaults: nil)
     }
 }
 

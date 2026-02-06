@@ -12,6 +12,7 @@ struct EditRecurringExpenseView: View {
     @State private var category: String
     @State private var memo: String
     @State private var details: String
+    @State private var excludeFromBudget: Bool
 
     @State private var showingCategorySelection = false
     @State private var showFieldValidation = false
@@ -22,10 +23,11 @@ struct EditRecurringExpenseView: View {
     init(recurringExpense: RecurringExpense, decimalDisplayMode: DecimalDisplayMode, currencyCode: String) {
         _recurringExpense = State(initialValue: recurringExpense)
         _name = State(initialValue: recurringExpense.name)
-        _rawAmount = State(initialValue: NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: recurringExpense.amount)) ?? "")
+        _rawAmount = State(initialValue: String(recurringExpense.amount))
         _category = State(initialValue: recurringExpense.category)
         _memo = State(initialValue: recurringExpense.memo ?? "")
         _details = State(initialValue: recurringExpense.details ?? "")
+        _excludeFromBudget = State(initialValue: recurringExpense.excludeFromBudget)
         self.decimalDisplayMode = decimalDisplayMode
         self.currencyCode = currencyCode
     }
@@ -133,6 +135,10 @@ struct EditRecurringExpenseView: View {
                     }
                 }
 
+                Section {
+                    Toggle("Exclude from budget", isOn: $excludeFromBudget)
+                }
+
                 Section(header: Text("Recurrence Details (Not Editable)").font(.caption)) {
                     HStack {
                         Text("Starts on")
@@ -175,6 +181,7 @@ struct EditRecurringExpenseView: View {
                         updatedRecurringExpense.category = category
                         updatedRecurringExpense.memo = memo.isEmpty ? nil : memo
                         updatedRecurringExpense.details = details.isEmpty ? nil : details
+                        updatedRecurringExpense.excludeFromBudget = excludeFromBudget
 
                         store.updateRecurringExpenseMetadata(updatedRecurringExpense)
                         dismiss()
