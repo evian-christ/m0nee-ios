@@ -8,25 +8,91 @@ struct SettingsView: View {
         List {
             Section(header: Text("Configuration")) {
                 NavigationLink(destination: ExpenseBudgetSettingsView()) {
-                    Label("Expense & Budget", systemImage: "chart.bar.xaxis")
+                    Label {
+                        Text("Expense & Budget")
+                    } icon: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.blue)
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "creditcard.fill")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
                 }
                 NavigationLink(destination: AppearanceSettingsView()) {
-                    Label("Appearance", systemImage: "wand.and.stars")
+                    Label {
+                        Text("Appearance")
+                    } icon: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.purple)
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "paintbrush.fill")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
                 }
                 NavigationLink(destination: DataSyncSettingsView()) {
-                    Label("Data & Sync", systemImage: "arrow.2.squarepath")
+                    Label {
+                        Text("Data & Sync")
+                    } icon: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.green)
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
                 }
                 NavigationLink(destination: NotificationSettingsView()) {
-                    Label("Notifications", systemImage: "bell.badge.fill")
+                    Label {
+                        Text("Notifications")
+                    } icon: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.red)
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "bell.fill")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
                 }
             }
 
             Section(header: Text("Support & Pro")) {
                 NavigationLink(destination: SubscriptionSettingsView()) {
-                    Label("Monir Pro", systemImage: "star.fill")
+                    Label {
+                        Text("Monir Pro")
+                    } icon: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.orange)
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
                 }
                 NavigationLink(destination: SupportSettingsView()) {
-                    Label("Help & Support", systemImage: "questionmark.circle.fill")
+                    Label {
+                        Text("Help & Support")
+                    } icon: {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.gray)
+                                .frame(width: 28, height: 28)
+                            Image(systemName: "questionmark.circle.fill")
+                                .foregroundColor(.white)
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
                 }
             }
 

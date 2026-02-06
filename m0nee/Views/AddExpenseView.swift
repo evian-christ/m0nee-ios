@@ -76,7 +76,7 @@ struct AddExpenseView: View {
 			}
 			.tabViewStyle(.page(indexDisplayMode: .never))
 			.animation(.easeInOut, value: currentPage)
-			.simultaneousGesture(DragGesture().onChanged { _ in })
+			.highPriorityGesture(DragGesture())
 
 			// Progress indicator
 			HStack(spacing: 8) {
@@ -119,7 +119,7 @@ struct AddExpenseView: View {
 				HStack(spacing: 8) {
 					Text(currencySymbol)
 						.font(.system(size: 48, weight: .semibold))
-						.foregroundColor(.secondary)
+						.foregroundColor(.primary)
 
 					TextField("0", text: $amount)
 						.keyboardType(.decimalPad)

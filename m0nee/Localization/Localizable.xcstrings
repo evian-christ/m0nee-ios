@@ -132,6 +132,9 @@
         }
       }
     },
+    "Add Recurring Expense" : {
+
+    },
     "Add to Favourite" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1841,6 +1844,9 @@
           }
         }
       }
+    },
+    "Start Date" : {
+
     },
     "Start day of month" : {
       "localizations" : {

@@ -3,10 +3,11 @@ import SwiftUI
 struct RecurringSettingsView: View {
 	@EnvironmentObject var store: ExpenseStore
 	@EnvironmentObject var settings: AppSettings
+	@State private var showingAddSheet = false
 	private var currencySymbol: String {
 		CurrencyManager.symbol(for: settings.currencyCode)
 	}
-	
+
 	var body: some View {
 		List {
 			if store.recurringExpenses.isEmpty {
@@ -55,6 +56,20 @@ struct RecurringSettingsView: View {
 			}
 		}
 		.navigationTitle("Recurring Expenses")
+		.toolbar {
+			ToolbarItem(placement: .navigationBarTrailing) {
+				Button {
+					showingAddSheet = true
+				} label: {
+					Image(systemName: "plus")
+				}
+			}
+		}
+		.sheet(isPresented: $showingAddSheet) {
+			AddRecurringExpenseView(decimalDisplayMode: settings.decimalDisplayMode, currencyCode: settings.currencyCode)
+				.environmentObject(store)
+				.environmentObject(settings)
+		}
 	}
 	
 	

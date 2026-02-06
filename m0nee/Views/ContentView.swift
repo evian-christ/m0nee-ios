@@ -279,7 +279,7 @@ struct ContentView: View {
 				VStack(alignment: .leading, spacing: 3) {
 					HStack(spacing: 6) {
 						Text(expense.wrappedValue.name)
-							.font(.system(size: 15, weight: .medium))
+							.font(.system(size: 17, weight: .medium))
 							.foregroundColor(.primary)
 							.lineLimit(1)
 						if expense.wrappedValue.isRecurring {
