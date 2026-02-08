@@ -8,6 +8,7 @@ struct ContentView: View {
 	@State private var showingAddExpense = false
 	@State private var showingSettings = false
 	@State private var selectedMonth: String
+	@State private var currentCardIndex: Int? = 0
 
 	private var currencyCode: String { settings.currencyCode }
 	private var hasSeenTutorial: Bool { settings.hasSeenTutorial }
@@ -105,9 +106,13 @@ struct ContentView: View {
 					.ignoresSafeArea()
 
 				ScrollView {
-					expenseListContent
-						.padding(.horizontal, 16)
-						.padding(.top, 16)
+					VStack(spacing: 16) {
+						statsCardsSection
+
+						expenseListContent
+					}
+					.padding(.horizontal, 16)
+					.padding(.top, 16)
 				}
 			}
 			.navigationBarTitleDisplayMode(.inline)
@@ -207,6 +212,57 @@ struct ContentView: View {
 			}
 			.font(.system(size: 17, weight: .semibold))
 		}
+	}
+
+	// MARK: - Stats Cards Section
+
+	private var statsCardsSection: some View {
+		VStack(spacing: 8) {
+			ScrollView(.horizontal, showsIndicators: false) {
+				HStack(spacing: 0) {
+					ForEach(0..<3, id: \.self) { index in
+						statsCard(index: index)
+							.containerRelativeFrame(.horizontal)
+					}
+				}
+				.scrollTargetLayout()
+			}
+			.scrollTargetBehavior(.paging)
+			.scrollPosition(id: $currentCardIndex)
+			.frame(height: 165)
+
+			progressBar
+		}
+	}
+
+	private var progressBar: some View {
+		HStack(spacing: 0) {
+			ForEach(0..<3, id: \.self) { index in
+				Rectangle()
+					.fill(currentCardIndex ?? 0 == index ? Color.primary.opacity(0.6) : Color.secondary.opacity(0.2))
+					.frame(height: 3)
+			}
+		}
+		.frame(width: 60)
+	}
+
+	private func statsCard(index: Int) -> some View {
+		VStack(alignment: .leading, spacing: 12) {
+			Text("통계 카드 \(index + 1)")
+				.font(.system(size: 17, weight: .semibold))
+				.foregroundColor(.primary)
+
+			Spacer()
+
+			Text("플레이스홀더")
+				.font(.system(size: 14))
+				.foregroundColor(.secondary)
+		}
+		.padding(16)
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		.background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground))
+		.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+		.padding(.horizontal, 6)
 	}
 
 	// MARK: - Expense List
