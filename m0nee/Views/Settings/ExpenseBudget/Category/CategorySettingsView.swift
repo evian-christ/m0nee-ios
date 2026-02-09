@@ -232,7 +232,7 @@ struct IconPickerView: View {
 		"bag.fill", // Shopping
 
 		// Food & Drink
-		"cup.and.saucer.fill", "takeoutbag.and.cup.and.straw.fill", "mug.fill", "wineglass.fill", "carrot.fill", "apple.wholefill", "birthday.cake.fill", "leaf.fill",
+		"cup.and.saucer.fill", "takeoutbag.and.cup.and.straw.fill", "mug.fill", "wineglass.fill", "carrot.fill", "apple.logo", "birthday.cake.fill", "leaf.fill",
 
 		// Transportation
 		"car", "bus.fill", "tram.fill", "bicycle", "scooter", "airplane.departure", "sailboat.fill", "fuelpump.fill",
@@ -241,7 +241,7 @@ struct IconPickerView: View {
 		"house", "lightbulb.fill", "drop.fill", "bolt.fill", "thermometer.sun.fill", "wrench.and.screwdriver.fill", "hammer.fill", "paintpalette.fill", "trash.fill", "washer.fill", "dryer.fill",
 
 		// Shopping
-		"bag", "cart.fill", "creditcard.fill", "tag.fill", "gift.fill", "tshirt.fill", "shoe.fill", "watch.fill", "diamond.fill",
+		"bag", "cart.fill", "creditcard.fill", "tag.fill", "gift.fill", "tshirt.fill", "shoe.fill", "applewatch", "diamond.fill",
 
 		// Entertainment & Hobbies
 		"gamecontroller", "film.fill", "tv.fill", "music.note", "mic.fill", "book.closed.fill", "paintpalette", "camera.fill", "photo.fill", "ticket.fill", "theatermasks.fill",
@@ -305,10 +305,5 @@ struct IconPickerView: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "Search icons")
 		.navigationBarBackButtonHidden(false)
-		.toolbar {
-			ToolbarItem(placement: .navigationBarLeading) {
-				Text("")
-			}
-		}
 	}
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import Charts
 
 struct ContentView: View {
 	@EnvironmentObject var store: ExpenseStore
@@ -9,6 +10,7 @@ struct ContentView: View {
 	@State private var showingSettings = false
 	@State private var selectedMonth: String
 	@State private var currentCardIndex: Int? = 0
+	@State private var showingCardSettings = false
 
 	private var currencyCode: String { settings.currencyCode }
 	private var hasSeenTutorial: Bool { settings.hasSeenTutorial }
@@ -145,6 +147,9 @@ struct ContentView: View {
 			.navigationDestination(isPresented: $showingSettings) {
 				SettingsView()
 			}
+			.navigationDestination(isPresented: $showingCardSettings) {
+				StatsCardSettingsView()
+			}
 		}
 		.sheet(isPresented: $showingAddExpense) {
 			NavigationStack {
@@ -216,53 +221,261 @@ struct ContentView: View {
 
 	// MARK: - Stats Cards Section
 
+	private var enabledCards: [StatsCardType] {
+		settings.enabledStatsCards
+	}
+
+	private var totalCardCount: Int {
+		enabledCards.count + 1
+	}
+
 	private var statsCardsSection: some View {
 		VStack(spacing: 8) {
 			ScrollView(.horizontal, showsIndicators: false) {
 				HStack(spacing: 0) {
-					ForEach(0..<3, id: \.self) { index in
-						statsCard(index: index)
+					ForEach(Array(enabledCards.enumerated()), id: \.element) { index, card in
+						statsCard(for: card)
 							.containerRelativeFrame(.horizontal)
+							.id(index)
 					}
+					addStatsCard
+						.containerRelativeFrame(.horizontal)
+						.id(enabledCards.count)
 				}
 				.scrollTargetLayout()
 			}
 			.scrollTargetBehavior(.paging)
 			.scrollPosition(id: $currentCardIndex)
 			.frame(height: 165)
+			.onChange(of: enabledCards) { _ in
+				if let idx = currentCardIndex, idx >= totalCardCount {
+					currentCardIndex = max(totalCardCount - 1, 0)
+				}
+			}
 
-			progressBar
+			if totalCardCount > 1 {
+				progressBar
+			}
 		}
 	}
 
 	private var progressBar: some View {
 		HStack(spacing: 0) {
-			ForEach(0..<3, id: \.self) { index in
+			ForEach(0..<totalCardCount, id: \.self) { index in
 				Rectangle()
-					.fill(currentCardIndex ?? 0 == index ? Color.primary.opacity(0.6) : Color.secondary.opacity(0.2))
+					.fill((currentCardIndex ?? 0) == index ? Color.primary.opacity(0.6) : Color.secondary.opacity(0.2))
 					.frame(height: 3)
 			}
 		}
-		.frame(width: 60)
+		.frame(width: CGFloat(totalCardCount) * 20)
 	}
 
-	private func statsCard(index: Int) -> some View {
-		VStack(alignment: .leading, spacing: 12) {
-			Text("통계 카드 \(index + 1)")
-				.font(.system(size: 17, weight: .semibold))
-				.foregroundColor(.primary)
+	private var addStatsCard: some View {
+		Button {
+			showingCardSettings = true
+		} label: {
+			VStack(spacing: 12) {
+				Image(systemName: "plus.circle")
+					.font(.system(size: 32))
+					.foregroundColor(.secondary)
+				Text("Edit Cards")
+					.font(.system(size: 13, weight: .medium))
+					.foregroundColor(.secondary)
+			}
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground))
+			.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+			.padding(.horizontal, 6)
+		}
+		.buttonStyle(.plain)
+	}
 
-			Spacer()
-
-			Text("플레이스홀더")
-				.font(.system(size: 14))
-				.foregroundColor(.secondary)
+	@ViewBuilder
+	private func statsCard(for type: StatsCardType) -> some View {
+		Group {
+			switch type {
+			case .monthlyTotal:
+				monthlyTotalCard
+			case .budgetProgress:
+				budgetCard
+			case .dailyTrend:
+				spendingTrendCard
+			}
 		}
 		.padding(16)
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(colorScheme == .dark ? Color(.secondarySystemBackground) : Color(.systemBackground))
 		.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 		.padding(.horizontal, 6)
+	}
+
+	private var monthlyTotalCard: some View {
+		let total = filteredExpenses.reduce(0.0) { $0 + $1.wrappedValue.amount }
+		let count = filteredExpenses.count
+
+		return VStack(alignment: .leading, spacing: 0) {
+			HStack {
+				Text("Total Spending")
+					.font(.system(size: 13, weight: .medium))
+					.foregroundColor(.secondary)
+				Spacer()
+				Text("\(count) items")
+					.font(.system(size: 12))
+					.foregroundColor(.secondary.opacity(0.5))
+			}
+
+			Spacer()
+
+			Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: total)) ?? "")
+				.font(.system(size: 34, weight: .bold))
+				.foregroundColor(.primary)
+				.minimumScaleFactor(0.4)
+				.lineLimit(1)
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+	}
+
+	private var budgetCard: some View {
+		let spent = filteredExpenses
+			.filter { !$0.wrappedValue.excludeFromBudget }
+			.reduce(0.0) { $0 + $1.wrappedValue.amount }
+		let budget = settings.monthlyBudget
+		let ratio = budget > 0 ? spent / budget : 0
+		let clampedRatio = min(ratio, 1.0)
+		let remaining = budget - spent
+		let overBudget = remaining < 0
+		let barColor: Color = overBudget ? .red : .blue
+		let formatter = NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode)
+
+		return VStack(alignment: .leading, spacing: 0) {
+			HStack {
+				Text("Budget")
+					.font(.system(size: 13, weight: .medium))
+					.foregroundColor(.secondary)
+				Spacer()
+				Text("\(Int(ratio * 100))%")
+					.font(.system(size: 13, weight: .semibold))
+					.foregroundColor(barColor)
+			}
+
+			Spacer()
+
+			HStack(alignment: .firstTextBaseline, spacing: 4) {
+				Text(formatter.string(from: NSNumber(value: spent)) ?? "")
+					.font(.system(size: 28, weight: .bold))
+					.foregroundColor(.primary)
+					.minimumScaleFactor(0.4)
+					.lineLimit(1)
+				Text("/ \(formatter.string(from: NSNumber(value: budget)) ?? "")")
+					.font(.system(size: 13))
+					.foregroundColor(.secondary)
+					.lineLimit(1)
+			}
+
+			GeometryReader { geo in
+				ZStack(alignment: .leading) {
+					RoundedRectangle(cornerRadius: 3)
+						.fill(Color.secondary.opacity(0.1))
+					RoundedRectangle(cornerRadius: 3)
+						.fill(barColor)
+						.frame(width: geo.size.width * clampedRatio)
+				}
+			}
+			.frame(height: 5)
+			.padding(.top, 10)
+
+			Text(overBudget ? "Over budget" : "\(formatter.string(from: NSNumber(value: remaining)) ?? "") left")
+				.font(.system(size: 12))
+				.foregroundColor(overBudget ? .red : .secondary.opacity(0.5))
+				.padding(.top, 6)
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
+	}
+
+	private var spendingTrendCard: some View {
+		let dates = budgetDates
+		let sorted = filteredExpenses
+			.map { $0.wrappedValue }
+			.sorted { $0.date < $1.date }
+		let today = min(Calendar.current.startOfDay(for: Date()), dates.endDate)
+		let cumulative: [(date: Date, total: Double)] = {
+			var points: [(Date, Double)] = []
+			var running = 0.0
+			let calendar = Calendar.current
+
+			points.append((dates.startDate, 0))
+
+			let grouped = Dictionary(grouping: sorted) { calendar.startOfDay(for: $0.date) }
+			for date in grouped.keys.sorted() {
+				running += grouped[date]!.reduce(0) { $0 + $1.amount }
+				points.append((date, running))
+			}
+
+			if let last = points.last, last.0 < today {
+				points.append((today, running))
+			}
+
+			return points
+		}()
+
+		return VStack(alignment: .leading, spacing: 11) {
+			HStack {
+				Text("Spending Trend")
+					.font(.system(size: 13, weight: .medium))
+					.foregroundColor(.secondary)
+				Spacer()
+			}
+
+			Chart {
+				ForEach(cumulative, id: \.date) { item in
+					AreaMark(
+						x: .value("Date", item.date),
+						y: .value("Total", item.total)
+					)
+					.foregroundStyle(
+						LinearGradient(
+							colors: [Color.blue.opacity(0.3), Color.blue.opacity(0.05)],
+							startPoint: .top,
+							endPoint: .bottom
+						)
+					)
+					.interpolationMethod(.linear)
+
+					LineMark(
+						x: .value("Date", item.date),
+						y: .value("Total", item.total)
+					)
+					.foregroundStyle(Color.blue)
+					.interpolationMethod(.linear)
+					.lineStyle(StrokeStyle(lineWidth: 2))
+				}
+
+				if let last = cumulative.last, last.total > 0 {
+					let totalDuration = dates.endDate.timeIntervalSince(dates.startDate)
+					let elapsed = last.date.timeIntervalSince(dates.startDate)
+					let progress = totalDuration > 0 ? elapsed / totalDuration : 0
+					let labelPosition: AnnotationPosition = progress > 0.8 ? .topLeading : .trailing
+
+					PointMark(
+						x: .value("Date", last.date),
+						y: .value("Total", last.total)
+					)
+					.symbol(Circle())
+					.symbolSize(20)
+					.foregroundStyle(Color.blue)
+					.annotation(position: labelPosition, spacing: 4) {
+						Text(NumberFormatter.currency(for: decimalDisplayMode, currencyCode: currencyCode).string(from: NSNumber(value: last.total)) ?? "")
+							.font(.system(size: 10, weight: .medium))
+							.foregroundColor(.secondary)
+							.offset(x: progress > 0.8 ? 2 : 0, y: progress > 0.8 ? 2 : 0)
+					}
+				}
+			}
+			.chartXScale(domain: dates.startDate...dates.endDate)
+			.chartXAxis(.hidden)
+			.chartYAxis(.hidden)
+		}
+		.frame(maxWidth: .infinity, alignment: .leading)
 	}
 
 	// MARK: - Expense List

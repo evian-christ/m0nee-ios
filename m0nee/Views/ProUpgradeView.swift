@@ -86,9 +86,9 @@ struct ProUpgradeModalView: View {
 								.padding(.leading, 60)
 
 							featureItem(
-								icon: "person.2",
-								title: "Family Sharing",
-								description: "Share with up to 5 members",
+								icon: "chart.bar.xaxis.ascending",
+								title: "Advanced Statistics",
+								description: "Detailed spending insights on home",
 								gradient: [Color.purple, Color.pink]
 							)
 						}
@@ -179,14 +179,9 @@ struct ProUpgradeModalView: View {
 					Button {
 						dismiss()
 					} label: {
-						ZStack {
-							Circle()
-								.fill(Color.secondary.opacity(0.15))
-								.frame(width: 30, height: 30)
-							Image(systemName: "xmark")
-								.font(.system(size: 12, weight: .semibold))
-								.foregroundColor(.secondary)
-						}
+						Image(systemName: "xmark")
+							.font(.system(size: 14, weight: .semibold))
+							.foregroundColor(.secondary)
 					}
 				}
 			}

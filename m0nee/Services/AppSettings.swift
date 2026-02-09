@@ -29,6 +29,7 @@ final class AppSettings: ObservableObject {
         static let notificationHour = "notificationHour"
         static let notificationMinute = "notificationMinute"
         static let selectedLanguage = "selectedLanguage"
+        static let enabledStatsCards = "enabledStatsCards"
     }
 
     private let defaults: UserDefaults
@@ -117,6 +118,37 @@ final class AppSettings: ObservableObject {
         didSet { set(selectedLanguage, for: Keys.selectedLanguage, store: .standard) }
     }
 
+    @Published var enabledStatsCards: [StatsCardType] {
+        didSet { persistStatsCards() }
+    }
+
+    private static let sharedSuiteName = "group.com.chankim.Monir"
+    private static let migrationKey = "didMigrateFromSharedDefaults"
+
+    /// One-time migration: copy settings that were stored only in the app group container to .standard
+    private static func migrateFromSharedDefaultsIfNeeded(defaults: UserDefaults) {
+        guard !defaults.bool(forKey: migrationKey) else { return }
+        guard let shared = UserDefaults(suiteName: sharedSuiteName) else {
+            defaults.set(true, forKey: migrationKey)
+            return
+        }
+
+        // currencyCode — was stored only in .shared
+        if let value = shared.string(forKey: Keys.currencyCode), defaults.object(forKey: Keys.currencyCode) == nil {
+            defaults.set(value, forKey: Keys.currencyCode)
+        }
+        // monthlyBudget — was stored only in .shared
+        if shared.object(forKey: Keys.monthlyBudget) != nil, defaults.object(forKey: Keys.monthlyBudget) == nil {
+            defaults.set(shared.double(forKey: Keys.monthlyBudget), forKey: Keys.monthlyBudget)
+        }
+        // budgetByCategory — was stored only in .shared
+        if shared.object(forKey: Keys.budgetByCategory) != nil, defaults.object(forKey: Keys.budgetByCategory) == nil {
+            defaults.set(shared.bool(forKey: Keys.budgetByCategory), forKey: Keys.budgetByCategory)
+        }
+
+        defaults.set(true, forKey: migrationKey)
+    }
+
     // MARK: Init
     init(
         defaults: UserDefaults = .standard,
@@ -124,6 +156,8 @@ final class AppSettings: ObservableObject {
     ) {
         self.defaults = defaults
         self.sharedDefaults = sharedDefaults
+
+        Self.migrateFromSharedDefaultsIfNeeded(defaults: defaults)
 
         self.hasSeenTutorial = Self.boolValue(for: Keys.hasSeenTutorial, store: .standard, default: false, defaults: defaults, sharedDefaults: sharedDefaults)
         self.currencyCode = Self.stringValue(for: Keys.currencyCode, store: .standard, default: Locale.current.currency?.identifier ?? "USD", defaults: defaults, sharedDefaults: sharedDefaults)
@@ -142,6 +176,7 @@ final class AppSettings: ObservableObject {
         self.notificationHour = Self.intValue(for: Keys.notificationHour, store: .standard, default: 20, defaults: defaults, sharedDefaults: sharedDefaults)
         self.notificationMinute = Self.intValue(for: Keys.notificationMinute, store: .standard, default: 0, defaults: defaults, sharedDefaults: sharedDefaults)
         self.selectedLanguage = Self.stringValue(for: Keys.selectedLanguage, store: .standard, default: Locale.preferredLanguages.first?.components(separatedBy: "-").first ?? "en", defaults: defaults, sharedDefaults: sharedDefaults)
+        self.enabledStatsCards = Self.decodeStatsCards(for: Keys.enabledStatsCards, defaults: defaults, sharedDefaults: sharedDefaults)
     }
 
     // MARK: Budget helpers
@@ -170,6 +205,7 @@ final class AppSettings: ObservableObject {
         notificationHour = 20
         notificationMinute = 0
         categoriesList = "Food,Transport,Other"
+        enabledStatsCards = StatsCardType.defaultCards
     }
 
     // MARK: Private helpers
@@ -181,6 +217,19 @@ final class AppSettings: ObservableObject {
         if monthlyBudget != total {
             monthlyBudget = total
         }
+    }
+
+    private func persistStatsCards() {
+        guard let encoded = try? JSONEncoder().encode(enabledStatsCards) else { return }
+        set(encoded, for: Keys.enabledStatsCards, store: .standard)
+    }
+
+    private static func decodeStatsCards(for key: String, defaults: UserDefaults, sharedDefaults: UserDefaults?) -> [StatsCardType] {
+        if let data = defaults.data(forKey: key),
+           let decoded = try? JSONDecoder().decode([StatsCardType].self, from: data) {
+            return decoded
+        }
+        return StatsCardType.defaultCards
     }
 
     private func set(_ value: Bool, for key: String, store: Store) {

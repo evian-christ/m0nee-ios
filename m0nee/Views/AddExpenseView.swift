@@ -20,6 +20,10 @@ struct AddExpenseView: View {
 	@State private var details: String = ""
 	@State private var memo: String = ""
 	@State private var excludeFromBudget: Bool = false
+	@State private var showingAddCategory = false
+	@State private var newCategoryName = ""
+	@State private var newCategorySymbol = "folder"
+	@State private var newCategoryColor: Color = .gray
 
 	var onSave: (Expense) -> Void
 
@@ -316,6 +320,24 @@ struct AddExpenseView: View {
 							}
 						}
 					}
+
+					Button {
+						showingAddCategory = true
+					} label: {
+						VStack(spacing: 8) {
+							ZStack {
+								Circle()
+									.fill(Color.secondary.opacity(0.2))
+									.frame(width: 60, height: 60)
+								Image(systemName: "plus")
+									.font(.system(size: 24))
+									.foregroundColor(.secondary)
+							}
+							Text("Add")
+								.font(.caption)
+								.foregroundColor(.secondary)
+						}
+					}
 				}
 				.padding(.horizontal, 24)
 			}
@@ -359,6 +381,67 @@ struct AddExpenseView: View {
 		.background(Color(.systemGroupedBackground))
 		.onAppear {
 			focusedField = nil
+		}
+		.sheet(isPresented: $showingAddCategory) {
+			NavigationStack {
+				Form {
+					Section {
+						HStack {
+							Spacer()
+							ZStack {
+								Circle()
+									.fill(newCategoryColor)
+									.frame(width: 60, height: 60)
+								Image(systemName: newCategorySymbol)
+									.font(.system(size: 28))
+									.foregroundColor(.white)
+							}
+							Spacer()
+						}
+					}
+
+					Section(header: Text("Name")) {
+						TextField("Category Name", text: $newCategoryName)
+					}
+
+					Section {
+						NavigationLink("Change Icon") {
+							IconPickerView(selectedSymbol: $newCategorySymbol)
+						}
+						NavigationLink("Change Color") {
+							ColorPickerView(selectedColor: $newCategoryColor)
+						}
+					}
+				}
+				.navigationTitle("New Category")
+				.navigationBarTitleDisplayMode(.inline)
+				.toolbar {
+					ToolbarItem(placement: .cancellationAction) {
+						Button("Cancel") {
+							newCategoryName = ""
+							newCategorySymbol = "folder"
+							newCategoryColor = .gray
+							showingAddCategory = false
+						}
+					}
+					ToolbarItem(placement: .navigationBarTrailing) {
+						Button("Add") {
+							let trimmed = newCategoryName.trimmingCharacters(in: .whitespaces)
+							let cleaned = String(trimmed.prefix(30))
+							guard !cleaned.isEmpty else { return }
+							guard !store.categories.contains(where: { $0.name.lowercased() == cleaned.lowercased() }) else { return }
+
+							let newItem = CategoryItem(name: cleaned, symbol: newCategorySymbol, color: CodableColor(newCategoryColor))
+							store.addCategory(newItem)
+							category = cleaned
+							newCategoryName = ""
+							newCategorySymbol = "folder"
+							newCategoryColor = .gray
+							showingAddCategory = false
+						}
+					}
+				}
+			}
 		}
 	}
 

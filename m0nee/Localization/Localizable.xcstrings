@@ -10,6 +10,9 @@
     "(optional)" : {
 
     },
+    "/ %@" : {
+
+    },
     "%@  %.0f" : {
       "localizations" : {
         "en" : {
@@ -40,6 +43,9 @@
         }
       }
     },
+    "%@ left" : {
+
+    },
     "%@%.0f" : {
       "localizations" : {
         "en" : {
@@ -61,6 +67,12 @@
       }
     },
     "%lld" : {
+
+    },
+    "%lld items" : {
+
+    },
+    "%lld%%" : {
 
     },
     "0" : {
@@ -248,6 +260,9 @@
         }
       }
     },
+    "Available Cards" : {
+
+    },
     "Back" : {
 
     },
@@ -262,6 +277,7 @@
       }
     },
     "Budget" : {
+      "comment" : "Stats card type",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -544,6 +560,7 @@
       }
     },
     "Danger Zone" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -806,6 +823,9 @@
         }
       }
     },
+    "Edit Cards" : {
+
+    },
     "Edit Category" : {
       "localizations" : {
         "ko" : {
@@ -895,6 +915,9 @@
           }
         }
       }
+    },
+    "Enabled Cards" : {
+
     },
     "Enter a valid access code." : {
       "localizations" : {
@@ -1017,6 +1040,9 @@
       }
     },
     "Exclude from budget" : {
+
+    },
+    "Excluded" : {
 
     },
     "Expense & Budget" : {
@@ -1320,7 +1346,7 @@
     "Monir Pro" : {
 
     },
-    "Monir v1.4.2" : {
+    "Monir v2.0.0" : {
 
     },
     "month" : {
@@ -1402,6 +1428,9 @@
           }
         }
       }
+    },
+    "No cards enabled" : {
+
     },
     "No expenses here yet 💸" : {
       "extractionState" : "stale",
@@ -1523,6 +1552,9 @@
         }
       }
     },
+    "Over budget" : {
+
+    },
     "Pay once, own forever across all your devices" : {
 
     },
@@ -1567,6 +1599,9 @@
           }
         }
       }
+    },
+    "Pro" : {
+
     },
     "PRO" : {
 
@@ -1613,6 +1648,9 @@
           }
         }
       }
+    },
+    "Recurring" : {
+
     },
     "Recurring expense feature" : {
       "extractionState" : "stale",
@@ -1837,8 +1875,7 @@
       }
     },
     "Spending Trend" : {
-      "comment" : "Title for the Spending Trend insight card",
-      "extractionState" : "stale",
+      "comment" : "Stats card type",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -1902,6 +1939,12 @@
           }
         }
       }
+    },
+    "Stats Cards" : {
+
+    },
+    "Status" : {
+
     },
     "Support & Pro" : {
       "localizations" : {
@@ -1998,7 +2041,6 @@
       }
     },
     "Total" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2009,7 +2051,7 @@
       }
     },
     "Total Spending" : {
-      "extractionState" : "stale",
+      "comment" : "Stats card type",
       "localizations" : {
         "ko" : {
           "stringUnit" : {
@@ -2287,12 +2329,6 @@
           }
         }
       }
-    },
-    "통계 카드 %lld" : {
-
-    },
-    "플레이스홀더" : {
-
     }
   },
   "version" : "1.0"

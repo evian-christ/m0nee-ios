@@ -17,6 +17,9 @@ struct AppearanceSettingsView: View {
             }
 
             Section(header: Text("Main Screen Layout")) {
+                NavigationLink(destination: StatsCardSettingsView()) {
+                    Text("Stats Cards")
+                }
                 Toggle("Group Expenses by Day", isOn: settings.binding(\.groupByDay))
             }
 
